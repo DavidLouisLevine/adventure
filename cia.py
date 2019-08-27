@@ -19,9 +19,8 @@ def GoBuilding(state, world):
 
 def GoDoors(state, world):
     if state.location==world.locations['IN THE LOBBY OF THE BUILDING'] and state.upButtonPushed:
-            state.location = world.locations['IN THE LOBBY OF THE BUILDING']
-    else:
-        return 'THE GUARD LOOKS AT ME SUSPICIOUSLY, THEN THROWS ME BACK.'
+        state.location = world.locations['IN A SMALL ROOM']
+        return ""
 
 def PushFloorOne(state, world):
     state.upButtonPushed = True
@@ -101,10 +100,10 @@ objects = (
     Object('A SMALL PAINTING', 'PAI', 23, moveable=True),
     Object('A PAIR OF RUBBER GLOVES', 'GLO', 13, moveable=True),
     Object('A BOX WITH A BUTTON ON IT', 'BOX', 24, moveable=True),
-    Object('ONE', 'ONE', 9),
-    Object('TWO', 'TWO', 9),
-    Object('THREE', 'THR', 9),
-    Object('SLIT', 'SLI', 10),
+    Object('ONE', 'ONE', 9, lookable=False),
+    Object('TWO', 'TWO', 9, lookable=False),
+    Object('THREE', 'THR', 9, lookable=False),
+    Object('SLIT', 'SLI', 10, lookable=False),
 
     # These are not in the original game's object list but are included here
     # so that every target is a direction or an object.

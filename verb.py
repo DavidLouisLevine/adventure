@@ -45,11 +45,14 @@ class GoVerb(Verb):
         elif target.IsObject():
             object = target.value
             if game.state.location == object.placement.location:
-                #if object.response.verb == 1:
-                    #print("WE ARE", self.state.location.name)
-                    if object.response is not None and object.response.f is not None:
-                        m = object.response.f(game.state, game.world)
-                        m = m + "\n" if not m is None else ""
+                if object.response is not None and object.response.f is not None:
+                    m = object.response.f(game.state, game.world)
+                    if m is None:
+                        return "I CAN'T GO THAT WAY AT THE MOMENT."
+                    if m != "":
+                        m = m + "\n"
+            else:
+                return "I DON'T SEE THAT HERE."
         m += "WE ARE " + game.state.location.name + "\n"
 
         m += game.Look()
