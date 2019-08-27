@@ -1,7 +1,7 @@
 class Location:
     def __init__(self, name, moves):
         self.name = name
-        self.moves = moves
+        self.moves = list(moves)
 
 class Placement:
     def InInventory(self):
@@ -73,6 +73,8 @@ class Locations:
             (Location('IN THE CHAOS CONTROL ROOM', (0, 0, 30, 0))),
             (Location('NEAR THE END OF THE COMPLEX', (28, 0, 0, 29)))
         )
+        for i in range(len(self.items)):
+            self.items[i].i = i + 1
 
     def len(self):
         return len(self.items)

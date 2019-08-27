@@ -22,9 +22,24 @@ def GoDoors(state, world):
         state.location = world.locations['IN A SMALL ROOM']
         return ""
 
-def PushFloorOne(state, world):
+def PushUp(state, world):
     state.upButtonPushed = True
     return "THE DOORS OPEN WITH A WHOOSH!"
+
+def PushElevatorButton(state, world, floor, locationName):
+    if state.floor != floor:
+        state.location.moves[Direction.NORTH] = world.locations[locationName].i
+        state.floor = floor
+        return "THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."
+
+def PushOne(state, world):
+    return PushElevatorButton(state, world, 1, 'IN THE LOBBY OF THE BUILDING')
+
+def PushTwo(state, world):
+    return PushElevatorButton(state, world, 2, 'IN A SMALL HALLWAY')
+
+def PushThree(state, world):
+    return PushElevatorButton(state, world, 3, 'IN A SHORT CORRIDOR')
 
 class PushVerb(ObjectVerb):
     def __init__(self, *args, **kwargs):
@@ -100,15 +115,15 @@ objects = (
     Object('A SMALL PAINTING', 'PAI', 23, moveable=True),
     Object('A PAIR OF RUBBER GLOVES', 'GLO', 13, moveable=True),
     Object('A BOX WITH A BUTTON ON IT', 'BOX', 24, moveable=True),
-    Object('ONE', 'ONE', 9, lookable=False),
-    Object('TWO', 'TWO', 9, lookable=False),
-    Object('THREE', 'THR', 9, lookable=False),
+    Object('ONE', 'ONE', 9, Response(1, PushOne), lookable=False),
+    Object('TWO', 'TWO', 9, Response(1, PushTwo), lookable=False),
+    Object('THREE', 'THR', 9, Response(1, PushThree), lookable=False),
     Object('SLIT', 'SLI', 10, lookable=False),
 
     # These are not in the original game's object list but are included here
     # so that every target is a direction or an object.
     # In the game, "BUT" is a special cased string when used for this panel.
-    Object('A PANEL WITH ONE BUTTON', 'BUT', 3, Response(1, PushFloorOne), lookable=False),
+    Object('A PANEL WITH ONE BUTTON', 'BUT', 3, Response(1, PushUp), lookable=False),
     )
 
 world = World(objects, builtInVerbs)
@@ -116,6 +131,7 @@ world = World(objects, builtInVerbs)
 game = Game(world, State(world.locations['ON A BUSY STREET'], world))
 game.state.inventory.Add(world.objects['BADGE'])
 game.state.upButtonPushed = False
+game.state.floor = 1
 
 game.Do("GO BUILDING")
 game.Do("INVENTORY")
@@ -132,3 +148,5 @@ game.Do("GO EAST")
 game.Do("GO DOORS")
 game.Do("PUSH BUTTON")
 game.Do("GO DOORS")
+game.Do("PUSH TWO")
+game.Do("GO NORTH")
