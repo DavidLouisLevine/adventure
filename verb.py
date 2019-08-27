@@ -1,3 +1,4 @@
+from direction import *
 class Verb:
     def __init__(self, name, abbreviation):
         self.name = name
@@ -18,7 +19,8 @@ class Verbs:
     def __getitem__(self, item):
         if type(item) is str:
             for i in range(len(self.items)):
-                if self.items[i].name == item:
+                item2 = self.items[i]
+                if item2.name == item or item2.abbreviation == item[:3]:
                     return self.items[i]
             return None
         else:
@@ -115,6 +117,24 @@ class LookVerb(ObjectVerb):
                 if not m == "":
                     m += "\n"
                 m += "I CAN SEE " + object.name
+        moves = game.state.location.moves
+        if moves.count(0) != len(moves):
+            if not m == "":
+                m += "\n"
+            m += "WE COULD EASILY GO: "
+            for i in range(len(moves)):
+                if moves[i] != 0:
+                    m += Direction.names[i] + "  "
+        return m
+
+class QuitVerb(ObjectVerb):
+    def __init__(self, *args, **kwargs):
+        Verb.__init__(self, *args, **kwargs)
+
+    def DoObject(self, target, game):
+        m = "WHAT? YOU WOULD LEAVE ME HERE TO DIE ALONE?\n"
+        m += "JUST FOR THAT, I'M GOING TO DESTROY THE GAME.\n\n\n\nBOOOOOOOOOOOOM!"
+        game.quitting = True
         return m
 
 class BuiltInVerbs(Verbs):
@@ -126,6 +146,6 @@ class BuiltInVerbs(Verbs):
         (GetVerb('GET', 'GET')),
         (DropVerb('DROP', 'DRO')),
         (LookVerb('LOOK', 'LOO')),
-        (Verb('QUIT', 'QUI')),
+        (QuitVerb('QUIT', 'QUI')),
         (InventoryVerb('INVENTORY', 'INV'))
     )

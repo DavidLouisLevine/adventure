@@ -47,9 +47,12 @@ class PushVerb(ObjectVerb):
 
     def DoObject(self, target, game):
         if target.IsObject() and not target.value.response is None:
-            return target.value.response.f(game.state, game.world)
+            m = target.value.response.f(game.state, game.world)
+            if m == "" or m is None:
+                m = "NOTHING HAPPENS."
         else:
-            return ""
+            m = ""
+        return m
 
 verbs = (
     (PushVerb('PUSH', 'PUS')),
@@ -133,20 +136,29 @@ game.state.inventory.Add(world.objects['BADGE'])
 game.state.upButtonPushed = False
 game.state.floor = 1
 
-game.Do("GO BUILDING")
-game.Do("INVENTORY")
-game.Do("DROP BADGE")
-game.Do("INVENTORY")
+print("        C.I.A  ADVENTURE")
 game.Do("LOOK")
-game.Do("GO BUILDING")
-game.Do("GO WEST")
-game.Do("LOOK")
-game.Do("GET RECORDER")
-game.Do("LOOK")
-game.Do("INVENTORY")
-game.Do("GO EAST")
-game.Do("GO DOORS")
-game.Do("PUSH BUTTON")
-game.Do("GO DOORS")
-game.Do("PUSH TWO")
-game.Do("GO NORTH")
+print("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
+game.name = 'JIM'
+print("ENTER YOUR NAME PARTNER? " + game.name)
+sequence = (
+    "GO BUILDING",
+    "INVENTORY",
+    "DROP BADGE",
+    "INVENTORY",
+    "LOOK",
+    "GO BUILDING",
+    "GO WEST",
+    "LOOK",
+    "GET RECORDER",
+    "LOOK",
+    "INVENTORY",
+    "GO EAST",
+    "GO DOORS",
+    "PUSH BUTTON",
+    "GO DOORS",
+    "PUSH TWO",
+    "PUSH TWO",
+    "GO NORTH")
+#sequence = ()
+game.Run(sequence)

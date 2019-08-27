@@ -7,6 +7,7 @@ class Game:
     def __init__(self, world, state):
         self.world = world
         self.state = state
+        self.quitting = False
 
     def DoAction(self, action):
         try:
@@ -35,6 +36,18 @@ class Game:
         m = self.DoAction(action)
         if not m is None and not m == "":
             print(m)
+
+    def Run(self, actions):
+        i = 0
+        prompt = "WHAT DO YOU THINK WE SHOULD DO? "
+        while not self.quitting:
+            if i < len(actions):
+                str = actions[i]
+                print(prompt + str)
+            else:
+                str = input(prompt)
+            self.Do(str, echo=False)
+            i += 1
 
     def Look(self):
         return self.world.verbs['LOOK'].Do(None, self)
