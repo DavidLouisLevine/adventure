@@ -15,18 +15,16 @@ class Game:
             verbName = action[:i]
             objectName = action[i + 1:]
         except:
-            verbName = action
-            objectName = None
+            return "I DON'T KNOW HOW TO DO THAT."
 
         verb = self.world.verbs[verbName]
-        if objectName is None:
-            target = None
+        direction = Direction.FromName(objectName)
+        if not direction is None:
+            value = direction
         else:
-            direction = Direction.FromName(objectName)
-            if not direction is None:
-                target = Target(direction, self.world, self.state)
-            else:
-                target = Target(objectName, self.world, self.state)
+            value = objectName
+
+        target = Target(value, self.world, self.state)
 
         return verb.Do(target, self)
 
@@ -38,16 +36,20 @@ class Game:
             print(m)
 
     def Run(self, actions):
-        i = 0
-        prompt = "WHAT DO YOU THINK WE SHOULD DO? "
+        t = 0
+        prompt = "\nWHAT DO YOU THINK WE SHOULD DO? "
         while not self.quitting:
-            if i < len(actions):
-                str = actions[i]
+            if t < len(actions):
+                str = actions[t]
                 print(prompt + str)
             else:
                 str = input(prompt)
             self.Do(str, echo=False)
-            i += 1
+            self.Tick()
+            t += 1
+
+    def Tick(self, target, game):
+        pass
 
     def Look(self):
         return self.world.verbs['LOOK'].Do(None, self)
@@ -112,9 +114,13 @@ class Inventory:
             return False
 
     def Remove(self, object, location):
-        object.placement = PlacementLocation(location)
-        self.size -= 1
-        assert(self.size >= 0)
+        if self.Has(object):
+            object.placement = PlacementLocation(location)
+            self.size -= 1
+            assert(self.size >= 0)
+            return True
+        else:
+            return False
 
 class Response:
     def __init__(self, verb, f):

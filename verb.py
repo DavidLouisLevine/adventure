@@ -1,16 +1,4 @@
-from direction import *
-class Verb:
-    def __init__(self, name, abbreviation):
-        self.name = name
-        self.abbreviation = abbreviation
-
-class ObjectVerb(Verb):
-    def __init__(self, *args, **kwargs):
-        Verb.__init__(self, *args, **kwargs)
-
-    def Do(self, target, game):
-        #assert (target is None or target.IsObject())
-        return self.DoObject(target, game)
+from direction import Direction
 
 class Verbs:
     def __init__(self, verbs):
@@ -31,6 +19,15 @@ class Verbs:
 
     def Do(self, target, game):
         raise NotImplementedError()
+
+class Verb:
+    def __init__(self, name, abbreviation, targetNever=False, targetOptional=False):
+        self.name = name
+        self.abbreviation = abbreviation
+
+    def Do(self, target, game):
+        #assert (target is None or target.IsObject())
+        return self.DoObject(target, game)
 
 class GoVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -60,14 +57,15 @@ class GoVerb(Verb):
         m += game.Look()
         return m
 
-class DropVerb(ObjectVerb):
+class DropVerb(Verb):
     def __init__(self, *args, **kwargs):
         Verb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
-        game.state.inventory.Remove(target.value, game.state.location)
+        if game.state.inventory.Remove(target.value, game.state.location):
+            return "O.K. I DROPPED IT."
 
-class GetVerb(ObjectVerb):
+class GetVerb(Verb):
     def __init__(self, *args, **kwargs):
         Verb.__init__(self, *args, **kwargs)
 
@@ -87,7 +85,7 @@ class GetVerb(ObjectVerb):
             m = "I DON'T SEE THAT HERE."
         return m
 
-class InventoryVerb(ObjectVerb):
+class InventoryVerb(Verb):
     def __init__(self, *args, **kwargs):
         Verb.__init__(self, *args, **kwargs)
 
@@ -105,7 +103,7 @@ class InventoryVerb(ObjectVerb):
                 m += object.name
         return m
 
-class LookVerb(ObjectVerb):
+class LookVerb(Verb):
     def __init__(self, *args, **kwargs):
         Verb.__init__(self, *args, **kwargs)
 
@@ -125,9 +123,10 @@ class LookVerb(ObjectVerb):
             for i in range(len(moves)):
                 if moves[i] != 0:
                     m += Direction.names[i] + "  "
+        m += "\n>" + '-' * 62 + "<"
         return m
 
-class QuitVerb(ObjectVerb):
+class QuitVerb(Verb):
     def __init__(self, *args, **kwargs):
         Verb.__init__(self, *args, **kwargs)
 

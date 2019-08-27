@@ -6,7 +6,7 @@
 
 from object import Object
 from location import NoLocation
-from verb import Verb, ObjectVerb, BuiltInVerbs
+from verb import Verb, BuiltInVerbs
 from game import Game, World, State, Response
 from direction import *
 
@@ -41,7 +41,7 @@ def PushTwo(state, world):
 def PushThree(state, world):
     return PushElevatorButton(state, world, 3, 'IN A SHORT CORRIDOR')
 
-class PushVerb(ObjectVerb):
+class PushVerb(Verb):
     def __init__(self, *args, **kwargs):
         Verb.__init__(self, *args, **kwargs)
 
@@ -54,7 +54,7 @@ class PushVerb(ObjectVerb):
             m = ""
         return m
 
-verbs = (
+customVerbs = (
     (PushVerb('PUSH', 'PUS')),
     (Verb('PULL', 'PUL')),
     (Verb('INSERT', 'INS')),
@@ -66,10 +66,9 @@ verbs = (
     (Verb('CUT', 'CUT')),
     (Verb('THROW', 'THR')),
     (Verb('CON', 'CON')),
-    (Verb('BOND-007-', 'BON')),
-)
+    (Verb('BOND-007-', 'BON')),)
 
-builtInVerbs = BuiltInVerbs(verbs)
+verbs = BuiltInVerbs(customVerbs)
 
 objects = (
     Object('A VIDEO CASSETTE RECORDER', 'REC', 2),
@@ -129,18 +128,30 @@ objects = (
     Object('A PANEL WITH ONE BUTTON', 'BUT', 3, Response(1, PushUp), lookable=False),
     )
 
-world = World(objects, builtInVerbs)
 
-game = Game(world, State(world.locations['ON A BUSY STREET'], world))
-game.state.inventory.Add(world.objects['BADGE'])
-game.state.upButtonPushed = False
-game.state.floor = 1
+class CIA(Game):
+    def __init__(self):
+        world = World(objects, verbs)
+        state =  State(world.locations['ON A BUSY STREET'], world)
+        Game.__init__(self, world, state)
+        self.state.inventory.Add(world.objects['BADGE'])
+        self.state.upButtonPushed = False
+        self.state.floor = 1
+        self.combination = 12345
+        self.guard_ticks = -1
 
-print("        C.I.A  ADVENTURE")
-game.Do("LOOK")
-print("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
-game.name = 'JIM'
-print("ENTER YOUR NAME PARTNER? " + game.name)
+    def Run(self, actions):
+        print("        C.I.A  ADVENTURE")
+        self.Do("LOOK", echo=False)
+        print("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
+        self.playerName = 'JIM'
+        print("ENTER YOUR NAME PARTNER? " + self.playerName)
+        Game.Run(self, sequence)
+
+    def Tick(self):
+        if self.guard_ticks != -1:
+            self.guard_ticks -= 1
+
 sequence = (
     "GO BUILDING",
     "INVENTORY",
@@ -160,5 +171,7 @@ sequence = (
     "PUSH TWO",
     "PUSH TWO",
     "GO NORTH")
-#sequence = ()
-game.Run(sequence)
+# sequence = ()
+
+cia = CIA()
+cia.Run(sequence)
