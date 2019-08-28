@@ -52,7 +52,7 @@ class Target:
                 self.value = world.objects[value]
             else:
                 object = world.objects.Find(value)
-                if state.inventory.Has(object):
+                if object is not None and state.inventory.Has(object):
                     self.value = object
                 else:
                     self.value = world.objects.Find(value, state.location)

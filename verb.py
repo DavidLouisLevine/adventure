@@ -21,9 +21,15 @@ class Verbs:
         raise NotImplementedError()
 
 class Verb:
-    def __init__(self, name, abbreviation, targetNever=False, targetOptional=False):
+    # If both targetInventory and targetInRoom are False then there are no restrictions on the target location
+    # If either is True then only targets in those locations are allowed.
+    def __init__(self, name, abbreviation, targetNever=False, targetOptional=False, targetInventory=True, targetInRoom=True):
         self.name = name
         self.abbreviation = abbreviation
+        self.targetNever = targetNever
+        self.targetOptional = targetOptional
+        self.targetInventory = targetInventory
+        self.targetInRoom = targetInRoom
 
     def Do(self, target, game):
         #assert (target is None or target.IsObject())
@@ -35,6 +41,7 @@ class GoVerb(Verb):
 
     def Do(self, target, game):
         m = ""
+        cant = "I CAN'T GO THAT WAY AT THE MOMENT."
         if target.IsDirection():
             move = game.state.location.moves[target.value.d]
             if move == 0:
@@ -47,9 +54,11 @@ class GoVerb(Verb):
                 if object.response is not None and object.response.f is not None:
                     m = object.response.f(game.state, game.world)
                     if m is None:
-                        return "I CAN'T GO THAT WAY AT THE MOMENT."
+                        return cant
                     if m != "":
                         m = m + "\n"
+                else:
+                    return cant
             else:
                 return "I DON'T SEE THAT HERE."
         m += "WE ARE " + game.state.location.name + "\n"
@@ -143,8 +152,8 @@ class BuiltInVerbs(Verbs):
     builtinVerbs = (
         (GoVerb('GO', 'GO ')),
         (GetVerb('GET', 'GET')),
-        (DropVerb('DROP', 'DRO')),
-        (LookVerb('LOOK', 'LOO')),
-        (QuitVerb('QUIT', 'QUI')),
-        (InventoryVerb('INVENTORY', 'INV'))
+        (DropVerb('DROP', 'DRO', targetInventory=False, targetInRoom=False)),
+        (LookVerb('LOOK', 'LOO', targetOptional=True)),
+        (QuitVerb('QUIT', 'QUI', targetNever=True)),
+        (InventoryVerb('INVENTORY', 'INV', targetNever=True))
     )

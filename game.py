@@ -1,4 +1,4 @@
-from location import PlacementLocation, InventoryLocation, Locations
+from location import LocationPlacement, InventoryPlacement, Locations
 from verb import BuiltInVerbs
 from object import Objects, Target
 from direction import Direction
@@ -12,19 +12,29 @@ class Game:
     def DoAction(self, action):
         try:
             i = action.index(' ')
-            verbName = action[:i]
-            objectName = action[i + 1:]
+            verbStr = action[:i]
         except:
+            i = -1
+            verbStr = action
+
+        verb = self.world.verbs[verbStr]
+        if verb is None:
             return "I DON'T KNOW HOW TO DO THAT."
 
-        verb = self.world.verbs[verbName]
-        direction = Direction.FromName(objectName)
-        if not direction is None:
-            value = direction
-        else:
-            value = objectName
+        target = None
+        if i != -1:
+            targetStr = action[i + 1:]
 
-        target = Target(value, self.world, self.state)
+            direction = Direction.FromName(targetStr)
+            if not direction is None:
+                value = direction
+            else:
+                value = targetStr
+
+            target = Target(value, self.world, self.state)
+
+        if (target is None or target.value is None) and not (verb.targetOptional or verb.targetNever):
+            return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT."
 
         return verb.Do(target, self)
 
@@ -38,7 +48,7 @@ class Game:
     def Run(self, actions):
         t = 0
         prompt = "\nWHAT DO YOU THINK WE SHOULD DO? "
-        while not self.quitting:
+        while not   self.quitting:
             if t < len(actions):
                 str = actions[t]
                 print(prompt + str)
@@ -61,12 +71,12 @@ class World:
         self.objects = Objects(objects)
         for object in self.objects:
             if type(object.placement) is int:
-                object.placement = PlacementLocation(self.locations[object.placement])
+                object.placement = LocationPlacement(self.locations[object.placement])
 
     def AtLocation(self, location):
         l = ()
         for object in self.objects:
-            if type(object.placement) is PlacementLocation and object.placement.location == location:
+            if type(object.placement) is LocationPlacement and object.placement.location == location:
                 l += (object, )
         return l
 
@@ -106,7 +116,7 @@ class Inventory:
 
     def Add(self, object):
         if self.size != self.capacity:
-            object.placement = InventoryLocation()
+            object.placement = InventoryPlacement()
             self.size += 1
             assert(self.size <= self.capacity)
             return True
@@ -115,7 +125,7 @@ class Inventory:
 
     def Remove(self, object, location):
         if self.Has(object):
-            object.placement = PlacementLocation(location)
+            object.placement = LocationPlacement(location)
             self.size -= 1
             assert(self.size >= 0)
             return True

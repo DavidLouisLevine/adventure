@@ -5,22 +5,50 @@
 #   and was also released on Commodore 64.
 
 from object import Object
-from location import NoLocation
+from location import NoPlacement
 from verb import Verb, BuiltInVerbs
 from game import Game, World, State, Response
 from direction import *
+
+def GoOpenWoodenDoor(state, world):
+    state.location = world.locations['CEO']
+    return ""
+
+def GoRope(state, world):
+    if state.ropeThrown:
+        state.location = world.locations['PIT']
+        return ""
+    else:
+        return None
+
+def GoOpenDoor(state, world):
+    state.location = world.locations['METAL']
+
+def GoCloset(state, world):
+    state.location = world.locations['CLOSET']
 
 def GoBuilding(state, world):
     if state.location==world.locations['ON A BUSY STREET']:
         if not state.inventory.Has(world.objects['BADGE']):
             state.location = world.locations['IN THE LOBBY OF THE BUILDING']
+            return ""
         else:
             return 'THE GUARD LOOKS AT ME SUSPICIOUSLY, THEN THROWS ME BACK.'
 
 def GoDoors(state, world):
-    if state.location==world.locations['IN THE LOBBY OF THE BUILDING'] and state.upButtonPushed:
-        state.location = world.locations['IN A SMALL ROOM']
+    if state.upButtonPushed:
+        state.location = world.locations['ELEVATOR']
         return ""
+
+def GetPainting(state, world):
+    if not state.fellFromFrame:
+        state.fellFromFrame = True
+        world.objects['CAPSULE']
+        return "SOMETHING FELL FROM THE FRAME!"
+
+def GetTelevision(state, world):
+    if not state.fellFromFrame:
+        state.tvConnected = False
 
 def PushUp(state, world):
     state.upButtonPushed = True
@@ -54,12 +82,24 @@ class PushVerb(Verb):
             m = ""
         return m
 
+class WearVerb(Verb):
+    def __init__(self, *args, **kwargs):
+        Verb.__init__(self, *args, **kwargs)
+
+    def DoObject(self, target, game):
+        m = None
+        if target.IsObject() and not target.value.response is None:
+            m = target.value.response.f(game.state, game.world)
+        if m == "" or m is None:
+            m = "I CAN'T WEAR THAT!."
+        return m
+
 customVerbs = (
     (PushVerb('PUSH', 'PUS')),
     (Verb('PULL', 'PUL')),
     (Verb('INSERT', 'INS')),
     (Verb('OPEN', 'OPE')),
-    (Verb('WEAR', 'WEA')),
+    (WearVerb('WEAR', 'WEA', targetInventory=False, targetInRoom=False)),
     (Verb('READ', 'REA')),
     (Verb('STA?', 'STA')),
     (Verb('BREAK?', 'BRE')),
@@ -72,19 +112,19 @@ verbs = BuiltInVerbs(customVerbs)
 
 objects = (
     Object('A VIDEO CASSETTE RECORDER', 'REC', 2),
-    Object('A VIDEO TAPE', 'TAP', NoLocation(), moveable=True),
-    Object('A LARGE BATTERY', 'BAT', NoLocation(), moveable=True),
-    Object('A BLANK CREDIT CARD', 'CAR', NoLocation(), moveable=True),
-    Object('AN ELECTRONIC LOCK', 'LOC', NoLocation()),
+    Object('A VIDEO TAPE', 'TAP', NoPlacement(), moveable=True),
+    Object('A LARGE BATTERY', 'BAT', NoPlacement(), moveable=True),
+    Object('A BLANK CREDIT CARD', 'CAR', NoPlacement(), moveable=True),
+    Object('AN ELECTRONIC LOCK', 'LOC', NoPlacement()),
     Object('AN ELABORATE PAPER WEIGHT', 'WEI', 5, moveable=True),
     Object('A LOCKED WOODEN DOOR', 'DOO', 4),
-    Object('AN OPEN WOODEN DOOR', 'DOO', NoLocation()),
+    Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), Response(1, GoOpenWoodenDoor)),
     Object('A SOLID LOOKING DOOR', 'DOO', 10),
-    Object('AN OPEN DOOR', 'DOO', NoLocation()),
+    Object('AN OPEN DOOR', 'DOO', NoPlacement()),
     Object('AN ALERT SECURITY GUARD', 'GUA', 10),
-    Object('A SLEEPING SECURITY GUARD', 'GUA', NoLocation()),
+    Object('A SLEEPING SECURITY GUARD', 'GUA', NoPlacement()),
     Object('A LOCKED MAINTENANCE CLOSET', 'CLO', 14),
-    Object('A MAINTENANCE CLOSET', 'CLO', NoLocation()),
+    Object('A MAINTENANCE CLOSET', 'CLO', NoPlacement(), Response(1, GoCloset)),
     Object('A PLASTIC BAG', 'BAG', 13, moveable=True),
     Object('AN OLDE FASHIONED KEY', 'KEY', 9, moveable=True),
     Object('A SMALL METAL SQUARE ON THE WALL', 'SQU', 16),
@@ -92,24 +132,24 @@ objects = (
     Object('AN OLD MAHOGANY DESK', 'DES', 5),
     Object('A BROOM', 'BRO', 13, moveable=True),
     Object('A DUSTPAN', 'DUS', 13, moveable=True),
-    Object('A SPIRAL NOTEBOOK', 'NOT', NoLocation(), moveable=True),
-    Object('A MAHOGANY DRAWER', 'DRA', NoLocation(), moveable=True),
+    Object('A SPIRAL NOTEBOOK', 'NOT', NoPlacement(), moveable=True),
+    Object('A MAHOGANY DRAWER', 'DRA', NoPlacement(), moveable=True),
     Object('A GLASS CASE ON A PEDESTAL', 'CAS', 6),
     Object('A RAZOR BLADE', 'BLA', 27, moveable=True),
-    Object('A VERY LARGE RUBY', 'RUB', NoLocation(), moveable=True),
+    Object('A VERY LARGE RUBY', 'RUB', NoPlacement(), moveable=True),
     Object('A SIGN ON THE SQUARE', 'SIG', 16, moveable=True),
-    Object('A QUARTER', 'QUA', NoLocation(), moveable=True),
+    Object('A QUARTER', 'QUA', NoPlacement(), moveable=True),
     Object('A COFFEE MACHINE', 'MAC', 8),
-    Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoLocation(), moveable=True),
-    Object('A SMALL CAPSULE', 'CAP', NoLocation(), moveable=True),
+    Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(), moveable=True),
+    Object('A SMALL CAPSULE', 'CAP', NoPlacement(), moveable=True),
     Object('A LARGE SCULPTURE', 'SCU', 3),
     Object('A TALL OFFICE BUILDING', 'BUI', 1, Response(1, GoBuilding)),
     Object('A PAIR OF SLIDING DOORS', 'DOO', 3, Response(1, GoDoors)),
     Object('A LARGE BUTTON ON THE WALL', 'BUT', 29),
     Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PAN', 9),
-    Object('A STRONG NYLON ROPE', 'ROP', 17, moveable=True),
+    Object('A STRONG NYLON ROPE', 'ROP', 17, Response(1, GoRope), moveable=True),
     Object('A LARGE HOOK WITH A ROPE HANGING FROM IT', 'HOO', 21),
-    Object('A C.I.A. IDENTIFICATION BADGE', 'BAD', NoLocation(), moveable=True),
+    Object('A C.I.A. IDENTIFICATION BADGE', 'BAD', NoPlacement(), moveable=True),
     Object('A PORTABLE TELEVISION', 'TEL', 7, moveable=True),
     Object('A BANK OF MONITORS', 'MON', 7),
     Object('A CHAOS I.D. CARD', 'CAR', 30, moveable=True),
@@ -137,6 +177,10 @@ class CIA(Game):
         self.state.inventory.Add(world.objects['BADGE'])
         self.state.upButtonPushed = False
         self.state.floor = 1
+        self.state.ropeThrown = False
+        self.state.glovesWorn = False
+        self.state.fellFromFrame = False
+        self.state.tvConnected = False
         self.combination = 12345
         self.guard_ticks = -1
 
@@ -155,6 +199,7 @@ class CIA(Game):
 sequence = (
     "GO BUILDING",
     "INVENTORY",
+    "WEAR BADGE",
     "DROP BADGE",
     "INVENTORY",
     "LOOK",
