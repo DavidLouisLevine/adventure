@@ -25,13 +25,23 @@ class Game:
         if i != -1:
             targetStr = action[i + 1:]
 
-            direction = Direction.FromName(targetStr)
-            if not direction is None:
-                value = direction
-            else:
-                value = targetStr
+            value = Direction.FromName(targetStr)
+            locationSatisfied = not verb.targetInRoom and not verb.targetInventory
+            if value is None:
+                value = self.world.objects.Find(targetStr)
+                if value is not None and self.state.inventory.Has(value):
+                    self.value = value
+                    if verb.targetInventory:
+                        locationSatisfied = True
+                else:
+                    self.value = self.world.objects.Find(targetStr, self.state.location)
+                    if verb.targetInRoom:
+                        locationSatisfied = True
 
-            target = Target(value, self.world, self.state)
+                if value is not None and not locationSatisfied:
+                    value = None
+
+            target = Target(value)
 
         if (target is None or target.value is None) and not (verb.targetOptional or verb.targetNever):
             return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT."

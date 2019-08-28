@@ -44,22 +44,9 @@ class Action:
         self.target = target
 
 class Target:
-    def __init__(self, value, world, state):
-        if type(value) is str:
-            if Direction.IsValid(value):
-                self.value = Direction(value)
-            elif state.location is None:
-                self.value = world.objects[value]
-            else:
-                object = world.objects.Find(value)
-                if object is not None and state.inventory.Has(object):
-                    self.value = object
-                else:
-                    self.value = world.objects.Find(value, state.location)
-        elif type(value) is Direction or type(value) is Object:
-            self.value = value
-        else:
-            assert("Unknown type: {0}".format(type(value)))
+    def __init__(self, value):
+        assert(type(value) is Direction or type(value) is Object, "Unknown type: {0}".format(type(value)))
+        self.value = value
 
     def IsDirection(self):
         return type(self.value) is Direction

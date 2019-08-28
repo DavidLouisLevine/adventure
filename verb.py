@@ -73,6 +73,8 @@ class DropVerb(Verb):
     def DoObject(self, target, game):
         if game.state.inventory.Remove(target.value, game.state.location):
             return "O.K. I DROPPED IT."
+        else:
+            return "I DON'T SEEM TO BE CARRYING IT."
 
 class GetVerb(Verb):
     def __init__(self, *args, **kwargs):

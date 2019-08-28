@@ -50,6 +50,14 @@ def GetTelevision(state, world):
     if not state.fellFromFrame:
         state.tvConnected = False
 
+def DropCup(state, world):
+    state.pillDropped = False
+    world.object["CUP"].placement = NoPlacement()
+    return "I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES."
+
+def DropGloves(state, world):
+    state.glovesWorn = False
+
 def PushUp(state, world):
     state.upButtonPushed = True
     return "THE DOORS OPEN WITH A WHOOSH!"
@@ -140,7 +148,7 @@ objects = (
     Object('A SIGN ON THE SQUARE', 'SIG', 16, moveable=True),
     Object('A QUARTER', 'QUA', NoPlacement(), moveable=True),
     Object('A COFFEE MACHINE', 'MAC', 8),
-    Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(), moveable=True),
+    Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(), Response(3, DropCup), moveable=True),
     Object('A SMALL CAPSULE', 'CAP', NoPlacement(), moveable=True),
     Object('A LARGE SCULPTURE', 'SCU', 3),
     Object('A TALL OFFICE BUILDING', 'BUI', 1, Response(1, GoBuilding)),
@@ -155,7 +163,7 @@ objects = (
     Object('A CHAOS I.D. CARD', 'CAR', 30, moveable=True),
     Object('A BANK OF MONITORS', 'MON', 19),
     Object('A SMALL PAINTING', 'PAI', 23, moveable=True),
-    Object('A PAIR OF RUBBER GLOVES', 'GLO', 13, moveable=True),
+    Object('A PAIR OF RUBBER GLOVES', 'GLO', 13, Response(3, DropCup), moveable=True),
     Object('A BOX WITH A BUTTON ON IT', 'BOX', 24, moveable=True),
     Object('ONE', 'ONE', 9, Response(1, PushOne), lookable=False),
     Object('TWO', 'TWO', 9, Response(1, PushTwo), lookable=False),
@@ -181,6 +189,7 @@ class CIA(Game):
         self.state.glovesWorn = False
         self.state.fellFromFrame = False
         self.state.tvConnected = False
+        self.state.pillDropped = False
         self.combination = 12345
         self.guard_ticks = -1
 
