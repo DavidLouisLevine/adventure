@@ -58,15 +58,32 @@ def DropCup(state, world):
 def DropGloves(state, world):
     state.glovesWorn = False
 
-def PushUp(state, world):
+def PushUpButton(state, world):
     state.upButtonPushed = True
     return "THE DOORS OPEN WITH A WHOOSH!"
+
+def PushBoxButton(state, world):
+    if state.inventory.Has('BOX'):
+        m = "I PUSH THE BUTTON ON THE BOX AND\n"
+        if state.location == world.locations['CUBICLE'] or state.location == world.locations['CONTROL']:
+            m += 'THERE IS A BLINDING FLASH....'
+            state.fl = 1
+            world.locations['ELEVATOR'].moves[Direction.SOUTH] = 3
+            state.location = world.locations['LOBBY']
+        m += "NOTHING HAPPENS."
 
 def PushElevatorButton(state, world, floor, locationName):
     if state.floor != floor:
         state.location.moves[Direction.NORTH] = world.locations[locationName].i
         state.floor = floor
         return "THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."
+
+def PushSquare(state, world):
+    if not state.glovesWorn:
+        return "THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!"
+    else:
+        state.boxButtonPushed = True
+        return "THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."
 
 def PushOne(state, world):
     return PushElevatorButton(state, world, 1, 'IN THE LOBBY OF THE BUILDING')
@@ -78,6 +95,19 @@ def PushThree(state, world):
     return PushElevatorButton(state, world, 3, 'IN A SHORT CORRIDOR')
 
 class PushVerb(Verb):
+    def __init__(self, *args, **kwargs):
+        Verb.__init__(self, *args, **kwargs)
+
+    def DoObject(self, target, game):
+        if target.IsObject() and not target.value.response is None:
+            m = target.value.response.f(game.state, game.world)
+            if m == "" or m is None:
+                m = "NOTHING HAPPENS."
+        else:
+            m = ""
+        return m
+
+class PullVerb(Verb):
     def __init__(self, *args, **kwargs):
         Verb.__init__(self, *args, **kwargs)
 
@@ -104,7 +134,7 @@ class WearVerb(Verb):
 
 customVerbs = (
     (PushVerb('PUSH', 'PUS')),
-    (Verb('PULL', 'PUL')),
+    (PullVerb('PULL', 'PUL')),
     (Verb('INSERT', 'INS')),
     (Verb('OPEN', 'OPE')),
     (WearVerb('WEAR', 'WEA', targetInventory=False, targetInRoom=False)),
@@ -173,7 +203,8 @@ objects = (
     # These are not in the original game's object list but are included here
     # so that every target is a direction or an object.
     # In the game, "BUT" is a special cased string when used for this panel.
-    Object('A PANEL WITH ONE BUTTON', 'BUT', 3, Response(1, PushUp), lookable=False),
+    Object('AN UP BUTTON', 'BUT', 3, Response(1, PushUpButton), lookable=False),
+    Object('A BUTTON ON A BOX', 'BUT', 3, Response(1, PushBoxButton), lookable=False),
     )
 
 
@@ -190,6 +221,7 @@ class CIA(Game):
         self.state.fellFromFrame = False
         self.state.tvConnected = False
         self.state.pillDropped = False
+        self.state.boxButtonPushed = False
         self.combination = 12345
         self.guard_ticks = -1
 
@@ -225,7 +257,7 @@ sequence = (
     "PUSH TWO",
     "PUSH TWO",
     "GO NORTH")
-# sequence = ()
+sequence = ()
 
 cia = CIA()
 cia.Run(sequence)

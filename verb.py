@@ -3,6 +3,10 @@ from direction import Direction
 class Verbs:
     def __init__(self, verbs):
         self.items = verbs
+        i = 1
+        for item in self.items:
+            item.i = i
+            i += 1
 
     def __getitem__(self, item):
         if type(item) is str:
@@ -63,7 +67,6 @@ class GoVerb(Verb):
                 return "I DON'T SEE THAT HERE."
         m += "WE ARE " + game.state.location.name + "\n"
 
-        m += game.Look()
         return m
 
 class DropVerb(Verb):

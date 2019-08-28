@@ -69,7 +69,7 @@ class Locations:
             (Location('EXAM', 'IN A CROSS EXAMINATION ROOM', (23, 28, 0, 0))),
             (Location('BATHROOM', 'IN A SMALL BATHROOM', (0, 0, 28, 0))),
             (Location('CHIEF', 'IN THE OFFICE OF THE CHIEF OF CHAOS', (26, 30, 0, 27))),
-            (Location('CHAOS', 'IN THE CHAOS CONTROL ROOM', (0, 0, 30, 0))),
+            (Location('CONTROL', 'IN THE CHAOS CONTROL ROOM', (0, 0, 30, 0))),
             (Location('END', 'NEAR THE END OF THE COMPLEX', (28, 0, 0, 29)))
         )
         for i in range(len(self.items)):

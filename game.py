@@ -46,7 +46,12 @@ class Game:
         if (target is None or target.value is None) and not (verb.targetOptional or verb.targetNever):
             return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT."
 
-        return verb.Do(target, self)
+        currentLocation = self.state.location
+        m = verb.Do(target, self)
+        if self.state.location != currentLocation:
+            m += self.Look()
+        return m
+
 
     def Do(self, action, echo=True):
         if echo:
