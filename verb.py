@@ -56,17 +56,15 @@ class GoVerb(Verb):
             object = target.value
             if game.state.location == object.placement.location:
                 if object.response is not None and object.response.f is not None:
-                    m = object.response.f(game.state, game.world)
+                    m = object.response.f(game)
                     if m is None:
                         return cant
                     if m != "":
-                        m = m + "\n"
+                        pass # m = m + "\n"
                 else:
                     return cant
             else:
                 return "I DON'T SEE THAT HERE."
-        m += "WE ARE " + game.state.location.name + "\n"
-
         return m
 
 class DropVerb(Verb):
@@ -122,13 +120,13 @@ class LookVerb(Verb):
         Verb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
-        m = ""
+        m = "WE ARE " + game.state.location.name + "."
         objects = game.world.AtLocation(game.state.location)
         for object in objects:
             if object.lookable:
                 if not m == "":
                     m += "\n"
-                m += "I CAN SEE " + object.name
+                m += "I CAN SEE " + object.name + "."
         moves = game.state.location.moves
         if moves.count(0) != len(moves):
             if not m == "":
@@ -137,6 +135,8 @@ class LookVerb(Verb):
             for i in range(len(moves)):
                 if moves[i] != 0:
                     m += Direction.names[i] + "  "
+        else:
+            m += "\n"
         m += "\n>" + '-' * 62 + "<"
         return m
 

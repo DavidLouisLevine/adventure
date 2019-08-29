@@ -10,89 +10,94 @@ from verb import Verb, BuiltInVerbs
 from game import Game, World, State, Response
 from direction import *
 
-def GoOpenWoodenDoor(state, world):
-    state.location = world.locations['CEO']
+def GoOpenWoodenDoor(game):
+    game.state.location = game.world.locations['CEO']
     return ""
 
-def GoRope(state, world):
-    if state.ropeThrown:
-        state.location = world.locations['PIT']
+def GoRope(game):
+    if game.state.ropeThrown:
+        game.state.location = game.world.locations['PIT']
         return ""
     else:
         return None
 
-def GoOpenDoor(state, world):
-    state.location = world.locations['METAL']
+def GoOpenDoor(game):
+    game.state.location = game.world.locations['METAL']
 
-def GoCloset(state, world):
-    state.location = world.locations['CLOSET']
+def GoCloset(game):
+    game.state.location = game.world.locations['CLOSET']
 
-def GoBuilding(state, world):
-    if state.location==world.locations['ON A BUSY STREET']:
-        if not state.inventory.Has(world.objects['BADGE']):
-            state.location = world.locations['IN THE LOBBY OF THE BUILDING']
+def GoBuilding(game):
+    if game.state.location==game.world.locations['ON A BUSY STREET']:
+        game.state.location = game.world.locations['IN THE LOBBY OF THE BUILDING']
+        if not game.state.inventory.Has(game.world.objects['BADGE']):
+            game.state.location = game.world.locations['IN THE LOBBY OF THE BUILDING']
             return ""
         else:
-            return 'THE GUARD LOOKS AT ME SUSPICIOUSLY, THEN THROWS ME BACK.'
+            m = game.world.verbs['LOOK'].Do(None, game) + '\n'
+            m += 'THE DOOR MAN LOOKS AT MY BADGE AND THEN THROWS ME OUT.\n'
+            game.state.location = game.world.locations['STREET']
+            m += game.world.verbs['LOOK'].Do(None, game)
+            return m
 
-def GoDoors(state, world):
-    if state.upButtonPushed:
-        state.location = world.locations['ELEVATOR']
+def GoDoors(game):
+    if game.state.upButtonPushed:
+        game.state.location = game.world.locations['ELEVATOR']
         return ""
 
-def GetPainting(state, world):
-    if not state.fellFromFrame:
-        state.fellFromFrame = True
-        world.objects['CAPSULE']
+def GetPainting(game):
+    if not game.state.fellFromFrame:
+        game.state.fellFromFrame = True
+        game.world.objects['CAPSULE']
         return "SOMETHING FELL FROM THE FRAME!"
 
-def GetTelevision(state, world):
-    if not state.fellFromFrame:
-        state.tvConnected = False
+def GetTelevision(game):
+    if not game.state.fellFromFrame:
+        game.state.tvConnected = False
 
-def DropCup(state, world):
-    state.pillDropped = False
-    world.object["CUP"].placement = NoPlacement()
+def DropCup(game):
+    game.state.pillDropped = False
+    game.world.object["CUP"].placement = NoPlacement()
     return "I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES."
 
-def DropGloves(state, world):
-    state.glovesWorn = False
+def DropGloves(game):
+    game.state.glovesWorn = False
 
-def PushUpButton(state, world):
-    state.upButtonPushed = True
+def PushUpButton(game):
+    game.state.upButtonPushed = True
     return "THE DOORS OPEN WITH A WHOOSH!"
 
-def PushBoxButton(state, world):
-    if state.inventory.Has('BOX'):
+def PushBoxButton(game):
+    if game.state.inventory.Has('BOX'):
         m = "I PUSH THE BUTTON ON THE BOX AND\n"
-        if state.location == world.locations['CUBICLE'] or state.location == world.locations['CONTROL']:
+        if game.state.location == game.world.locations['CUBICLE'] or game.state.location == game.world.locations['CONTROL']:
             m += 'THERE IS A BLINDING FLASH....'
-            state.fl = 1
-            world.locations['ELEVATOR'].moves[Direction.SOUTH] = 3
-            state.location = world.locations['LOBBY']
+            game.state.fl = 1
+            game.world.locations['ELEVATOR'].moves[Direction.SOUTH] = 3
+            game.state.location = game.world.locations['LOBBY']
         m += "NOTHING HAPPENS."
 
-def PushElevatorButton(state, world, floor, locationName):
-    if state.floor != floor:
-        state.location.moves[Direction.NORTH] = world.locations[locationName].i
-        state.floor = floor
-        return "THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."
-
-def PushSquare(state, world):
-    if not state.glovesWorn:
+def PushSquare(game):
+    if not game.state.glovesWorn:
         return "THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!"
     else:
-        state.boxButtonPushed = True
+        game.state.boxButtonPushed = True
         return "THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."
 
-def PushOne(state, world):
-    return PushElevatorButton(state, world, 1, 'IN THE LOBBY OF THE BUILDING')
+def PushElevatorButton(game, floor, locationName):
+    if game.state.floor != floor:
+        game.state.location.moves[Direction.NORTH] = game.world.locations[locationName].i
+        game.state.floor = floor
+        return "THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."
 
-def PushTwo(state, world):
-    return PushElevatorButton(state, world, 2, 'IN A SMALL HALLWAY')
+def PushOne(game):
+    return PushElevatorButton(game, 1, 'IN THE LOBBY OF THE BUILDING')
 
-def PushThree(state, world):
-    return PushElevatorButton(state, world, 3, 'IN A SHORT CORRIDOR')
+def PushTwo(game):
+    return PushElevatorButton(game, 2, 'IN A SMALL HALLWAY')
+
+def PushThree(game):
+    return PushElevatorButton(game, 3, 'IN A SHORT CORRIDOR')
 
 class PushVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -100,7 +105,7 @@ class PushVerb(Verb):
 
     def DoObject(self, target, game):
         if target.IsObject() and not target.value.response is None:
-            m = target.value.response.f(game.state, game.world)
+            m = target.value.response.f(game)
             if m == "" or m is None:
                 m = "NOTHING HAPPENS."
         else:
@@ -113,7 +118,7 @@ class PullVerb(Verb):
 
     def DoObject(self, target, game):
         if target.IsObject() and not target.value.response is None:
-            m = target.value.response.f(game.state, game.world)
+            m = target.value.response.f(game)
             if m == "" or m is None:
                 m = "NOTHING HAPPENS."
         else:
@@ -127,7 +132,7 @@ class WearVerb(Verb):
     def DoObject(self, target, game):
         m = None
         if target.IsObject() and not target.value.response is None:
-            m = target.value.response.f(game.state, game.world)
+            m = target.value.response.f(game)
         if m == "" or m is None:
             m = "I CAN'T WEAR THAT!."
         return m
@@ -228,9 +233,9 @@ class CIA(Game):
     def Run(self, actions):
         print("        C.I.A  ADVENTURE")
         self.Do("LOOK", echo=False)
-        print("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
         self.playerName = 'JIM'
         print("ENTER YOUR NAME PARTNER? " + self.playerName)
+        print("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
         Game.Run(self, sequence)
 
     def Tick(self):
@@ -257,7 +262,7 @@ sequence = (
     "PUSH TWO",
     "PUSH TWO",
     "GO NORTH")
-sequence = ()
+#sequence = ()
 
 cia = CIA()
 cia.Run(sequence)
