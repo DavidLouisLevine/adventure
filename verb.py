@@ -1,4 +1,5 @@
 from direction import Direction
+from response import Response
 
 class Verbs:
     def __init__(self, verbs):
@@ -55,8 +56,8 @@ class GoVerb(Verb):
         elif target.IsObject():
             object = target.value
             if game.state.location == object.placement.location:
-                if object.response is not None and object.response.f is not None:
-                    m = object.response.f(game)
+                if object.response is not None:
+                    m = Response.Respond(object.response, game)
                     if m is None:
                         return cant
                     if m != "":
@@ -121,24 +122,35 @@ class LookVerb(Verb):
 
     def DoObject(self, target, game):
         m = "WE ARE " + game.state.location.name + "."
-        objects = game.world.AtLocation(game.state.location)
-        for object in objects:
-            if object.lookable:
+        if target is not None and target.IsObject():
+            object = target.value
+            if object.response is not None:
+                m = Response.Respond(object.response, game)
+                if m is None or m == "":
+                    print("I SEE NOTHING OF INTEREST.")
+        else:
+            objects = game.world.AtLocation(game.state.location)
+            for object in objects:
+                if object.lookable:
+                    if not m == "":
+                        m += "\n"
+                    m += "I CAN SEE " + object.name + "."
+            moves = game.state.location.moves
+            if moves.count(0) != len(moves):
                 if not m == "":
                     m += "\n"
-                m += "I CAN SEE " + object.name + "."
-        moves = game.state.location.moves
-        if moves.count(0) != len(moves):
-            if not m == "":
+                m += "WE COULD EASILY GO: "
+                for i in range(len(moves)):
+                    if moves[i] != 0:
+                        m += Direction.names[i] + "  "
+            else:
                 m += "\n"
-            m += "WE COULD EASILY GO: "
-            for i in range(len(moves)):
-                if moves[i] != 0:
-                    m += Direction.names[i] + "  "
-        else:
-            m += "\n"
-        m += "\n>" + '-' * 62 + "<"
+            m += "\n>" + '-' * 62 + "<"
         return m
+
+def LookAt(game, message, condition=None):
+    if condition is None or condition(game):
+        return message
 
 class QuitVerb(Verb):
     def __init__(self, *args, **kwargs):

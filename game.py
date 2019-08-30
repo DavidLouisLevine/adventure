@@ -2,12 +2,51 @@ from location import LocationPlacement, InventoryPlacement, Locations
 from verb import BuiltInVerbs
 from object import Objects, Target
 from direction import Direction
+import numpy as np
+import response
 
 class Game:
     def __init__(self, world, state):
         self.world = world
         self.state = state
         self.quitting = False
+        self.inputFile = open("ciatest.adv", "r")
+        self.inResponse = False
+
+    def Input(self, prompt):
+        if self.inputFile is not None:
+            print(prompt + '? ', end='')
+            u = ""
+            while u == "":
+                #k = self.inputFile.readlines()
+                t = self.inputFile.readline()
+                if t == "":
+                    break
+                if t[0] != '#':
+                    u = t
+
+            message = ""
+            while True:
+                t = self.inputFile.readline()
+                if t == "":
+                    break
+
+                if t[:4] == '---@':
+                    break
+
+                if t[0] != '#':
+                    message += t
+
+            if t == "":
+                self.inputFile.close()
+                self.inputFile = None
+
+            if u != "":
+                print(u, end='')
+                return (u, message)
+
+        if self.inputFile is None:
+            return (input(prompt), None)
 
     def DoAction(self, action):
         try:
@@ -34,7 +73,7 @@ class Game:
                     if verb.targetInventory:
                         locationSatisfied = True
                 else:
-                    self.value = self.world.objects.Find(targetStr, self.state.location)
+                    value = self.world.objects.Find(targetStr, self.state.location)
                     if verb.targetInRoom:
                         locationSatisfied = True
 
@@ -59,17 +98,31 @@ class Game:
         m = self.DoAction(action)
         if not m is None and not m == "":
             print(m)
+            return m
 
     def Run(self, actions):
         t = 0
         prompt = "\nWHAT DO YOU THINK WE SHOULD DO? "
-        while not   self.quitting:
+        while not self.quitting:
             if t < len(actions):
                 str = actions[t]
                 print(prompt + str)
             else:
-                str = input(prompt)
-            self.Do(str, echo=False)
+                str, expectedMessage = self.Input(prompt)
+
+            temp = self.Do(str, echo=False)
+            if temp is not None:
+                actualMessage = temp + "\n\n"
+                if expectedMessage is not None and expectedMessage != actualMessage:
+                    print("ERROR: Expected Message:\n", expectedMessage)
+                    print("ERROR: Actual Message:\n", actualMessage)
+                    n = min(len(actualMessage), len(expectedMessage))
+                    k = np.array(list(expectedMessage[:n])) == np.array(list(actualMessage[:n]))
+                    j = 1
+            else:
+                if expectedMessage is not None and expectedMessage != "":
+                    print("ERROR: Actual message is empty but expected message is:", expectedMessage)
+
             self.Tick()
             t += 1
 
@@ -146,8 +199,3 @@ class Inventory:
             return True
         else:
             return False
-
-class Response:
-    def __init__(self, verb, f):
-        self.verb = verb
-        self.f = f
