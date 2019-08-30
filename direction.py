@@ -24,3 +24,6 @@ class Direction:
     @staticmethod
     def IsValid(name):
         return name in Direction.names
+
+    def __str__(self):
+        return self.Name()

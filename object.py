@@ -22,7 +22,7 @@ class Objects:
 
     def Find(self, item, location=None):
         for i in range(len(self.items)):
-            if self.items[i].name == item or self.items[i].abbreviation == item[:3]:
+            if self.items[i].name == item or self.items[i].abbreviation[:3] == item[:3]:
                 if location is None or self.items[i].placement.location == location:
                     return self.items[i]
         return None
@@ -49,10 +49,16 @@ class Object:
 
         return filter(lambda x: x.iVerb == iVerb, responses)
 
+    def __str__(self):
+        return self.abbreviation
+
 class Action:
     def __init__(self, verb, target):
         self.verb = verb
         self.target = target
+
+def __str__(self):
+    return str(self.verb) + ' ' + str(self.target)
 
 class Target:
     def __init__(self, value):
@@ -64,3 +70,6 @@ class Target:
 
     def IsObject(self):
         return type(self.value) is Object
+
+    def __str__(self):
+        return str(self.value)

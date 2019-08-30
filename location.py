@@ -4,6 +4,9 @@ class Location:
         self.moves = list(moves)
         self.abbreviation = abbreviation
 
+    def __str__(self):
+        return self.abbreviation
+
 class Placement:
     def InInventory(self):
         return self.inventory
@@ -44,7 +47,7 @@ class Locations:
             (Location('STREET', 'ON A BUSY STREET', (0, 0, 0, 0))),
             (Location('VISITOR', 'IN A VISITOR\'S ROOM', (0,  0,  3,  0))),
             (Location('LOBBY', 'IN THE LOBBY OF THE BUILDING', (1, 0, 4, 2))),
-            (Location('ANTE', 'IN A DINGY ANTE ROOM', (0, 0, 0, 3))),
+            (Location('ANTEROOM', 'IN A DINGY ANTE ROOM', (0, 0, 0, 3))),
             (Location('CEO', 'IN THE COMPANY PRESIDENT\'S OFFICE', (0, 0, 0, 4 ))),
             (Location('CUBICLE', 'IN A SMALL SOUND PROOFED CUBICLE', (0, 12, 0, 0))),
             (Location('SECURITY', 'IN A SECURITY OFFICE', (0, 0, 8, 0))),

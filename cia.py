@@ -273,7 +273,7 @@ objects = (
     Object('AN ELABORATE PAPER WEIGHT', 'WEI', 5, (
         lookResponse(LookAt, "IT LOOKS HEAVY."),
         getResponse(CanGet))),
-    Object('A LOCKED WOODEN DOOR', 'DOO', 4,
+    Object('A LOCKED WOODEN DOOR', 'DOOR', 4,
            (lookResponse(LookAt, "IT'S LOCKED."),
            (openResponse(OpenWoodenDoor)))),
     Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), goResponse(GoOpenWoodenDoor)),

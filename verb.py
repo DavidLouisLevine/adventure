@@ -13,7 +13,7 @@ class Verbs:
         if type(item) is str:
             for i in range(len(self.items)):
                 item2 = self.items[i]
-                if item2.name == item or item2.abbreviation == item[:3]:
+                if item2.name == item or item2.abbreviation[:3] == item[:3]:
                     return self.items[i]
             return None
         else:
@@ -43,6 +43,9 @@ class Verb:
 
     def MakeResponse(self, f, *args, **kwargs):
         return Response(self.i, f, *args, **kwargs)
+
+    def __str__(self):
+        return self.name
 
 class GoVerb(Verb):
     def __init__(self, *args, **kwargs):

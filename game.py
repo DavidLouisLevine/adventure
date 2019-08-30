@@ -146,6 +146,9 @@ class Game:
         object = self.world.ResolveObject(object)
         return self.state.inventory.Has(object)
 
+    def __str__(self):
+        return str(self.state.location) + str(self.state.inventory)
+
 class World:
     def __init__(self, objects, verbs):
         self.locations = Locations()
@@ -217,6 +220,13 @@ class Inventory:
                 items += (object, )
         return items
 
+    def GetStrings(self):
+        items = ()
+        for object in self.world.objects:
+            if object.placement.InInventory():
+                items += (str(object), )
+        return items
+
     def Has(self, object):
         return object.placement.InInventory()
 
@@ -237,3 +247,6 @@ class Inventory:
             return True
         else:
             return False
+
+    def __str__(self):
+        return '(' + ', '.join(self.GetStrings()) + ')'
