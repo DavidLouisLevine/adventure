@@ -1,5 +1,6 @@
 import copy
 from direction import Direction
+from response import Response
 
 class Objects:
     def __init__(self, items):
@@ -38,6 +39,16 @@ class Object:
         self.moveable = moveable
         self.lookable = lookable
 
+    def Responses(self, iVerb=None):
+        if self.response is None:
+            responses = ()
+        elif type(self.response) is Response:
+            responses = (self.response, )
+        else:
+            responses = self.response
+
+        return filter(lambda x: x.iVerb == iVerb, responses)
+
 class Action:
     def __init__(self, verb, target):
         self.verb = verb
@@ -45,7 +56,7 @@ class Action:
 
 class Target:
     def __init__(self, value):
-        assert(type(value) is Direction or type(value) is Object, "Unknown type: {0}".format(type(value)))
+        assert type(value) is Direction or type(value) is Object, "Unknown type: {0}".format(type(value))
         self.value = value
 
     def IsDirection(self):

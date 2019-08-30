@@ -12,44 +12,44 @@ from response import Response
 from direction import *
 
 def GoOpenWoodenDoor(game, *args, **kwargs):
-    game.state.location = game.world.locations['CEO']
+    game.MoveSelfToLocation('CEO')
     return ""
 
 def GoRope(game, *args, **kwargs):
     if game.state.ropeThrown:
-        game.state.location = game.world.locations['PIT']
+        game.MoveSelfToLocation('PIT')
         return ""
     else:
         return None
 
 def GoOpenDoor(game, *args, **kwargs):
-    game.state.location = game.world.locations['METAL']
+    game.MoveSelfToLocation('METAL')
 
 def GoCloset(game, *args, **kwargs):
-    game.state.location = game.world.locations['CLOSET']
+    game.MoveSelfToLocation('CLOSET')
 
 def GoBuilding(game, *args, **kwargs):
     if game.state.location==game.world.locations['ON A BUSY STREET']:
-        game.state.location = game.world.locations['IN THE LOBBY OF THE BUILDING']
+#        game.MoveSelfToLocation('LOBBY')
         if not game.state.inventory.Has(game.world.objects['BADGE']):
-            game.state.location = game.world.locations['IN THE LOBBY OF THE BUILDING']
+            game.MoveSelfToLocation('LOBBY')
             return ""
         else:
-            m = game.world.verbs['LOOK'].Do(None, game) + '\n'
+            m = game.Look()
             m += 'THE DOOR MAN LOOKS AT MY BADGE AND THEN THROWS ME OUT.\n'
-            game.state.location = game.world.locations['STREET']
-            m += game.world.verbs['LOOK'].Do(None, game)
+            game.MoveSelfToLocation('STREET')
+            m += game.Look()
             return m
 
 def GoDoors(game, *args, **kwargs):
     if game.state.upButtonPushed:
-        game.state.location = game.world.locations['ELEVATOR']
+        game.MoveSelfToLocation('ELEVATOR')
         return ""
 
 def GetPainting(game, *args, **kwargs):
     if not game.state.fellFromFrame:
         game.state.fellFromFrame = True
-        game.world.objects['CAPSULE'].location = game.state.location
+        game.CreateHere('CAPSULE')
         return "SOMETHING FELL FROM THE FRAME!"
 
 def GetTelevision(game, *args, **kwargs):
@@ -58,7 +58,7 @@ def GetTelevision(game, *args, **kwargs):
 
 def DropCup(game, *args, **kwargs):
     game.state.pillDropped = False
-    game.world.object["CUP"].placement = NoPlacement()
+    game.world.RemoveObject('CUP')
     return "I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES."
 
 def DropGloves(game, *args, **kwargs):
@@ -73,9 +73,9 @@ def PushBoxButton(game, *args, **kwargs):
         m = "I PUSH THE BUTTON ON THE BOX AND\n"
         if game.state.location == game.world.locations['CUBICLE'] or game.state.location == game.world.locations['CONTROL']:
             m += 'THERE IS A BLINDING FLASH....'
-            game.state.fl = 1
+            game.state.floor = 1
             game.world.locations['ELEVATOR'].moves[Direction.SOUTH] = 3
-            game.state.location = game.world.locations['LOBBY']
+            game.MoveSelfToLocation('LOBBY')
         m += "NOTHING HAPPENS."
 
 def PushSquare(game, *args, **kwargs):
@@ -106,12 +106,59 @@ class PushVerb(Verb):
 
     def DoObject(self, target, game):
         if target.IsObject() and not target.value.response is None:
-            m = Response.Respond(target.value.response, game)
+            m = Response.Respond(target.value.response, self.i, game)
             if m == "" or m is None:
                 m = "NOTHING HAPPENS."
         else:
             m = ""
         return m
+
+def InsertBattery(game, *args, **kwargs):
+    into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
+    if into == game.objects['RECORDER']:
+        game.state.batteryInserted = True
+        game.world.RemoveObject('BATTERY')
+        return "OK"
+
+def InsertCard(game, *args, **kwargs):
+    into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
+    if into == game.objects['SLIT']:
+        if game.state.sleepTimer < 0:
+            return "THE GUARD WON'T LET ME"
+        else:
+            game.world.RemoveObject('CARD')
+            game.world.MoveObject('LOCK', 'CORRIDOR')
+            return "POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING."
+
+def InsertTape(game, *args, **kwargs):
+    pass
+    # into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
+    # if into == game.objects['SLIT']:
+    #     if game.state.sleepTimer < 0:
+    #         return "THE GUARD WON'T LET ME"
+    #     else:
+    #         game.
+    #         game.objects["CARD"].location = NoPlacement()
+    #         game.objects["LOCK"].location = game.locations["CORRIDOR"]
+    #         return "POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING."
+
+def InsertQuarter(game, *args, **kwargs):
+    into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
+    if into == game.objects['MACHINE']:
+        game.world.RemoveObject('QUARTER')
+        game.world.MoveObject('COFFEE', 'HALLWAY')
+        return "POP! A CUP OF COFFEE COMES OUT OF THE MACHINE."
+
+def OpenDrawer(game, *args, **kwargs):
+    game.state.upButtonPushed = True
+    return "THE DOORS OPEN WITH A WHOOSH!"
+
+
+def OpenWoodenDoor(game, *args, **kwargs):
+    if game.Has('KEY'):
+        game.world.RemoveObject('A LOCKED WOODEN DOOR')
+        game.CreateHere('AN OPEN WOODEN DOOR')
+        return "O.K. I OPENED THE DOOR."
 
 class PullVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -119,9 +166,57 @@ class PullVerb(Verb):
 
     def DoObject(self, target, game):
         if target.IsObject() and not target.value.response is None:
-            m = Response.Respond(target.value.response, game)
+            m = Response.Respond(target.value.response, self.i, game)
             if m == "" or m is None:
                 m = "NOTHING HAPPENS."
+        else:
+            m = ""
+        return m
+
+class InsertVerb(Verb):
+    def __init__(self, *args, **kwargs):
+        Verb.__init__(self, *args, **kwargs)
+
+    def DoObject(self, target, game):
+        if target.IsObject() and not target.value.response is None:
+            if Response.HasResponse(target.value.response, self.i):
+                m = Response.Respond(target.value.response, self.i, game)
+                if m == "" or m is None:
+                    m = "NOTHING HAPPENED."
+            else:
+                m = "I CAN'T INSERT THAT!"
+        else:
+            m = ""
+        return m
+
+class InsertVerb(Verb):
+    def __init__(self, *args, **kwargs):
+        Verb.__init__(self, *args, **kwargs)
+
+    def DoObject(self, target, game):
+        if target.IsObject() and not target.value.response is None:
+            if Response.HasResponse(target.value.response, self.i):
+                m = Response.Respond(target.value.response, self.i, game)
+                if m == "" or m is None:
+                    m = "NOTHING HAPPENED."
+            else:
+                m = "I CAN'T INSERT THAT!"
+        else:
+            m = ""
+        return m
+
+class OpenVerb(Verb):
+    def __init__(self, *args, **kwargs):
+        Verb.__init__(self, *args, **kwargs)
+
+    def DoObject(self, target, game):
+        if target.IsObject() and not target.value.response is None:
+            if Response.HasResponse(target.value.response, self.i):
+                m = Response.Respond(target.value.response, self.i, game)
+                if m == "" or m is None:
+                    m = "NOTHING HAPPENED."
+            else:
+                m = "I CAN'T OPEN THAT!"
         else:
             m = ""
         return m
@@ -133,7 +228,7 @@ class WearVerb(Verb):
     def DoObject(self, target, game):
         m = None
         if target.IsObject() and not target.value.response is None:
-            m = Response.Respond(target.value.response, game)
+            m = Response.Respond(target.value.response, self.i, game)
         if m == "" or m is None:
             m = "I CAN'T WEAR THAT!."
         return m
@@ -141,8 +236,8 @@ class WearVerb(Verb):
 customVerbs = (
     (PushVerb('PUSH', 'PUS')),
     (PullVerb('PULL', 'PUL')),
-    (Verb('INSERT', 'INS')),
-    (Verb('OPEN', 'OPE')),
+    (InsertVerb('INSERT', 'INS')),
+    (OpenVerb('OPEN', 'OPE')),
     (WearVerb('WEAR', 'WEA', targetInventory=False, targetInRoom=False)),
     (Verb('READ', 'REA')),
     (Verb('STA?', 'STA')),
@@ -153,8 +248,11 @@ customVerbs = (
     (Verb('BOND-007-', 'BON')),)
 
 verbs = BuiltInVerbs(customVerbs)
+pushResponse = verbs['PUSH'].MakeResponse
 goResponse = verbs['GO'].MakeResponse
 getResponse = verbs['GET'].MakeResponse
+insertResponse = verbs['INSERT'].MakeResponse
+openResponse = verbs['OPEN'].MakeResponse
 dropResponse = verbs['DROP'].MakeResponse
 lookResponse = verbs['LOOK'].MakeResponse
 
@@ -162,14 +260,22 @@ objects = (
     Object('A VIDEO CASSETTE RECORDER', 'REC', 2, (
         lookResponse(LookAt, "THERE'S NO POWER FOR IT.", lambda g: not g.state.batteryInserted),
         lookResponse(LookAt, "THERE'S NO T.V. TO WATCH ON.", lambda g: not g.state.tvConnected))),
-    Object('A VIDEO TAPE', 'TAP', NoPlacement(), getResponse(CanGet)),
-    Object('A LARGE BATTERY', 'BAT', NoPlacement(), getResponse(CanGet)),
-    Object('A BLANK CREDIT CARD', 'CAR', NoPlacement(), getResponse(CanGet)),
+    Object('A VIDEO TAPE', 'TAP', NoPlacement(), (
+        insertResponse(InsertTape),
+        getResponse(CanGet))),
+    Object('A LARGE BATTERY', 'BAT', NoPlacement(), (
+        insertResponse(InsertBattery),
+        getResponse(CanGet))),
+    Object('A BLANK CREDIT CARD', 'CAR', NoPlacement(), (
+        insertResponse(InsertCard),
+        getResponse(CanGet))),
     Object('AN ELECTRONIC LOCK', 'LOC', NoPlacement()),
     Object('AN ELABORATE PAPER WEIGHT', 'WEI', 5, (
         lookResponse(LookAt, "IT LOOKS HEAVY."),
         getResponse(CanGet))),
-    Object('A LOCKED WOODEN DOOR', 'DOO', 4, lookResponse(LookAt, "IT'S LOCKED.")),
+    Object('A LOCKED WOODEN DOOR', 'DOO', 4,
+           (lookResponse(LookAt, "IT'S LOCKED."),
+           (openResponse(OpenWoodenDoor)))),
     Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), goResponse(GoOpenWoodenDoor)),
     Object('A SOLID LOOKING DOOR', 'DOO', 10),
     Object('AN OPEN DOOR', 'DOO', NoPlacement()),
@@ -190,15 +296,19 @@ objects = (
         lookResponse(LookAt, "THERE'S WRITING ON IT."),
         getResponse(CanGet))),
     Object('A MAHOGANY DRAWER', 'DRA', NoPlacement(), (
+        openResponse(OpenDrawer),
         lookResponse(LookAt, "IT LOOKS FRAGILE")),
         getResponse(CanGet)),
     Object('A GLASS CASE ON A PEDESTAL', 'CAS', 6, lookResponse(LookAt, "I CAN SEE A GLEAMING STONE IN IT.")),
-    Object('A RAZOR BLADE', 'BLA', 27, getResponse(CanGet)),
+    Object('A RAZOR BLADE', 'BLA',
+           27, getResponse(CanGet)),
     Object('A VERY LARGE RUBY', 'RUB', NoPlacement(), getResponse(CanGet)),
     Object('A SIGN ON THE SQUARE', 'SIG', 16,
            (lookResponse(LookAt, "THERE'S WRITING ON IT."),
             getResponse(CanGet))),
-    Object('A QUARTER', 'QUA', NoPlacement(), getResponse(CanGet)),
+    Object('A QUARTER', 'QUA', NoPlacement(),
+           insertResponse(InsertQuarter),
+           getResponse(CanGet)),
     Object('A COFFEE MACHINE', 'MAC', 8),
     Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(), (
         dropResponse(DropCup),
@@ -244,7 +354,7 @@ objects = (
     # so that every target is a direction or an object.
     # In the game, "BUT" is a special cased string when used for this panel.
     Object('AN UP BUTTON', 'BUT', 3, (
-        goResponse(PushUpButton),
+        pushResponse(PushUpButton),
         lookResponse(CantLookAt))),
     Object('A BUTTON ON A BOX', 'BUT', 3, (
         goResponse(PushBoxButton),
@@ -267,6 +377,8 @@ class CIA(Game):
         self.state.boxButtonPushed = False
         self.state.batteryInserted = False
         self.state.tvConnected = False
+        self.state.sleepTimer = -1
+        self.state.tapeInserted = False
         self.combination = 12345
         self.guard_ticks = -1
 

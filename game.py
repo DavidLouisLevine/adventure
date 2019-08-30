@@ -1,6 +1,6 @@
-from location import LocationPlacement, InventoryPlacement, Locations
+from location import LocationPlacement, InventoryPlacement, Locations, NoPlacement, Location
 from verb import BuiltInVerbs
-from object import Objects, Target
+from object import Objects, Target, Object
 from direction import Direction
 import numpy as np
 import response
@@ -95,6 +95,10 @@ class Game:
     def Do(self, action, echo=True):
         if echo:
             print("> ", action)
+
+        if action[-1] == '\n':
+            action = action[:-1]
+
         m = self.DoAction(action)
         if not m is None and not m == "":
             print(m)
@@ -132,6 +136,16 @@ class Game:
     def Look(self):
         return self.world.verbs['LOOK'].Do(None, self)
 
+    def MoveSelfToLocation(self, location):
+        self.state.location = self.world.ResolveLocation(location)
+
+    def CreateHere(self, object):
+        self.world.MoveObject(object, self.state.location)
+
+    def Has(self, object):
+        object = self.world.ResolveObject(object)
+        return self.state.inventory.Has(object)
+
 class World:
     def __init__(self, objects, verbs):
         self.locations = Locations()
@@ -159,6 +173,30 @@ class World:
 
         for i in range(self.verbs.len()):
             print(i, self.verbs[i].name)
+
+    def MoveObject(self, object, location):
+        object = self.ResolveObject(object)
+        location = self.ResolveLocation(location)
+        object.placement = LocationPlacement(location)
+
+    def RemoveObject(self, object):
+        object = self.ResolveObject(object)
+        object.placement = LocationPlacement(NoPlacement())
+
+    @staticmethod
+    def Resolve(item, type, list):
+        if type(item) is type:
+            return item
+        elif type(item) is str:
+            return list[item]
+        else:
+            assert 'Unknown object type to resolved:', type(object)
+
+    def ResolveObject(self, item):
+        return World.Resolve(item, type(Object), self.objects)
+
+    def ResolveLocation(self, item):
+        return World.Resolve(item, type(Location), self.locations)
 
 class State:
     def __init__(self, location, world):

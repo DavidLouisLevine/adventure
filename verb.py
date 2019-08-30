@@ -61,7 +61,7 @@ class GoVerb(Verb):
             object = target.value
             if game.state.location == object.placement.location:
                 if object.response is not None:
-                    m = Response.Respond(object.response, game)
+                    m = Response.Respond(object.response, self.i, game)
                     if m is None:
                         return cant
                     if m != "":
@@ -91,7 +91,7 @@ class GetVerb(Verb):
         if object.placement.location == game.state.location:
             m = None
             if object.response is not None:
-                m = Response.Respond(object.response, game)
+                m = Response.Respond(object.response, self.i, game)
             if m is None and not object.moveable:
                 m = "I CAN'T CARRY THAT!"
             elif game.state.inventory.Has(object):
@@ -135,12 +135,16 @@ class LookVerb(Verb):
         if target is not None and target.IsObject():
             object = target.value
             if object.response is not None:
-                m = Response.Respond(object.response, game)
+                m = Response.Respond(object.response, self.i, game)
                 if m is None or m == "":
                     print("I SEE NOTHING OF INTEREST.")
         else:
             for object in game.world.AtLocation(game.state.location):
-                if object.lookable:
+                canLookAt = True
+                for response in object.Responses(self.i):
+                    if response.f == CantLookAt:
+                        canLookAt = False
+                if canLookAt:
                     if not m == "":
                         m += "\n"
                     m += "I CAN SEE " + object.name + "."
