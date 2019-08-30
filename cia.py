@@ -6,7 +6,7 @@
 
 from object import Object
 from location import NoPlacement
-from verb import Verb, BuiltInVerbs, LookAt
+from verb import Verb, BuiltInVerbs, LookAt, CanGet, CantLookAt
 from game import Game, World, State
 from response import Response
 from direction import *
@@ -153,72 +153,103 @@ customVerbs = (
     (Verb('BOND-007-', 'BON')),)
 
 verbs = BuiltInVerbs(customVerbs)
+goResponse = verbs['GO'].MakeResponse
+getResponse = verbs['GET'].MakeResponse
+dropResponse = verbs['DROP'].MakeResponse
+lookResponse = verbs['LOOK'].MakeResponse
 
 objects = (
-    Object('A VIDEO CASSETTE RECORDER', 'REC', 2,
-           Response(4, LookAt, "THERE'S NO POWER FOR IT.", lambda g: not g.state.batteryInserted),
-           Response(4, LookAt, "THERE'S NO T.V. TO WATCH ON.", lambda g: not g.state.tvConnected)),
-    Object('A VIDEO TAPE', 'TAP', NoPlacement(), moveable=True),
-    Object('A LARGE BATTERY', 'BAT', NoPlacement(), moveable=True),
-    Object('A BLANK CREDIT CARD', 'CAR', NoPlacement(), moveable=True),
+    Object('A VIDEO CASSETTE RECORDER', 'REC', 2, (
+        lookResponse(LookAt, "THERE'S NO POWER FOR IT.", lambda g: not g.state.batteryInserted),
+        lookResponse(LookAt, "THERE'S NO T.V. TO WATCH ON.", lambda g: not g.state.tvConnected))),
+    Object('A VIDEO TAPE', 'TAP', NoPlacement(), getResponse(CanGet)),
+    Object('A LARGE BATTERY', 'BAT', NoPlacement(), getResponse(CanGet)),
+    Object('A BLANK CREDIT CARD', 'CAR', NoPlacement(), getResponse(CanGet)),
     Object('AN ELECTRONIC LOCK', 'LOC', NoPlacement()),
-    Object('AN ELABORATE PAPER WEIGHT', 'WEI', 5, Response(4, LookAt, "IT LOOKS HEAVY."), moveable=True),
-    Object('A LOCKED WOODEN DOOR', 'DOO', 4, Response(4, LookAt, "IT'S LOCKED.")),
-    Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), Response(1, GoOpenWoodenDoor)),
+    Object('AN ELABORATE PAPER WEIGHT', 'WEI', 5, (
+        lookResponse(LookAt, "IT LOOKS HEAVY."),
+        getResponse(CanGet))),
+    Object('A LOCKED WOODEN DOOR', 'DOO', 4, lookResponse(LookAt, "IT'S LOCKED.")),
+    Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), goResponse(GoOpenWoodenDoor)),
     Object('A SOLID LOOKING DOOR', 'DOO', 10),
     Object('AN OPEN DOOR', 'DOO', NoPlacement()),
     Object('AN ALERT SECURITY GUARD', 'GUA', 10),
     Object('A SLEEPING SECURITY GUARD', 'GUA', NoPlacement()),
     Object('A LOCKED MAINTENANCE CLOSET', 'CLO', 14),
-    Object('A MAINTENANCE CLOSET', 'CLO', NoPlacement(), Response(1, GoCloset)),
-    Object('A PLASTIC BAG', 'BAG', 13, Response(4, LookAt, "IT'S A VERY STRONG BAG."), moveable=True),
-    Object('AN OLDE FASHIONED KEY', 'KEY', 9, moveable=True),
+    Object('A MAINTENANCE CLOSET', 'CLO', NoPlacement(), goResponse(GoCloset)),
+    Object('A PLASTIC BAG', 'BAG', 13, (
+        lookResponse(LookAt, "IT'S A VERY STRONG BAG."),
+        getResponse(CanGet))),
+    Object('AN OLDE FASHIONED KEY', 'KEY', 9, getResponse(CanGet)),
     Object('A SMALL METAL SQUARE ON THE WALL', 'SQU', 16),
     Object('A LEVER ON THE SQUARE', 'LEV', 16),
-    Object('AN OLD MAHOGANY DESK', 'DES', 5, Response(4, LookAt, "I CAN SEE A LOCKED DRAWER IN IT.")),
-    Object('A BROOM', 'BRO', 13, moveable=True),
-    Object('A DUSTPAN', 'DUS', 13, moveable=True),
-    Object('A SPIRAL NOTEBOOK', 'NOT', NoPlacement(), Response(4, LookAt, "THERE'S WRITING ON IT."), moveable=True),
-    Object('A MAHOGANY DRAWER', 'DRA', NoPlacement(), Response(4, LookAt, "IT LOOKS FRAGILE"), moveable=True),
-    Object('A GLASS CASE ON A PEDESTAL', 'CAS', 6, Response(4, LookAt, "I CAN SEE A GLEAMING STONE IN IT.")),
-    Object('A RAZOR BLADE', 'BLA', 27, moveable=True),
-    Object('A VERY LARGE RUBY', 'RUB', NoPlacement(), moveable=True),
-    Object('A SIGN ON THE SQUARE', 'SIG', 16, Response(4, LookAt, "THERE'S WRITING ON IT."), moveable=True),
-    Object('A QUARTER', 'QUA', NoPlacement(), moveable=True),
+    Object('AN OLD MAHOGANY DESK', 'DES', 5, lookResponse(LookAt, "I CAN SEE A LOCKED DRAWER IN IT.")),
+    Object('A BROOM', 'BRO', 13, getResponse(CanGet)),
+    Object('A DUSTPAN', 'DUS', 13, getResponse(CanGet)),
+    Object('A SPIRAL NOTEBOOK', 'NOT', NoPlacement(), (
+        lookResponse(LookAt, "THERE'S WRITING ON IT."),
+        getResponse(CanGet))),
+    Object('A MAHOGANY DRAWER', 'DRA', NoPlacement(), (
+        lookResponse(LookAt, "IT LOOKS FRAGILE")),
+        getResponse(CanGet)),
+    Object('A GLASS CASE ON A PEDESTAL', 'CAS', 6, lookResponse(LookAt, "I CAN SEE A GLEAMING STONE IN IT.")),
+    Object('A RAZOR BLADE', 'BLA', 27, getResponse(CanGet)),
+    Object('A VERY LARGE RUBY', 'RUB', NoPlacement(), getResponse(CanGet)),
+    Object('A SIGN ON THE SQUARE', 'SIG', 16,
+           (lookResponse(LookAt, "THERE'S WRITING ON IT."),
+            getResponse(CanGet))),
+    Object('A QUARTER', 'QUA', NoPlacement(), getResponse(CanGet)),
     Object('A COFFEE MACHINE', 'MAC', 8),
-    Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(), Response(3, DropCup), moveable=True),
-    Object('A SMALL CAPSULE', 'CAP', NoPlacement(), moveable=True),
+    Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(), (
+        dropResponse(DropCup),
+        getResponse(CanGet))),
+    Object('A SMALL CAPSULE', 'CAP', NoPlacement(), getResponse(CanGet)),
     Object('A LARGE SCULPTURE', 'SCU', 3),
-    Object('A TALL OFFICE BUILDING', 'BUI', 1, Response(1, GoBuilding)),
+    Object('A TALL OFFICE BUILDING', 'BUI', 1, goResponse(GoBuilding)),
     Object('A PAIR OF SLIDING DOORS', 'DOO', 3, (
-        Response(1, GoDoors),
-        Response(4, LookAt, "THE DOORS ARE OPEN.", lambda g:g.state.upButtonPushed))),
+        goResponse(GoDoors),
+        lookResponse(LookAt, "THE DOORS ARE OPEN.", lambda g:g.state.upButtonPushed))),
     Object('A LARGE BUTTON ON THE WALL', 'BUT', 29),
     Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PAN', 9),
-    Object('A STRONG NYLON ROPE', 'ROP', 17, Response(1, GoRope), moveable=True),
+    Object('A STRONG NYLON ROPE', 'ROP', 17, (
+        goResponse(GoRope),
+        getResponse(CanGet))),
     Object('A LARGE HOOK WITH A ROPE HANGING FROM IT', 'HOO', 21),
-    Object('A C.I.A. IDENTIFICATION BADGE', 'BAD', NoPlacement(), moveable=True),
-    Object('A PORTABLE TELEVISION', 'TEL', 7, moveable=True),
+    Object('A C.I.A. IDENTIFICATION BADGE', 'BAD', NoPlacement(), getResponse(CanGet)),
+    Object('A PORTABLE TELEVISION', 'TEL', 7, getResponse(CanGet)),
     Object('A BANK OF MONITORS', 'MON', 7,
-           Response(4, LookAt, "THE SCREEN IS DARK.", lambda g: not g.state.boxButtonPushed),
-           Response(4, LookAt, "I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.", lambda g: g.state.boxButtonPushed)),
-    Object('A CHAOS I.D. CARD', 'CAR', 30, moveable=True),
+           lookResponse(LookAt, "THE SCREEN IS DARK.", lambda g: not g.state.boxButtonPushed),
+           lookResponse(LookAt, "I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.", lambda g: g.state.boxButtonPushed)),
+    Object('A CHAOS I.D. CARD', 'CAR', 30, getResponse(CanGet)),
     Object('A BANK OF MONITORS', 'MON', 19),
-    Object('A SMALL PAINTING', 'PAI', 23, Response(4, LookAt, "I SEE A PICTURE OF A GRINNING JACKAL."), moveable=True),
-    Object('A PAIR OF RUBBER GLOVES', 'GLO', 13, Response(3, DropCup), moveable=True),
-    Object('A BOX WITH A BUTTON ON IT', 'BOX', 24, moveable=True),
-    Object('ONE', 'ONE', 9, Response(1, PushOne), lookable=False),
-    Object('TWO', 'TWO', 9, Response(1, PushTwo), lookable=False),
-    Object('THREE', 'THR', 9, Response(1, PushThree), lookable=False),
-    Object('SLIT', 'SLI', 10, lookable=False),
+    Object('A SMALL PAINTING', 'PAI', 23, (
+        lookResponse(LookAt, "I SEE A PICTURE OF A GRINNING JACKAL."),
+        getResponse(CanGet))),
+    Object('A PAIR OF RUBBER GLOVES', 'GLO', 13, (
+        dropResponse(DropCup),
+        getResponse(CanGet))),
+    Object('A BOX WITH A BUTTON ON IT', 'BOX', 24, getResponse(CanGet)),
+    Object('ONE', 'ONE', 9, (
+        goResponse(PushOne),
+        lookResponse(CantLookAt))),
+    Object('TWO', 'TWO', 9, (
+        goResponse(PushTwo),
+        lookResponse(CantLookAt))),
+    Object('THREE', 'THR', 9, (
+        goResponse(PushThree),
+        lookResponse(CantLookAt))),
+    Object('SLIT', 'SLI', 10, lookResponse(CantLookAt)),
 
     # These are not in the original game's object list but are included here
     # so that every target is a direction or an object.
     # In the game, "BUT" is a special cased string when used for this panel.
-    Object('AN UP BUTTON', 'BUT', 3, Response(1, PushUpButton), lookable=False),
-    Object('A BUTTON ON A BOX', 'BUT', 3, Response(1, PushBoxButton), lookable=False),
-    )
-
+    Object('AN UP BUTTON', 'BUT', 3, (
+        goResponse(PushUpButton),
+        lookResponse(CantLookAt))),
+    Object('A BUTTON ON A BOX', 'BUT', 3, (
+        goResponse(PushBoxButton),
+        lookResponse(CantLookAt))),
+)
 
 class CIA(Game):
     def __init__(self):

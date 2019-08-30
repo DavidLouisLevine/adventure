@@ -35,10 +35,14 @@ class Verb:
         self.targetOptional = targetOptional
         self.targetInventory = targetInventory
         self.targetInRoom = targetInRoom
+        self.i = None
 
     def Do(self, target, game):
         #assert (target is None or target.IsObject())
         return self.DoObject(target, game)
+
+    def MakeResponse(self, f, *args, **kwargs):
+        return Response(self.i, f, *args, **kwargs)
 
 class GoVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -85,7 +89,10 @@ class GetVerb(Verb):
     def DoObject(self, target, game):
         object = target.value
         if object.placement.location == game.state.location:
-            if not object.moveable:
+            m = None
+            if object.response is not None:
+                m = Response.Respond(object.response, game)
+            if m is None and not object.moveable:
                 m = "I CAN'T CARRY THAT!"
             elif game.state.inventory.Has(object):
                 m = "I ALREADY HAVE IT."
@@ -97,6 +104,9 @@ class GetVerb(Verb):
         else:
             m = "I DON'T SEE THAT HERE."
         return m
+
+def CanGet(game, *args, **kwargs):
+    return ""
 
 class InventoryVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -129,8 +139,7 @@ class LookVerb(Verb):
                 if m is None or m == "":
                     print("I SEE NOTHING OF INTEREST.")
         else:
-            objects = game.world.AtLocation(game.state.location)
-            for object in objects:
+            for object in game.world.AtLocation(game.state.location):
                 if object.lookable:
                     if not m == "":
                         m += "\n"
@@ -151,6 +160,9 @@ class LookVerb(Verb):
 def LookAt(game, message, condition=None):
     if condition is None or condition(game):
         return message
+
+def CantLookAt(game, *args, **kwargs):
+    return None
 
 class QuitVerb(Verb):
     def __init__(self, *args, **kwargs):
