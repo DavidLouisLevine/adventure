@@ -136,7 +136,7 @@ class Game:
     def Look(self):
         return self.world.verbs['LOOK'].Do(None, self)
 
-    def MoveSelfToLocation(self, location):
+    def TravelTo(self, location):
         self.state.location = self.world.ResolveLocation(location)
 
     def CreateHere(self, object):
@@ -193,7 +193,7 @@ class World:
         elif type(item) is str:
             return list[item]
         else:
-            assert 'Unknown object type to resolved:', type(object)
+            assert 'Unknown object type to resolved:', type(Object)
 
     def ResolveObject(self, item):
         return World.Resolve(item, type(Object), self.objects)

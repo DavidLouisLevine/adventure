@@ -12,38 +12,38 @@ from response import Response
 from direction import *
 
 def GoOpenWoodenDoor(game, *args, **kwargs):
-    game.MoveSelfToLocation('CEO')
+    game.TravelTo('CEO')
     return ""
 
 def GoRope(game, *args, **kwargs):
     if game.state.ropeThrown:
-        game.MoveSelfToLocation('PIT')
+        game.TravelTo('PIT')
         return ""
     else:
         return None
 
 def GoOpenDoor(game, *args, **kwargs):
-    game.MoveSelfToLocation('METAL')
+    game.TravelTo('METAL')
 
 def GoCloset(game, *args, **kwargs):
-    game.MoveSelfToLocation('CLOSET')
+    game.TravelTo('CLOSET')
 
 def GoBuilding(game, *args, **kwargs):
     if game.state.location==game.world.locations['ON A BUSY STREET']:
-#        game.MoveSelfToLocation('LOBBY')
+#        game.TravelTo('LOBBY')
         if not game.state.inventory.Has(game.world.objects['BADGE']):
-            game.MoveSelfToLocation('LOBBY')
+            game.TravelTo('LOBBY')
             return ""
         else:
             m = game.Look()
             m += 'THE DOOR MAN LOOKS AT MY BADGE AND THEN THROWS ME OUT.\n'
-            game.MoveSelfToLocation('STREET')
+            game.TravelTo('STREET')
             m += game.Look()
             return m
 
 def GoDoors(game, *args, **kwargs):
     if game.state.upButtonPushed:
-        game.MoveSelfToLocation('ELEVATOR')
+        game.TravelTo('ELEVATOR')
         return ""
 
 def GetPainting(game, *args, **kwargs):
@@ -75,7 +75,7 @@ def PushBoxButton(game, *args, **kwargs):
             m += 'THERE IS A BLINDING FLASH....'
             game.state.floor = 1
             game.world.locations['ELEVATOR'].moves[Direction.SOUTH] = 3
-            game.MoveSelfToLocation('LOBBY')
+            game.TravelTo('LOBBY')
         m += "NOTHING HAPPENS."
 
 def PushSquare(game, *args, **kwargs):
@@ -310,7 +310,8 @@ objects = (
     Object('A LARGE SCULPTURE', 'SCU', 3),
     Object('A TALL OFFICE BUILDING', 'BUI', 1, goResponse(GoBuilding)),
     Object('A PAIR OF SLIDING DOORS', 'DOO', 3, (
-        goResponse(GoDoors),
+        goResponse(condition=lambda g:g.state.upButtonPushed, travelTo='ELEVATOR'),
+        # goResponse(GoDoors),
         lookResponse(LookAt, "THE DOORS ARE OPEN.", lambda g:g.state.upButtonPushed))),
     Object('A LARGE BUTTON ON THE WALL', 'BUT', 29),
     Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PAN', 9),

@@ -41,7 +41,7 @@ class Verb:
         #assert (target is None or target.IsObject())
         return self.DoObject(target, game)
 
-    def MakeResponse(self, f, *args, **kwargs):
+    def MakeResponse(self, f=None, *args, **kwargs):
         return Response(self.i, f, *args, **kwargs)
 
     def __str__(self):
