@@ -25,28 +25,6 @@ def GoBuilding(game, *args, **kwargs):
             m += game.Look()
             return m
 
-def GetPainting(game, *args, **kwargs):
-    if not game.state.fellFromFrame:
-        game.state.fellFromFrame = True
-        game.CreateHere('CAPSULE')
-        return "SOMETHING FELL FROM THE FRAME!"
-
-def GetTelevision(game, *args, **kwargs):
-    if not game.state.fellFromFrame:
-        game.state.tvConnected = False
-
-def DropCup(game, *args, **kwargs):
-    game.state.pillDropped = False
-    game.world.RemoveObject('CUP')
-    return "I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES."
-
-def DropGloves(game, *args, **kwargs):
-    game.state.glovesWorn = False
-
-def PushUpButton(game, *args, **kwargs):
-    game.state['upButtonPushed'] = True
-    return "THE DOORS OPEN WITH A WHOOSH!"
-
 def PushBoxButton(game, *args, **kwargs):
     if game.state.inventory.Has('BOX'):
         m = "I PUSH THE BUTTON ON THE BOX AND\n"
@@ -56,13 +34,6 @@ def PushBoxButton(game, *args, **kwargs):
             game.world.locations['ELEVATOR'].moves[Direction.SOUTH] = 3
             game.TravelTo('LOBBY')
         m += "NOTHING HAPPENS."
-
-def PushSquare(game, *args, **kwargs):
-    if not game.state.glovesWorn:
-        return "THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!"
-    else:
-        game.state.boxButtonPushed = True
-        return "THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."
 
 def PushElevatorButton(game, floor, locationName):
     if game.state.floor != floor:
@@ -127,12 +98,6 @@ def OpenDrawer(game, *args, **kwargs):
     # game.state.upButtonPushed = True
     # return "THE DOORS OPEN WITH A WHOOSH!"
 
-def OpenWoodenDoor(game, *args, **kwargs):
-    if game.Has('KEY'):
-        game.world.RemoveObject('A LOCKED WOODEN DOOR')
-        game.CreateHere('AN OPEN WOODEN DOOR')
-        return "O.K. I OPENED THE DOOR."
-
 class PullVerb(Verb):
     def __init__(self, *args, **kwargs):
         Verb.__init__(self, *args, **kwargs)
@@ -142,22 +107,6 @@ class PullVerb(Verb):
             m = Response.Respond(target.value.response, self.i, game)
             if m == "" or m is None:
                 m = "NOTHING HAPPENS."
-        else:
-            m = ""
-        return m
-
-class InsertVerb(Verb):
-    def __init__(self, *args, **kwargs):
-        Verb.__init__(self, *args, **kwargs)
-
-    def DoObject(self, target, game):
-        if target.IsObject() and not target.value.response is None:
-            if Response.HasResponse(target.value.response, self.i):
-                m = Response.Respond(target.value.response, self.i, game)
-                if m == "" or m is None:
-                    m = "NOTHING HAPPENED."
-            else:
-                m = "I CAN'T INSERT THAT!"
         else:
             m = ""
         return m
@@ -232,7 +181,7 @@ lookResponse = verbs['LOOK'].MakeResponse
 objects = (
     Object('A VIDEO CASSETTE RECORDER', 'REC', 2, (
         lookResponse(LookAt, "THERE'S NO POWER FOR IT.", lambda g: not g.state.batteryInserted),
-        lookResponse(LookAt, "THERE'S NO T.V. TO WATCH ON.", lambda g: not g.state.tvConnected))),
+        lookResponse(LookAt, "THERE'S NO T.V. TO WATCH ON.", lambda g: not g.state['tvConnected']))),
     Object('A VIDEO TAPE', 'TAP', NoPlacement(), (
         insertResponse(InsertTape),
         getResponse(CanGet))),
@@ -248,7 +197,7 @@ objects = (
         getResponse(CanGet))),
     Object('A LOCKED WOODEN DOOR', 'DOOR', 4,
            (lookResponse(LookAt, "IT'S LOCKED."),
-           (openResponse(OpenWoodenDoor)))),
+           (openResponse(condition=lambda g:g.Has('KEY'), removeObject='A LOCKED WOODEN DOOR', createHere='AN OPEN WOODEN DOOR', message='O.K. I OPENED THE DOOR.')))),
     Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), goResponse(travelTo='CEO')),
     Object('A SOLID LOOKING DOOR', 'DOO', 10),
     Object('AN OPEN DOOR', 'DOO', NoPlacement(), goResponse(travelTo='METAL')),
@@ -260,7 +209,9 @@ objects = (
         lookResponse(LookAt, "IT'S A VERY STRONG BAG."),
         getResponse(CanGet))),
     Object('AN OLDE FASHIONED KEY', 'KEY', 9, getResponse(CanGet)),
-    Object('A SMALL METAL SQUARE ON THE WALL', 'SQU', 16),
+    Object('A SMALL METAL SQUARE ON THE WALL', 'SQU', 16,
+        pushResponse(condition=lambda g:not g.state['glovesWorn'], isFatal=True, message="THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!"),
+        pushResponse(condition=lambda g:g.state['glovesWorn'], setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW.")),
     Object('A LEVER ON THE SQUARE', 'LEV', 16),
     Object('AN OLD MAHOGANY DESK', 'DES', 5, lookResponse(LookAt, "I CAN SEE A LOCKED DRAWER IN IT.")),
     Object('A BROOM', 'BRO', 13, getResponse(CanGet)),
@@ -277,14 +228,14 @@ objects = (
            27, getResponse(CanGet)),
     Object('A VERY LARGE RUBY', 'RUB', NoPlacement(), getResponse(CanGet)),
     Object('A SIGN ON THE SQUARE', 'SIG', 16,
-           (lookResponse(LookAt, "THERE'S WRITING ON IT."),
+           (lookResponse(message="THERE'S WRITING ON IT."),
             getResponse(CanGet))),
     Object('A QUARTER', 'QUA', NoPlacement(),
            insertResponse(InsertQuarter),
            getResponse(CanGet)),
     Object('A COFFEE MACHINE', 'MAC', 8),
     Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(), (
-        dropResponse(DropCup),
+        dropResponse(setState=('pillDropped', False), removeObject='CUP', message='I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES.'),
         getResponse(CanGet))),
     Object('A SMALL CAPSULE', 'CAP', NoPlacement(), getResponse(CanGet)),
     Object('A LARGE SCULPTURE', 'SCU', 3),
@@ -299,7 +250,7 @@ objects = (
         getResponse(CanGet))),
     Object('A LARGE HOOK WITH A ROPE HANGING FROM IT', 'HOO', 21),
     Object('A C.I.A. IDENTIFICATION BADGE', 'BAD', NoPlacement(), getResponse(CanGet)),
-    Object('A PORTABLE TELEVISION', 'TEL', 7, getResponse(CanGet)),
+    Object('A PORTABLE TELEVISION', 'TEL', 7, getResponse(CanGet, setState=('tvConnected', True))),
     Object('A BANK OF MONITORS', 'MON', 7,
            lookResponse(LookAt, "THE SCREEN IS DARK.", lambda g: not g.state.boxButtonPushed),
            lookResponse(LookAt, "I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.", lambda g: g.state.boxButtonPushed)),
@@ -307,9 +258,9 @@ objects = (
     Object('A BANK OF MONITORS', 'MON', 19),
     Object('A SMALL PAINTING', 'PAI', 23, (
         lookResponse(LookAt, "I SEE A PICTURE OF A GRINNING JACKAL."),
-        getResponse(CanGet))),
+        getResponse(setState=('fellFromFrame', True), createHere='CAPSULE', message='SOMETHING FELL FROM THE FRAME!'))),
     Object('A PAIR OF RUBBER GLOVES', 'GLO', 13, (
-        dropResponse(DropCup),
+        dropResponse(setState=('glovesWorn', False)),
         getResponse(CanGet))),
     Object('A BOX WITH A BUTTON ON IT', 'BOX', 24, getResponse(CanGet)),
     Object('ONE', 'ONE', 9, (
@@ -343,13 +294,12 @@ class CIA(Game):
         self.state['upButtonPushed'] = False
         self.state.floor = 1
         self.state.ropeThrown = False
-        self.state.glovesWorn = False
-        self.state.fellFromFrame = False
-        self.state.tvConnected = False
+        self.state['glovesWorn'] = False
+        self.state['fellFromFrame'] = False
         self.state.pillDropped = False
         self.state.boxButtonPushed = False
         self.state.batteryInserted = False
-        self.state.tvConnected = False
+        self.state['tvConnected'] = False
         self.state.sleepTimer = -1
         self.state.tapeInserted = False
         self.combination = 12345

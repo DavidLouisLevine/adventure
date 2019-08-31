@@ -128,6 +128,9 @@ class Game:
             self.Tick()
             t += 1
 
+        if self.state.isDead:
+            print("I'M DEAD!\nYOU DIDN'T WIN")
+
     def Tick(self, target, game):
         pass
 

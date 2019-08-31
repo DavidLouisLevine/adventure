@@ -7,6 +7,7 @@ class Response:
         self.args = args
         self.kwargs = kwargs
         self.travelTo = None
+        self.isFatal = False
 
     def Arg(self, arg):
         return None if arg not in self.kwargs else self.kwargs[arg]
@@ -30,6 +31,13 @@ class Response:
                             setStates = (setStates, )
                         for setState in setStates:
                             game.state[setState[0]] = setState[1]
+                    if response.Arg('createHere') is not None:
+                        game.CreateHere(response.Arg('createHere'))
+                    if response.Arg('removeObject') is not None:
+                        game.world.RemoveObject(response.Arg('removeObject'))
+                    if response.isFatal == True:
+                        game.state.isDead = True
+                        game.quitting = True
                     m += response.ArgStr('message')
                     if response.f is not None:
                         if m != "":
@@ -42,7 +50,7 @@ class Response:
         if type(responses) is Response:
             responses = (responses,)
         for response in responses:
-            if response.iVerb == iVerb and response.f is not None:
+            if response.iVerb == iVerb:
                 return True
 
         return False
