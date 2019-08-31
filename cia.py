@@ -131,16 +131,10 @@ def InsertCard(game, *args, **kwargs):
             return "POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING."
 
 def InsertTape(game, *args, **kwargs):
-    pass
-    # into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
-    # if into == game.objects['SLIT']:
-    #     if game.state.sleepTimer < 0:
-    #         return "THE GUARD WON'T LET ME"
-    #     else:
-    #         game.
-    #         game.objects["CARD"].location = NoPlacement()
-    #         game.objects["LOCK"].location = game.locations["CORRIDOR"]
-    #         return "POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING."
+    into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
+    if into == game.objects['RECORDER']:
+        game.world.RemoveObject('TAPE')
+        return "O.K. THE TAPE IS IN THE RECORDER."
 
 def InsertQuarter(game, *args, **kwargs):
     into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
@@ -152,7 +146,6 @@ def InsertQuarter(game, *args, **kwargs):
 def OpenDrawer(game, *args, **kwargs):
     game.state.upButtonPushed = True
     return "THE DOORS OPEN WITH A WHOOSH!"
-
 
 def OpenWoodenDoor(game, *args, **kwargs):
     if game.Has('KEY'):
