@@ -1,9 +1,7 @@
 from location import LocationPlacement, InventoryPlacement, Locations, NoPlacement, Location
-from verb import BuiltInVerbs
 from object import Objects, Target, Object
 from direction import Direction
 import numpy as np
-import response
 
 class Game:
     def __init__(self, world, state):
@@ -200,53 +198,3 @@ class World:
 
     def ResolveLocation(self, item):
         return World.Resolve(item, type(Location), self.locations)
-
-class State:
-    def __init__(self, location, world):
-        self.location = location
-        self.inventory = Inventory(5, self, world)
-
-class Inventory:
-    def __init__(self, capacity, state, world):
-        self.capacity = capacity
-        self.size = 0
-        self.state = state
-        self.world = world
-
-    def Get(self):
-        items = ()
-        for object in self.world.objects:
-            if object.placement.InInventory():
-                items += (object, )
-        return items
-
-    def GetStrings(self):
-        items = ()
-        for object in self.world.objects:
-            if object.placement.InInventory():
-                items += (str(object), )
-        return items
-
-    def Has(self, object):
-        return object.placement.InInventory()
-
-    def Add(self, object):
-        if self.size != self.capacity:
-            object.placement = InventoryPlacement()
-            self.size += 1
-            assert(self.size <= self.capacity)
-            return True
-        else:
-            return False
-
-    def Remove(self, object, location):
-        if self.Has(object):
-            object.placement = LocationPlacement(location)
-            self.size -= 1
-            assert(self.size >= 0)
-            return True
-        else:
-            return False
-
-    def __str__(self):
-        return '(' + ', '.join(self.GetStrings()) + ')'

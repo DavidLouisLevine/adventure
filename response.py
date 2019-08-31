@@ -1,3 +1,5 @@
+from state import State
+
 class Response:
     def __init__(self, iVerb, f, *args, **kwargs):
         self.iVerb = iVerb
@@ -22,6 +24,13 @@ class Response:
                     m = ""
                     if response.Arg('travelTo') is not None:
                         game.TravelTo(response.ArgStr('travelTo'))
+                    if response.Arg('setState') is not None:
+                        setStates = response.Arg('setState')
+                        if type (setStates[0]) is not tuple:
+                            setStates = (setStates, )
+                        for setState in setStates:
+                            game.state[setState[0]] = setState[1]
+                    m += response.ArgStr('message')
                     if response.f is not None:
                         if m != "":
                             m += '\n'

@@ -7,33 +7,23 @@
 from object import Object
 from location import NoPlacement
 from verb import Verb, BuiltInVerbs, LookAt, CanGet, CantLookAt
-from game import Game, World, State
+from game import Game, World
 from response import Response
 from direction import *
-
-def GoOpenDoor(game, *args, **kwargs):
-    game.TravelTo('METAL')
-
-def GoCloset(game, *args, **kwargs):
-    game.TravelTo('CLOSET')
+from state import State
 
 def GoBuilding(game, *args, **kwargs):
     if game.state.location==game.world.locations['ON A BUSY STREET']:
-#        game.TravelTo('LOBBY')
+        game.TravelTo('LOBBY')
         if not game.state.inventory.Has(game.world.objects['BADGE']):
             game.TravelTo('LOBBY')
             return ""
         else:
             m = game.Look()
-            m += 'THE DOOR MAN LOOKS AT MY BADGE AND THEN THROWS ME OUT.\n'
+            m += '\nTHE DOOR MAN LOOKS AT MY BADGE AND THEN THROWS ME OUT.\n'
             game.TravelTo('STREET')
             m += game.Look()
             return m
-
-def GoDoors(game, *args, **kwargs):
-    if game.state.upButtonPushed:
-        game.TravelTo('ELEVATOR')
-        return ""
 
 def GetPainting(game, *args, **kwargs):
     if not game.state.fellFromFrame:
@@ -54,7 +44,7 @@ def DropGloves(game, *args, **kwargs):
     game.state.glovesWorn = False
 
 def PushUpButton(game, *args, **kwargs):
-    game.state.upButtonPushed = True
+    game.state['upButtonPushed'] = True
     return "THE DOORS OPEN WITH A WHOOSH!"
 
 def PushBoxButton(game, *args, **kwargs):
@@ -133,8 +123,9 @@ def InsertQuarter(game, *args, **kwargs):
         return "POP! A CUP OF COFFEE COMES OUT OF THE MACHINE."
 
 def OpenDrawer(game, *args, **kwargs):
-    game.state.upButtonPushed = True
-    return "THE DOORS OPEN WITH A WHOOSH!"
+    pass
+    # game.state.upButtonPushed = True
+    # return "THE DOORS OPEN WITH A WHOOSH!"
 
 def OpenWoodenDoor(game, *args, **kwargs):
     if game.Has('KEY'):
@@ -260,11 +251,11 @@ objects = (
            (openResponse(OpenWoodenDoor)))),
     Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), goResponse(travelTo='CEO')),
     Object('A SOLID LOOKING DOOR', 'DOO', 10),
-    Object('AN OPEN DOOR', 'DOO', NoPlacement()),
+    Object('AN OPEN DOOR', 'DOO', NoPlacement(), goResponse(travelTo='METAL')),
     Object('AN ALERT SECURITY GUARD', 'GUA', 10),
     Object('A SLEEPING SECURITY GUARD', 'GUA', NoPlacement()),
     Object('A LOCKED MAINTENANCE CLOSET', 'CLO', 14),
-    Object('A MAINTENANCE CLOSET', 'CLO', NoPlacement(), goResponse(GoCloset)),
+    Object('A MAINTENANCE CLOSET', 'CLO', NoPlacement(), goResponse(travelTo='CLOSET')),
     Object('A PLASTIC BAG', 'BAG', 13, (
         lookResponse(LookAt, "IT'S A VERY STRONG BAG."),
         getResponse(CanGet))),
@@ -299,9 +290,8 @@ objects = (
     Object('A LARGE SCULPTURE', 'SCU', 3),
     Object('A TALL OFFICE BUILDING', 'BUI', 1, goResponse(GoBuilding)),
     Object('A PAIR OF SLIDING DOORS', 'DOO', 3, (
-        goResponse(condition=lambda g:g.state.upButtonPushed, travelTo='ELEVATOR'),
-        # goResponse(GoDoors),
-        lookResponse(LookAt, "THE DOORS ARE OPEN.", lambda g:g.state.upButtonPushed))),
+        goResponse(condition=lambda g:g.state['upButtonPushed'], travelTo='ELEVATOR'),
+        lookResponse(LookAt, "THE DOORS ARE OPEN.", lambda g:g.state['upButtonPushed']))),
     Object('A LARGE BUTTON ON THE WALL', 'BUT', 29),
     Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PAN', 9),
     Object('A STRONG NYLON ROPE', 'ROPE', 17, (
@@ -337,7 +327,7 @@ objects = (
     # so that every target is a direction or an object.
     # In the game, "BUT" is a special cased string when used for this panel.
     Object('AN UP BUTTON', 'BUT', 3, (
-        pushResponse(PushUpButton),
+        pushResponse(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'),
         lookResponse(CantLookAt))),
     Object('A BUTTON ON A BOX', 'BUT', 3, (
         goResponse(PushBoxButton),
@@ -350,7 +340,7 @@ class CIA(Game):
         state =  State(world.locations['ON A BUSY STREET'], world)
         Game.__init__(self, world, state)
         self.state.inventory.Add(world.objects['BADGE'])
-        self.state.upButtonPushed = False
+        self.state['upButtonPushed'] = False
         self.state.floor = 1
         self.state.ropeThrown = False
         self.state.glovesWorn = False
