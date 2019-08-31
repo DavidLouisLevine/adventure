@@ -11,17 +11,6 @@ from game import Game, World, State
 from response import Response
 from direction import *
 
-def GoOpenWoodenDoor(game, *args, **kwargs):
-    game.TravelTo('CEO')
-    return ""
-
-def GoRope(game, *args, **kwargs):
-    if game.state.ropeThrown:
-        game.TravelTo('PIT')
-        return ""
-    else:
-        return None
-
 def GoOpenDoor(game, *args, **kwargs):
     game.TravelTo('METAL')
 
@@ -269,7 +258,7 @@ objects = (
     Object('A LOCKED WOODEN DOOR', 'DOOR', 4,
            (lookResponse(LookAt, "IT'S LOCKED."),
            (openResponse(OpenWoodenDoor)))),
-    Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), goResponse(GoOpenWoodenDoor)),
+    Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), goResponse(travelTo='CEO')),
     Object('A SOLID LOOKING DOOR', 'DOO', 10),
     Object('AN OPEN DOOR', 'DOO', NoPlacement()),
     Object('AN ALERT SECURITY GUARD', 'GUA', 10),
@@ -315,8 +304,8 @@ objects = (
         lookResponse(LookAt, "THE DOORS ARE OPEN.", lambda g:g.state.upButtonPushed))),
     Object('A LARGE BUTTON ON THE WALL', 'BUT', 29),
     Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PAN', 9),
-    Object('A STRONG NYLON ROPE', 'ROP', 17, (
-        goResponse(GoRope),
+    Object('A STRONG NYLON ROPE', 'ROPE', 17, (
+        goResponse(condition=lambda g:g.state.ropeThrown, travelTo= 'PIT'),
         getResponse(CanGet))),
     Object('A LARGE HOOK WITH A ROPE HANGING FROM IT', 'HOO', 21),
     Object('A C.I.A. IDENTIFICATION BADGE', 'BAD', NoPlacement(), getResponse(CanGet)),
