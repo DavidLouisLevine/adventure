@@ -4,6 +4,9 @@
 #   It's an adventure game, set in an interactive fiction, spy / espionage and contemporary themes,
 #   and was also released on Commodore 64.
 
+# The site at http://gamingafter40.blogspot.com/2013/07/adventure-of-week-cia-adventure-1980.html, downloaded 2019-08-31
+# credits the game to Hugh Lampert. That site also has a complete walk through.
+
 from object import Object
 from location import NoPlacement
 from verb import Verb, BuiltInVerbs, LookAt, CanGet, CantLookAt
@@ -50,48 +53,35 @@ def PushTwo(game, *args, **kwargs):
 def PushThree(game, *args, **kwargs):
     return PushElevatorButton(game, 3, 'IN A SHORT CORRIDOR')
 
-class PushVerb(Verb):
+def ArgStr(kwargs, key):
+    return kwargs[key] if key in kwargs else ""
+
+class StandardVerb(Verb):
     def __init__(self, *args, **kwargs):
+        self.notApplicableMessage = ArgStr(kwargs, 'notApplicableMessage')
+        self.didntWorkMessage = ArgStr(kwargs, 'didntWorkMessage')
+        if 'notApplicableMessage' in kwargs:
+            self.notApplicableMessage = kwargs.pop('notApplicableMessage')
+        if 'didntWorkMessage' in kwargs:
+            self.didntWorkMessage = kwargs.pop('didntWorkMessage')
         Verb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
         if target.IsObject() and not target.value.response is None:
-            m = Response.Respond(target.value.response, self.i, game)
-            if m == "" or m is None:
-                m = "NOTHING HAPPENS."
+            if Response.HasResponse(target.value.response, self.i):
+                m = Response.Respond(target.value.response, self.i, game)
+                if m == "" or m is None:
+                    m = self.didntWorkMessage
+            else:
+                m = self.notApplicableMessage if self.notApplicableMessage is not None else self.didntWorkMessage
         else:
             m = ""
         return m
 
-def InsertBattery(game, *args, **kwargs):
-    into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
-    if into == game.objects['RECORDER']:
-        game.state.batteryInserted = True
-        game.world.RemoveObject('BATTERY')
-        return "OK"
-
-def InsertCard(game, *args, **kwargs):
-    into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
-    if into == game.objects['SLIT']:
-        if game.state.sleepTimer < 0:
-            return "THE GUARD WON'T LET ME"
-        else:
-            game.world.RemoveObject('CARD')
-            game.world.MoveObject('LOCK', 'CORRIDOR')
-            return "POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING."
-
-def InsertTape(game, *args, **kwargs):
-    into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
-    if into == game.objects['RECORDER']:
-        game.world.RemoveObject('TAPE')
-        return "O.K. THE TAPE IS IN THE RECORDER."
-
-def InsertQuarter(game, *args, **kwargs):
-    into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
-    if into == game.objects['MACHINE']:
-        game.world.RemoveObject('QUARTER')
-        game.world.MoveObject('COFFEE', 'HALLWAY')
-        return "POP! A CUP OF COFFEE COMES OUT OF THE MACHINE."
+class PushVerb(StandardVerb):
+    def __init__(self, *args, **kwargs):
+        kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
+        StandardVerb.__init__(self, *args, **kwargs)
 
 def OpenDrawer(game, *args, **kwargs):
     pass
@@ -100,60 +90,40 @@ def OpenDrawer(game, *args, **kwargs):
 
 class PullVerb(Verb):
     def __init__(self, *args, **kwargs):
-        Verb.__init__(self, *args, **kwargs)
-
-    def DoObject(self, target, game):
-        if target.IsObject() and not target.value.response is None:
-            m = Response.Respond(target.value.response, self.i, game)
-            if m == "" or m is None:
-                m = "NOTHING HAPPENS."
-        else:
-            m = ""
-        return m
+        kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
+        StandardVerb.__init__(self, *args, **kwargs)
 
 class InsertVerb(Verb):
     def __init__(self, *args, **kwargs):
-        Verb.__init__(self, *args, **kwargs)
+        kwargs['didntWorkMessage'] = 'NOTHING HAPPENED.'
+        StandardVerb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
         if target.IsObject() and not target.value.response is None:
-            if Response.HasResponse(target.value.response, self.i):
-                m = Response.Respond(target.value.response, self.i, game)
-                if m == "" or m is None:
-                    m = "NOTHING HAPPENED."
+            response = Response.get(target.value.response, self.i);
+            if response is not None:
+                into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
+                if into == response.kwargs['insertedObject']:
+                    m = Response.Respond(target.value.response, self.i, game)
+                    if m == "" or m is None:
+                        m = "NOTHING HAPPENED."
             else:
                 m = "I CAN'T INSERT THAT!"
         else:
             m = ""
         return m
 
-class OpenVerb(Verb):
+class OpenVerb(StandardVerb):
     def __init__(self, *args, **kwargs):
-        Verb.__init__(self, *args, **kwargs)
+        kwargs['notApplicableMessage'] = "I CAN'T OPEN THAT!"
+        kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
+        StandardVerb.__init__(self, *args, **kwargs)
 
-    def DoObject(self, target, game):
-        if target.IsObject() and not target.value.response is None:
-            if Response.HasResponse(target.value.response, self.i):
-                m = Response.Respond(target.value.response, self.i, game)
-                if m == "" or m is None:
-                    m = "NOTHING HAPPENED."
-            else:
-                m = "I CAN'T OPEN THAT!"
-        else:
-            m = ""
-        return m
-
-class WearVerb(Verb):
+class WearVerb(StandardVerb):
     def __init__(self, *args, **kwargs):
-        Verb.__init__(self, *args, **kwargs)
-
-    def DoObject(self, target, game):
-        m = None
-        if target.IsObject() and not target.value.response is None:
-            m = Response.Respond(target.value.response, self.i, game)
-        if m == "" or m is None:
-            m = "I CAN'T WEAR THAT!."
-        return m
+        kwargs['notApplicableMessage'] = "I CAN'T WEAR THAT!"
+        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
+        StandardVerb.__init__(self, *args, **kwargs)
 
 customVerbs = (
     (PushVerb('PUSH', 'PUS')),
@@ -170,119 +140,120 @@ customVerbs = (
     (Verb('BOND-007-', 'BON')),)
 
 verbs = BuiltInVerbs(customVerbs)
-pushResponse = verbs['PUSH'].MakeResponse
-goResponse = verbs['GO'].MakeResponse
-getResponse = verbs['GET'].MakeResponse
-insertResponse = verbs['INSERT'].MakeResponse
-openResponse = verbs['OPEN'].MakeResponse
-dropResponse = verbs['DROP'].MakeResponse
-lookResponse = verbs['LOOK'].MakeResponse
+push = verbs['PUSH'].MakeResponse
+go = verbs['GO'].MakeResponse
+get = verbs['GET'].MakeResponse
+insert = verbs['INSERT'].MakeResponse
+open = verbs['OPEN'].MakeResponse
+drop = verbs['DROP'].MakeResponse
+look = verbs['LOOK'].MakeResponse
 
 objects = (
     Object('A VIDEO CASSETTE RECORDER', 'REC', 2, (
-        lookResponse(LookAt, "THERE'S NO POWER FOR IT.", lambda g: not g.state.batteryInserted),
-        lookResponse(LookAt, "THERE'S NO T.V. TO WATCH ON.", lambda g: not g.state['tvConnected']))),
+        look(LookAt, "THERE'S NO POWER FOR IT.", lambda g: not g.state.batteryInserted),
+        look(LookAt, "THERE'S NO T.V. TO WATCH ON.", lambda g: not g.state['tvConnected']))),
     Object('A VIDEO TAPE', 'TAP', NoPlacement(), (
-        insertResponse(InsertTape),
-        getResponse(CanGet))),
+        insert(into='RECORDER', moveObject='TAPE', message='O.K. THE TAPE IS IN THE RECORDER.'),
+       get(CanGet))),
     Object('A LARGE BATTERY', 'BAT', NoPlacement(), (
-        insertResponse(InsertBattery),
-        getResponse(CanGet))),
+        insert(into='RECORDER', setState=('batteryInserted', True), removeObject='BATTERY', message='OK'),
+        get(CanGet))),
     Object('A BLANK CREDIT CARD', 'CAR', NoPlacement(), (
-        insertResponse(InsertCard),
-        getResponse(CanGet))),
+        insert(into='SLIT', condition=lambda g: g.state.sleepTimer < 0, messsage="THE GUARD WON'T LET ME"),
+        insert(into='SLIT', condition=lambda g: g.state.sleepTimer >= 0, removeObject='CARD', moveObject = ('LOCK', 'CORRIDOR'), message='POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING.'),
+        get(CanGet))),
     Object('AN ELECTRONIC LOCK', 'LOC', NoPlacement()),
     Object('AN ELABORATE PAPER WEIGHT', 'WEI', 5, (
-        lookResponse(LookAt, "IT LOOKS HEAVY."),
-        getResponse(CanGet))),
+        look(LookAt, "IT LOOKS HEAVY."),
+        get(CanGet))),
     Object('A LOCKED WOODEN DOOR', 'DOOR', 4,
-           (lookResponse(LookAt, "IT'S LOCKED."),
-           (openResponse(condition=lambda g:g.Has('KEY'), removeObject='A LOCKED WOODEN DOOR', createHere='AN OPEN WOODEN DOOR', message='O.K. I OPENED THE DOOR.')))),
-    Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), goResponse(travelTo='CEO')),
+       (look(LookAt, "IT'S LOCKED."),
+       (open(condition=lambda g:g.Has('KEY'), replaceObject=('A LOCKED WOODEN DOOR', 'AN OPEN WOODEN DOOR'), message='O.K. I OPENED THE DOOR.')))),
+    Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), go(travelTo='CEO')),
     Object('A SOLID LOOKING DOOR', 'DOO', 10),
-    Object('AN OPEN DOOR', 'DOO', NoPlacement(), goResponse(travelTo='METAL')),
+    Object('AN OPEN DOOR', 'DOO', NoPlacement(), go(travelTo='METAL')),
     Object('AN ALERT SECURITY GUARD', 'GUA', 10),
     Object('A SLEEPING SECURITY GUARD', 'GUA', NoPlacement()),
     Object('A LOCKED MAINTENANCE CLOSET', 'CLO', 14),
-    Object('A MAINTENANCE CLOSET', 'CLO', NoPlacement(), goResponse(travelTo='CLOSET')),
+    Object('A MAINTENANCE CLOSET', 'CLO', NoPlacement(), go(travelTo='CLOSET')),
     Object('A PLASTIC BAG', 'BAG', 13, (
-        lookResponse(LookAt, "IT'S A VERY STRONG BAG."),
-        getResponse(CanGet))),
-    Object('AN OLDE FASHIONED KEY', 'KEY', 9, getResponse(CanGet)),
+        look(LookAt, "IT'S A VERY STRONG BAG."),
+        get(CanGet))),
+    Object('AN OLDE FASHIONED KEY', 'KEY', 9, get(CanGet)),
     Object('A SMALL METAL SQUARE ON THE WALL', 'SQU', 16,
-        pushResponse(condition=lambda g:not g.state['glovesWorn'], isFatal=True, message="THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!"),
-        pushResponse(condition=lambda g:g.state['glovesWorn'], setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW.")),
+        push(condition=lambda g:not g.state['glovesWorn'], isFatal=True, message="THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!"),
+        push(condition=lambda g:g.state['glovesWorn'], setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW.")),
     Object('A LEVER ON THE SQUARE', 'LEV', 16),
-    Object('AN OLD MAHOGANY DESK', 'DES', 5, lookResponse(LookAt, "I CAN SEE A LOCKED DRAWER IN IT.")),
-    Object('A BROOM', 'BRO', 13, getResponse(CanGet)),
-    Object('A DUSTPAN', 'DUS', 13, getResponse(CanGet)),
+    Object('AN OLD MAHOGANY DESK', 'DES', 5, look(LookAt, "I CAN SEE A LOCKED DRAWER IN IT.")),
+    Object('A BROOM', 'BRO', 13, get(CanGet)),
+    Object('A DUSTPAN', 'DUS', 13, get(CanGet)),
     Object('A SPIRAL NOTEBOOK', 'NOT', NoPlacement(), (
-        lookResponse(LookAt, "THERE'S WRITING ON IT."),
-        getResponse(CanGet))),
+        look(LookAt, "THERE'S WRITING ON IT."),
+        get(CanGet))),
     Object('A MAHOGANY DRAWER', 'DRA', NoPlacement(), (
-        openResponse(OpenDrawer),
-        lookResponse(LookAt, "IT LOOKS FRAGILE")),
-        getResponse(CanGet)),
-    Object('A GLASS CASE ON A PEDESTAL', 'CAS', 6, lookResponse(LookAt, "I CAN SEE A GLEAMING STONE IN IT.")),
+        open(OpenDrawer),
+        look(LookAt, "IT LOOKS FRAGILE")),
+        get(CanGet)),
+    Object('A GLASS CASE ON A PEDESTAL', 'CAS', 6, look(LookAt, "I CAN SEE A GLEAMING STONE IN IT.")),
     Object('A RAZOR BLADE', 'BLA',
-           27, getResponse(CanGet)),
-    Object('A VERY LARGE RUBY', 'RUB', NoPlacement(), getResponse(CanGet)),
+           27, get(CanGet)),
+    Object('A VERY LARGE RUBY', 'RUB', NoPlacement(), get(CanGet)),
     Object('A SIGN ON THE SQUARE', 'SIG', 16,
-           (lookResponse(message="THERE'S WRITING ON IT."),
-            getResponse(CanGet))),
+           (look(message="THERE'S WRITING ON IT."),
+            get(CanGet))),
     Object('A QUARTER', 'QUA', NoPlacement(),
-           insertResponse(InsertQuarter),
-           getResponse(CanGet)),
+           insert(into='MACHINE', moveObject=('COFFEE', 'HALLWAY'), message='POP! A CUP OF COFFEE COMES OUT OF THE MACHINE.'),
+           get(CanGet)),
     Object('A COFFEE MACHINE', 'MAC', 8),
     Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(), (
-        dropResponse(setState=('pillDropped', False), removeObject='CUP', message='I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES.'),
-        getResponse(CanGet))),
-    Object('A SMALL CAPSULE', 'CAP', NoPlacement(), getResponse(CanGet)),
+        drop(setState=('pillDropped', False), removeObject='CUP', message='I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES.'),
+        get(CanGet))),
+    Object('A SMALL CAPSULE', 'CAP', NoPlacement(), get(CanGet)),
     Object('A LARGE SCULPTURE', 'SCU', 3),
-    Object('A TALL OFFICE BUILDING', 'BUI', 1, goResponse(GoBuilding)),
+    Object('A TALL OFFICE BUILDING', 'BUI', 1, go(GoBuilding)),
     Object('A PAIR OF SLIDING DOORS', 'DOO', 3, (
-        goResponse(condition=lambda g:g.state['upButtonPushed'], travelTo='ELEVATOR'),
-        lookResponse(LookAt, "THE DOORS ARE OPEN.", lambda g:g.state['upButtonPushed']))),
+        go(condition=lambda g:g.state['upButtonPushed'], travelTo='ELEVATOR'),
+        look(LookAt, "THE DOORS ARE OPEN.", lambda g:g.state['upButtonPushed']))),
     Object('A LARGE BUTTON ON THE WALL', 'BUT', 29),
     Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PAN', 9),
     Object('A STRONG NYLON ROPE', 'ROPE', 17, (
-        goResponse(condition=lambda g:g.state.ropeThrown, travelTo= 'PIT'),
-        getResponse(CanGet))),
+        go(condition=lambda g:g.state.ropeThrown, travelTo= 'PIT'),
+        get(CanGet))),
     Object('A LARGE HOOK WITH A ROPE HANGING FROM IT', 'HOO', 21),
-    Object('A C.I.A. IDENTIFICATION BADGE', 'BAD', NoPlacement(), getResponse(CanGet)),
-    Object('A PORTABLE TELEVISION', 'TEL', 7, getResponse(CanGet, setState=('tvConnected', True))),
+    Object('A C.I.A. IDENTIFICATION BADGE', 'BAD', NoPlacement(), get(CanGet)),
+    Object('A PORTABLE TELEVISION', 'TEL', 7, get(CanGet, setState=('tvConnected', True))),
     Object('A BANK OF MONITORS', 'MON', 7,
-           lookResponse(LookAt, "THE SCREEN IS DARK.", lambda g: not g.state.boxButtonPushed),
-           lookResponse(LookAt, "I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.", lambda g: g.state.boxButtonPushed)),
-    Object('A CHAOS I.D. CARD', 'CAR', 30, getResponse(CanGet)),
+           look(LookAt, "THE SCREEN IS DARK.", lambda g: not g.state.boxButtonPushed),
+           look(LookAt, "I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.", lambda g: g.state.boxButtonPushed)),
+    Object('A CHAOS I.D. CARD', 'CAR', 30, get(CanGet)),
     Object('A BANK OF MONITORS', 'MON', 19),
     Object('A SMALL PAINTING', 'PAI', 23, (
-        lookResponse(LookAt, "I SEE A PICTURE OF A GRINNING JACKAL."),
-        getResponse(setState=('fellFromFrame', True), createHere='CAPSULE', message='SOMETHING FELL FROM THE FRAME!'))),
+        look(LookAt, "I SEE A PICTURE OF A GRINNING JACKAL."),
+        get(setState=('fellFromFrame', True), createHere='CAPSULE', message='SOMETHING FELL FROM THE FRAME!'))),
     Object('A PAIR OF RUBBER GLOVES', 'GLO', 13, (
-        dropResponse(setState=('glovesWorn', False)),
-        getResponse(CanGet))),
-    Object('A BOX WITH A BUTTON ON IT', 'BOX', 24, getResponse(CanGet)),
+        drop(setState=('glovesWorn', False)),
+        get(CanGet))),
+    Object('A BOX WITH A BUTTON ON IT', 'BOX', 24, get(CanGet)),
     Object('ONE', 'ONE', 9, (
-        goResponse(PushOne),
-        lookResponse(CantLookAt))),
+        go(PushOne),
+        look(CantLookAt))),
     Object('TWO', 'TWO', 9, (
-        goResponse(PushTwo),
-        lookResponse(CantLookAt))),
+        go(PushTwo),
+        look(CantLookAt))),
     Object('THREE', 'THR', 9, (
-        goResponse(PushThree),
-        lookResponse(CantLookAt))),
-    Object('SLIT', 'SLI', 10, lookResponse(CantLookAt)),
+        go(PushThree),
+        look(CantLookAt))),
+    Object('SLIT', 'SLI', 10, look(CantLookAt)),
 
     # These are not in the original game's object list but are included here
     # so that every target is a direction or an object.
     # In the game, "BUT" is a special cased string when used for this panel.
     Object('AN UP BUTTON', 'BUT', 3, (
-        pushResponse(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'),
-        lookResponse(CantLookAt))),
+        push(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'),
+        look(CantLookAt))),
     Object('A BUTTON ON A BOX', 'BUT', 3, (
-        goResponse(PushBoxButton),
-        lookResponse(CantLookAt))),
+        go(PushBoxButton),
+        look(CantLookAt))),
 )
 
 class CIA(Game):

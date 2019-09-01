@@ -35,6 +35,9 @@ class Response:
                         game.CreateHere(response.Arg('createHere'))
                     if response.Arg('removeObject') is not None:
                         game.world.RemoveObject(response.Arg('removeObject'))
+                    if response.Arg('replaceObject') is not None:
+                        game.world.RemoveObject(response.Arg('replaceObject')[0])
+                        game.CreateHere(response.Arg('replaceObject')[1])
                     if response.isFatal == True:
                         game.state.isDead = True
                         game.quitting = True
@@ -46,11 +49,15 @@ class Response:
                     return m
 
     @staticmethod
-    def HasResponse(responses, iVerb):
+    def GetResponse(responses, iVerb):
         if type(responses) is Response:
             responses = (responses,)
         for response in responses:
             if response.iVerb == iVerb:
-                return True
+                return response
 
-        return False
+        return None
+
+    @staticmethod
+    def HasResponse(responses, iVerb):
+        return Response.GetResponse(responses, iVerb) is not None

@@ -9,21 +9,22 @@ class Game:
         self.state = state
         self.quitting = False
         self.inputFile = open("ciatest.adv", "r")
+        self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
         self.inResponse = False
 
     def Input(self, prompt):
+        expected = None
         if self.inputFile is not None:
             print(prompt + '? ', end='')
             u = ""
             while u == "":
-                #k = self.inputFile.readlines()
                 t = self.inputFile.readline()
                 if t == "":
                     break
                 if t[0] != '#':
                     u = t
 
-            message = ""
+            expected = ""
             while True:
                 t = self.inputFile.readline()
                 if t == "":
@@ -33,7 +34,7 @@ class Game:
                     break
 
                 if t[0] != '#':
-                    message += t
+                    expected += t
 
             if t == "":
                 self.inputFile.close()
@@ -41,10 +42,15 @@ class Game:
 
             if u != "":
                 print(u, end='')
-                return (u, message)
 
         if self.inputFile is None:
-            return (input(prompt), None)
+            u = input(prompt)
+            t = None
+
+        if self.scriptOutputFile is not None:
+            self.scriptOutputFile.write(u)
+
+        return (u, expected)
 
     def DoAction(self, action):
         try:
@@ -185,19 +191,19 @@ class World:
 
     def RemoveObject(self, object):
         object = self.ResolveObject(object)
-        object.placement = LocationPlacement(NoPlacement())
+        object.placement = NoPlacement()
 
     @staticmethod
-    def Resolve(item, type, list):
-        if type(item) is type:
+    def Resolve(item, t, list):
+        if type(item) is t:
             return item
         elif type(item) is str:
             return list[item]
         else:
-            assert 'Unknown object type to resolved:', type(Object)
+            assert 'Unknown object type to resolved:', type(item)
 
     def ResolveObject(self, item):
-        return World.Resolve(item, type(Object), self.objects)
+        return World.Resolve(item, Object, self.objects)
 
     def ResolveLocation(self, item):
-        return World.Resolve(item, type(Location), self.locations)
+        return World.Resolve(item, Location, self.locations)
