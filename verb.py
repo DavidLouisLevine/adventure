@@ -188,7 +188,8 @@ class BuiltInVerbs(Verbs):
     builtinVerbs = (
         (GoVerb('GO', 'GO ')),
         (GetVerb('GET', 'GET')),
-        (DropVerb('DROP', 'DRO', targetInventory=False, targetInRoom=False)),
+        (DropVerb('DROP', 'DRO')),
+#        (DropVerb('DROP', 'DRO', targetInventory=False, targetInRoom=False)),
         (LookVerb('LOOK', 'LOO', targetOptional=True)),
         (QuitVerb('QUIT', 'QUI', targetNever=True)),
         (InventoryVerb('INVENTORY', 'INV', targetNever=True))

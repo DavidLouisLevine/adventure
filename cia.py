@@ -149,88 +149,88 @@ drop = verbs['DROP'].MakeResponse
 look = verbs['LOOK'].MakeResponse
 
 objects = (
-    Object('A VIDEO CASSETTE RECORDER', 'REC', 2, (
+    Object('A VIDEO CASSETTE RECORDER', 'RECORDER', 2, (
         look(LookAt, "THERE'S NO POWER FOR IT.", lambda g: not g.state.batteryInserted),
         look(LookAt, "THERE'S NO T.V. TO WATCH ON.", lambda g: not g.state['tvConnected']))),
-    Object('A VIDEO TAPE', 'TAP', NoPlacement(), (
+    Object('A VIDEO TAPE', 'TAPe', NoPlacement(), (
         insert(into='RECORDER', moveObject='TAPE', message='O.K. THE TAPE IS IN THE RECORDER.'),
        get(CanGet))),
-    Object('A LARGE BATTERY', 'BAT', NoPlacement(), (
+    Object('A LARGE BATTERY', 'BATTERY', NoPlacement(), (
         insert(into='RECORDER', setState=('batteryInserted', True), removeObject='BATTERY', message='OK'),
         get(CanGet))),
-    Object('A BLANK CREDIT CARD', 'CAR', NoPlacement(), (
+    Object('A BLANK CREDIT CARD', 'CARD', NoPlacement(), (
         insert(into='SLIT', condition=lambda g: g.state.sleepTimer < 0, messsage="THE GUARD WON'T LET ME"),
         insert(into='SLIT', condition=lambda g: g.state.sleepTimer >= 0, removeObject='CARD', moveObject = ('LOCK', 'CORRIDOR'), message='POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING.'),
         get(CanGet))),
-    Object('AN ELECTRONIC LOCK', 'LOC', NoPlacement()),
-    Object('AN ELABORATE PAPER WEIGHT', 'WEI', 5, (
+    Object('AN ELECTRONIC LOCK', 'LOCK', NoPlacement()),
+    Object('AN ELABORATE PAPER WEIGHT', 'WEIGHT', 5, (
         look(LookAt, "IT LOOKS HEAVY."),
         get(CanGet))),
     Object('A LOCKED WOODEN DOOR', 'DOOR', 4,
        (look(LookAt, "IT'S LOCKED."),
        (open(condition=lambda g:g.Has('KEY'), replaceObject=('A LOCKED WOODEN DOOR', 'AN OPEN WOODEN DOOR'), message='O.K. I OPENED THE DOOR.')))),
-    Object('AN OPEN WOODEN DOOR', 'DOO', NoPlacement(), go(travelTo='CEO')),
-    Object('A SOLID LOOKING DOOR', 'DOO', 10),
-    Object('AN OPEN DOOR', 'DOO', NoPlacement(), go(travelTo='METAL')),
-    Object('AN ALERT SECURITY GUARD', 'GUA', 10),
-    Object('A SLEEPING SECURITY GUARD', 'GUA', NoPlacement()),
-    Object('A LOCKED MAINTENANCE CLOSET', 'CLO', 14),
-    Object('A MAINTENANCE CLOSET', 'CLO', NoPlacement(), go(travelTo='CLOSET')),
+    Object('AN OPEN WOODEN DOOR', 'DOOR', NoPlacement(), go(travelTo='CEO')),
+    Object('A SOLID LOOKING DOOR', 'DOOR', 10),
+    Object('AN OPEN DOOR', 'DOOR', NoPlacement(), go(travelTo='METAL')),
+    Object('AN ALERT SECURITY GUARD', 'GUARD', 10),
+    Object('A SLEEPING SECURITY GUARD', 'GUARD', NoPlacement()),
+    Object('A LOCKED MAINTENANCE CLOSET', 'CLOSET', 14),
+    Object('A MAINTENANCE CLOSET', 'CLOSET', NoPlacement(), go(travelTo='CLOSET')),
     Object('A PLASTIC BAG', 'BAG', 13, (
         look(LookAt, "IT'S A VERY STRONG BAG."),
         get(CanGet))),
     Object('AN OLDE FASHIONED KEY', 'KEY', 9, get(CanGet)),
-    Object('A SMALL METAL SQUARE ON THE WALL', 'SQU', 16,
-        push(condition=lambda g:not g.state['glovesWorn'], isFatal=True, message="THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!"),
-        push(condition=lambda g:g.state['glovesWorn'], setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW.")),
-    Object('A LEVER ON THE SQUARE', 'LEV', 16),
-    Object('AN OLD MAHOGANY DESK', 'DES', 5, look(LookAt, "I CAN SEE A LOCKED DRAWER IN IT.")),
-    Object('A BROOM', 'BRO', 13, get(CanGet)),
-    Object('A DUSTPAN', 'DUS', 13, get(CanGet)),
-    Object('A SPIRAL NOTEBOOK', 'NOT', NoPlacement(), (
+    Object('A SMALL METAL SQUARE ON THE WALL', 'SQUARE', 16,
+        push(condition=lambda g:g.state['glovesWorn'], setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."),
+        push(isFatal=True, message="THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!")),
+    Object('A LEVER ON THE SQUARE', 'LEVER', 16),
+    Object('AN OLD MAHOGANY DESK', 'DESK', 5, look(LookAt, "I CAN SEE A LOCKED DRAWER IN IT.")),
+    Object('A BROOM', 'BROOM', 13, get(CanGet)),
+    Object('A DUSTPAN', 'DUSTPAN', 13, get(CanGet)),
+    Object('A SPIRAL NOTEBOOK', 'NOTEBOOK', NoPlacement(), (
         look(LookAt, "THERE'S WRITING ON IT."),
         get(CanGet))),
-    Object('A MAHOGANY DRAWER', 'DRA', NoPlacement(), (
+    Object('A MAHOGANY DRAWER', 'DRAWER', 5, (
         open(OpenDrawer),
         look(LookAt, "IT LOOKS FRAGILE")),
         get(CanGet)),
-    Object('A GLASS CASE ON A PEDESTAL', 'CAS', 6, look(LookAt, "I CAN SEE A GLEAMING STONE IN IT.")),
-    Object('A RAZOR BLADE', 'BLA',
+    Object('A GLASS CASE ON A PEDESTAL', 'CASE', 6, look(LookAt, "I CAN SEE A GLEAMING STONE IN IT.")),
+    Object('A RAZOR BLADE', 'BLADE',
            27, get(CanGet)),
-    Object('A VERY LARGE RUBY', 'RUB', NoPlacement(), get(CanGet)),
-    Object('A SIGN ON THE SQUARE', 'SIG', 16,
+    Object('A VERY LARGE RUBY', 'RUBY', NoPlacement(), get(CanGet)),
+    Object('A SIGN ON THE SQUARE', 'SIGN', 16,
            (look(message="THERE'S WRITING ON IT."),
             get(CanGet))),
-    Object('A QUARTER', 'QUA', NoPlacement(),
+    Object('A QUARTER', 'QUARTER', NoPlacement(),
            insert(into='MACHINE', moveObject=('COFFEE', 'HALLWAY'), message='POP! A CUP OF COFFEE COMES OUT OF THE MACHINE.'),
            get(CanGet)),
-    Object('A COFFEE MACHINE', 'MAC', 8),
+    Object('A COFFEE MACHINE', 'MACHINE', 8),
     Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(), (
         drop(setState=('pillDropped', False), removeObject='CUP', message='I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES.'),
         get(CanGet))),
-    Object('A SMALL CAPSULE', 'CAP', NoPlacement(), get(CanGet)),
-    Object('A LARGE SCULPTURE', 'SCU', 3),
-    Object('A TALL OFFICE BUILDING', 'BUI', 1, go(GoBuilding)),
-    Object('A PAIR OF SLIDING DOORS', 'DOO', 3, (
+    Object('A SMALL CAPSULE', 'CAPSULE', NoPlacement(), get(CanGet)),
+    Object('A LARGE SCULPTURE', 'SCULPTURE', 3),
+    Object('A TALL OFFICE BUILDING', 'BUILDING', 1, go(GoBuilding)),
+    Object('A PAIR OF SLIDING DOORS', 'DOORS', 3, (
         go(condition=lambda g:g.state['upButtonPushed'], travelTo='ELEVATOR'),
         look(LookAt, "THE DOORS ARE OPEN.", lambda g:g.state['upButtonPushed']))),
-    Object('A LARGE BUTTON ON THE WALL', 'BUT', 29),
-    Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PAN', 9),
+    Object('A LARGE BUTTON ON THE WALL', 'BUTTON', 29),
+    Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PANEL', 9),
     Object('A STRONG NYLON ROPE', 'ROPE', 17, (
         go(condition=lambda g:g.state.ropeThrown, travelTo= 'PIT'),
         get(CanGet))),
-    Object('A LARGE HOOK WITH A ROPE HANGING FROM IT', 'HOO', 21),
-    Object('A C.I.A. IDENTIFICATION BADGE', 'BAD', NoPlacement(), get(CanGet)),
-    Object('A PORTABLE TELEVISION', 'TEL', 7, get(CanGet, setState=('tvConnected', True))),
-    Object('A BANK OF MONITORS', 'MON', 7,
+    Object('A LARGE HOOK WITH A ROPE HANGING FROM IT', 'HOOK', 21),
+    Object('A C.I.A. IDENTIFICATION BADGE', 'BADGE', NoPlacement(), get(CanGet)),
+    Object('A PORTABLE TELEVISION', 'TELEVISION', 7, get(CanGet, setState=('tvConnected', True))),
+    Object('A BANK OF MONITORS', 'MONITORS', 7,
            look(LookAt, "THE SCREEN IS DARK.", lambda g: not g.state.boxButtonPushed),
            look(LookAt, "I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.", lambda g: g.state.boxButtonPushed)),
-    Object('A CHAOS I.D. CARD', 'CAR', 30, get(CanGet)),
-    Object('A BANK OF MONITORS', 'MON', 19),
-    Object('A SMALL PAINTING', 'PAI', 23, (
+    Object('A CHAOS I.D. CARD', 'CARD', 30, get(CanGet)),
+    Object('A BANK OF MONITORS', 'MONITORS', 19),
+    Object('A SMALL PAINTING', 'PAINTING', 23, (
         look(LookAt, "I SEE A PICTURE OF A GRINNING JACKAL."),
         get(setState=('fellFromFrame', True), createHere='CAPSULE', message='SOMETHING FELL FROM THE FRAME!'))),
-    Object('A PAIR OF RUBBER GLOVES', 'GLO', 13, (
+    Object('A PAIR OF RUBBER GLOVES', 'GLOVES', 13, (
         drop(setState=('glovesWorn', False)),
         get(CanGet))),
     Object('A BOX WITH A BUTTON ON IT', 'BOX', 24, get(CanGet)),
@@ -248,10 +248,10 @@ objects = (
     # These are not in the original game's object list but are included here
     # so that every target is a direction or an object.
     # In the game, "BUT" is a special cased string when used for this panel.
-    Object('AN UP BUTTON', 'BUT', 3, (
+    Object('AN UP BUTTON', 'BUTTON', 3, (
         push(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'),
         look(CantLookAt))),
-    Object('A BUTTON ON A BOX', 'BUT', 3, (
+    Object('A BUTTON ON A BOX', 'BUTTON', 3, (
         go(PushBoxButton),
         look(CantLookAt))),
 )

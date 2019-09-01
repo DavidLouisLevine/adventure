@@ -123,10 +123,13 @@ class Game:
                 actualMessage = temp + "\n\n"
                 if expectedMessage is not None and expectedMessage != actualMessage:
                     print("ERROR: Expected Message:\n", expectedMessage)
+                    print("---------")
                     print("ERROR: Actual Message:\n", actualMessage)
+                    print("---------")
                     n = min(len(actualMessage), len(expectedMessage))
                     k = np.array(list(expectedMessage[:n])) == np.array(list(actualMessage[:n]))
-                    j = 1
+                    j = np.argwhere(k == False)[0][0]
+                    o = 9
             else:
                 if expectedMessage is not None and expectedMessage != "":
                     print("ERROR: Actual message is empty but expected message is:", expectedMessage)
