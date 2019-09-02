@@ -143,11 +143,7 @@ class LookVerb(Verb):
                     print("I SEE NOTHING OF INTEREST.")
         else:
             for object in game.world.AtLocation(game.state.location):
-                canLookAt = True
-                for response in object.Responses(self.i):
-                    if response.f == CantLookAt:
-                        canLookAt = False
-                if canLookAt:
+                if object.visible:
                     if not m == "":
                         m += "\n"
                     m += "I CAN SEE " + object.name + "."
@@ -163,13 +159,6 @@ class LookVerb(Verb):
                 m += "\n"
             m += "\n>" + '-' * 62 + "<"
         return m
-
-def LookAt(game, message, condition=None):
-    if condition is None or condition(game):
-        return message
-
-def CantLookAt(game, *args, **kwargs):
-    return None
 
 class QuitVerb(Verb):
     def __init__(self, *args, **kwargs):

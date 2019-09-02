@@ -21,7 +21,13 @@ class Response:
             responses = (responses,)
         for response in responses:
             if response.iVerb == iVerb:
-                if response.Arg('condition') is None or response.Arg('condition')(game):
+                if (response.Arg('condition') is None or response.Arg('condition')(game))\
+                        and\
+                   (response.Arg('conditionIsSet') is None or game.state[response.Arg('conditionIsSet')])\
+                        and\
+                   (response.Arg('conditionIsNotSet') is None or not game.state[response.Arg('conditionIsNotSet')])\
+                        and\
+                   (response.Arg('conditionHas') is None or game.Has(response.Arg('conditionHas'))):
                     m = ""
                     if response.Arg('travelTo') is not None:
                         game.TravelTo(response.ArgStr('travelTo'))
@@ -31,6 +37,8 @@ class Response:
                             setStates = (setStates, )
                         for setState in setStates:
                             game.state[setState[0]] = setState[1]
+                    if response.Arg('conditionSet') is not None:
+                        game.CreateHere(response.Arg('createHere'))
                     if response.Arg('createHere') is not None:
                         game.CreateHere(response.Arg('createHere'))
                     if response.Arg('removeObject') is not None:
@@ -45,7 +53,9 @@ class Response:
                     if response.f is not None:
                         if m != "":
                             m += '\n'
-                        m += response.f(game, response.args, response.kwargs)
+                        m_new = response.f(game, response.args, response.kwargs)
+                        if m_new is not None:
+                            m += m_new
                     return m
 
     @staticmethod

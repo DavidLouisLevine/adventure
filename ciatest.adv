@@ -89,8 +89,9 @@ WE COULD EASILY GO: WEST
 >--------------------------------------------------------------<
 
 ---@
-OPEN DRAWER
-foo
+#OPEN DRAWER
+# The lowercase s below is in the original game code
+#IT's STUCK.
 ---@
 #GO WEST
 #LOOK

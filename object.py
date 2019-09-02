@@ -31,13 +31,13 @@ class Objects:
         self.items += items
 
 class Object:
-    def __init__(self, name, abbreviation, placement, response=None, moveable=False, lookable=True):
+    def __init__(self, name, abbreviation, placement, response=None, moveable=False, visible=True):
         self.name = name
         self.abbreviation = abbreviation
         self.placement = placement
         self.response = response
         self.moveable = moveable
-        self.lookable = lookable
+        self.visible = visible
 
     def Responses(self, iVerb=None):
         if self.response is None:

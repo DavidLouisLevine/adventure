@@ -121,7 +121,7 @@ class Game:
             temp = self.Do(str, echo=False)
             if temp is not None:
                 actualMessage = temp + "\n\n"
-                if expectedMessage is not None and expectedMessage != actualMessage:
+                if expectedMessage is not None and expectedMessage != actualMessage and expectedMessage != "":
                     print("ERROR: Expected Message:\n", expectedMessage)
                     print("---------")
                     print("ERROR: Actual Message:\n", actualMessage)
