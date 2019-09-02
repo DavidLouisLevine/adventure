@@ -99,7 +99,7 @@ class GetVerb(Verb):
                 m = "I CAN'T CARRY THAT!"
             elif game.state.inventory.Has(object):
                 m = "I ALREADY HAVE IT."
-            elif game.state.inventory.capacity == len(game.state.inventory.Get()):
+            elif game.state.inventory.capacity == len(game.state.inventory.Get(game.world)):
                 m = "I CAN'T CARRY ANYMORE."
             else:
                 game.state.inventory.Add(object)
@@ -117,12 +117,12 @@ class InventoryVerb(Verb):
 
     def DoObject(self, target, game):
         m = "WE ARE PRESENTLY CARRYING:\n"
-        objects = game.state.inventory.Get()
+        objects = game.state.inventory.Get(game.world)
         if len(objects) == 0:
             m += "NOTHING"
         else:
             first = True
-            for object in game.state.inventory.Get():
+            for object in game.state.inventory.Get(game.world):
                 if not first:
                     m += "\n"
                     first = False

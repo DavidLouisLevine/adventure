@@ -11,21 +11,24 @@ from adventure.game import Game
 from adventure.world import World
 from adventure.state import State
 from cia.cia_verb import verbs
-from cia.cia_object import objects
+from cia.cia_object import GetObjects
 from cia.cia_location import locations
+import random
 
 class CIA(Game):
     def __init__(self):
-        world = World(objects, verbs, locations)
-        state =  State(world.locations['ON A BUSY STREET'], world)
+        state = State()
+        world = World(GetObjects(self), verbs, locations)
         Game.__init__(self, world, state)
-        self.state.inventory.Add(world.objects['BADGE'])
+        state.location = world.locations['ON A BUSY STREET']
+        self.state['playerName'] = None
+        self.state['secretCode'] = str(9 * random.choice(range(9)))[1:]
         self.state['upButtonPushed'] = False
         self.state.floor = 1
         self.state.ropeThrown = False
         self.state['glovesWorn'] = False
         self.state['fellFromFrame'] = False
-        self.state.pillDropped = False
+        self.state.capsuleDropped = False
         self.state.boxButtonPushed = False
         self.state.batteryInserted = False
         self.state['tvConnected'] = False
@@ -34,6 +37,8 @@ class CIA(Game):
         self.state.sculptureMessage = False
         self.combination = 12345
         self.guard_ticks = -1
+
+        self.state.inventory.Add(world.objects['BADGE'])
 
     def Run(self, actions):
 #        self.world.print()

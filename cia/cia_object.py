@@ -47,26 +47,30 @@ get = verbs['GET'].MakeResponse
 insert = verbs['INSERT'].MakeResponse
 open = verbs['OPEN'].MakeResponse
 drop = verbs['DROP'].MakeResponse
+wear = verbs['WEAR'].MakeResponse
+read = verbs['READ'].MakeResponse
+start = verbs['START'].MakeResponse
+break_ = verbs['BREAK'].MakeResponse
 look = verbs['LOOK'].MakeResponse
 
 objects = (
     Object('A VIDEO CASSETTE RECORDER', 'RECORDER', 'VISITOR', (
         look(conditionIsNotSet='batteryInserted', message="THERE'S NO POWER FOR IT."),
-        look(conditionIsNotSet='tvConnected', message="THERE'S NO T.V. TO WATCH ON."))),
-    Object('A VIDEO TAPE', 'TAPE', NoPlacement(), (
-        insert(into='RECORDER', moveObject='TAPE', message='O.K. THE TAPE IS IN THE RECORDER.')),
-		moveable=True),
-    Object('A LARGE BATTERY', 'BATTERY', NoPlacement(), (
-        insert(into='RECORDER', setState=('batteryInserted', True), removeObject='BATTERY', message='OK')),
-		moveable=True),
+        look(conditionIsNotSet='tvConnected', message="THERE'S NO T.V. TO WATCH ON."),
+        start(conditionIfNotSet=('batteryInserted', 'tapeInserted', 'tvConnected'),
+              setState=('sculptureMessage', True),
+              message=("{playerName},\nWE HAVE UNCOVERED A NUMBER THAT MAY HELP YOU.\nTHAT NUMBER IS:{secretCode}. PLEASE WATCH OUT FOR HIDDEN TRAPS.\nALSO, THERE IS SOMETHING IN THE SCULPTURE.")))),
+    Object('A VIDEO TAPE', 'TAPE', NoPlacement(), insert(into='RECORDER', moveObject='TAPE', message='O.K. THE TAPE IS IN THE RECORDER.'), moveable=True),
+    Object('A LARGE BATTERY', 'BATTERY', NoPlacement(), (insert(into='RECORDER', setState=('batteryInserted', True), removeObject='BATTERY', message='OK')), moveable=True),
     Object('A BLANK CREDIT CARD', 'CARD', NoPlacement(), (
         insert(into='SLIT', condition=lambda g: g.state.sleepTimer < 0, messsage="THE GUARD WON'T LET ME"),
         insert(into='SLIT', condition=lambda g: g.state.sleepTimer >= 0, removeObject='CARD', moveObject = ('LOCK', 'CORRIDOR'), message='POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING.')),
-		moveable=True),
-    Object('AN ELECTRONIC LOCK', 'LOCK', NoPlacement()),
+        moveable=True),
+    Object('AN ELECTRONIC LOCK', 'LOCK', NoPlacement(),
+           open(challenge="WHAT'S THE COMBINATION", answer="{secretCode}", removeObject=('LOCK', 'A SOLID LOOKING DOOR, IN A SHORT CORRIDOR'), createHere='AN OPEN DOOR')),
     Object('AN ELABORATE PAPER WEIGHT', 'WEIGHT', 'CEO', (
         look(message="IT LOOKS HEAVY.")),
-		moveable=True),
+        moveable=True),
     Object('A LOCKED WOODEN DOOR', 'DOOR', 'ANTEROOM',
        (look(message="IT'S LOCKED."),
        (open(conditionHas='KEY', replaceObject=('A LOCKED WOODEN DOOR', 'AN OPEN WOODEN DOOR'), message='O.K. I OPENED THE DOOR.')))),
@@ -82,7 +86,7 @@ objects = (
     Object('A PLASTIC BAG', 'BAG', 13, (
         open(message="I CAN'T. IT'S TOO STRONG."),
         look(message="IT'S A VERY STRONG BAG.")),
-		moveable=True),
+        moveable=True),
     Object('AN OLDE FASHIONED KEY', 'KEY', 'ELEVATOR', moveable=True),
     Object('A SMALL METAL SQUARE ON THE WALL', 'SQUARE', 'GENERATOR',
         push(conditionIsSet='glovesWorn', setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."),
@@ -92,26 +96,30 @@ objects = (
     Object('A BROOM', 'BROOM', 'CLOSET', moveable=True),
     Object('A DUSTPAN', 'DUSTPAN', 'CLOSET', moveable=True),
     Object('A SPIRAL NOTEBOOK', 'NOTEBOOK', NoPlacement(), (
-        look(message="THERE'S WRITING ON IT.")),
-		moveable=True),
+        look(message="THERE'S WRITING ON IT."),
+        read(message="IT SAYS{playerName},\n  WE HAVE DISCOVERED ONE OF CHAOSES SECRET WORDS.\nIT IS: BOND-007- .TO BE USED IN A -TASTEFUL- SITUATION.")),
+        moveable=True),
     Object('A MAHOGANY DRAWER', 'DRAWER', 'CEO', (
         open(conditionHas='WEIGHT', message="IT'S STUCK"),
         open(message="IT's STUCK"), # Lowercase 's' in original code
-        look(message="IT LOOKS FRAGILE")),
+        look(message="IT LOOKS FRAGILE"),
+        break_(hasObject='WEIGHT', createHere=('BATTERY', 'NOTEBOOK'), makeVisible='DRAWER', message = "IT'S HARD....BUT I GOT IT. TWO THINGS FELL OUT.")),
         moveable=True,
         visible=False),
     Object('A GLASS CASE ON A PEDESTAL', 'CASE', 'CUBICLE', look(message="I CAN SEE A GLEAMING STONE IN IT.")),
     Object('A RAZOR BLADE', 'BLADE', 'BATHROOM', moveable=True),
     Object('A VERY LARGE RUBY', 'RUBY', NoPlacement(), moveable=True),
-    Object('A SIGN ON THE SQUARE', 'SIGN', 'GENERATOR', look(message="THERE'S WRITING ON IT."), moveable=True),
+    Object('A SIGN ON THE SQUARE', 'SIGN', 'GENERATOR', (
+        look(message="THERE'S WRITING ON IT."),
+        read(message="IT SAYS: WATCH OUT! DANGEROUS!")), moveable=True),
     Object('A QUARTER', 'QUARTER', NoPlacement(),
         insert(into='MACHINE', moveObject=('COFFEE', 'HALLWAY'), message='POP! A CUP OF COFFEE COMES OUT OF THE MACHINE.'),
-		moveable=True),
+        moveable=True),
     Object('A COFFEE MACHINE', 'MACHINE', 'HALLWAY'),
     Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(),
-        drop(setState=('pillDropped', False), removeObject='CUP', message='I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES.'),
-		moveable=True),
-    Object('A SMALL CAPSULE', 'CAPSULE', NoPlacement(), moveable=True),
+        drop(setState=('capsuleDropped', False), removeObject='CUP', message='I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES.\nTHE COFFEE SOAKED INTO THE GROUND.'),
+        moveable=True),
+    Object('A SMALL CAPSULE', 'CAPSULE', NoPlacement(), drop(hasObject='CUP', removeObject='CAPSULE', setState=('capsuleDropped', True)), moveable=True),
     Object('A LARGE SCULPTURE', 'SCULPTURE', 'LOBBY', (
         (open(condition=lambda g: not g.Exists('QUARTER') and not g.Exists('CARD') and g.state.sculptureMessage, createHere='CARD', message='SOMETHING FALLS OUT.')))),
     Object('A TALL OFFICE BUILDING', 'BUILDING', 1, go(GoBuilding)),
@@ -132,7 +140,9 @@ objects = (
     Object('A SMALL PAINTING', 'PAINTING', 'ROOM', (
         look(message="I SEE A PICTURE OF A GRINNING JACKAL."),
         get(setState=('fellFromFrame', True), createHere='CAPSULE', message='SOMETHING FELL FROM THE FRAME!'))),
-    Object('A PAIR OF RUBBER GLOVES', 'GLOVES', 'CLOSET', ( drop(setState=('glovesWorn', False))), moveable=True),
+    Object('A PAIR OF RUBBER GLOVES', 'GLOVES', 'CLOSET', (
+        drop(setState=('glovesWorn', False)),
+        wear(hasObject='GLOVES')), moveable=True),
     Object('A BOX WITH A BUTTON ON IT', 'BOX', 'LAB', moveable=True),
     Object('ONE', 'ONE', 'ELEVATOR', go(PushOne), visible=False),
     Object('TWO', 'TWO', 'ELEVATOR', go(PushTwo), visible=False),

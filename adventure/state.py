@@ -1,9 +1,9 @@
 from adventure.inventory import Inventory
 
 class State:
-    def __init__(self, location, world):
-        self.location = location
-        self.inventory = Inventory(5, self, world)
+    def __init__(self):
+        self.location = None
+        self.inventory = Inventory(5, self)
         self.items = dict()
         self.isDead = False
 

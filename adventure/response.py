@@ -1,3 +1,6 @@
+def MakeTuple(t):
+    return t if type(t) is tuple else (t, )
+
 class Response:
     def __init__(self, iVerb, f, *args, **kwargs):
         self.iVerb = iVerb
@@ -12,6 +15,7 @@ class Response:
 
     def ArgStr(self, arg):
         return "" if self.Arg(arg) is None else self.Arg(arg)
+
 
     @staticmethod
     def Respond(responses, iVerb, game):
@@ -39,11 +43,9 @@ class Response:
                         for setState in setStates:
                             game.state[setState[0]] = setState[1]
 
-                    if response.Arg('conditionSet') is not None:
-                        game.CreateHere(response.Arg('createHere'))
-
                     if response.Arg('createHere') is not None:
-                        game.CreateHere(response.Arg('createHere'))
+                        for object in MakeTuple(response.Arg('createHere')):
+                            game.CreateHere(object)
 
                     if response.Arg('removeObject') is not None:
                         game.world.RemoveObject(response.Arg('removeObject'))
@@ -52,10 +54,14 @@ class Response:
                         game.world.RemoveObject(response.Arg('replaceObject')[0])
                         game.CreateHere(response.Arg('replaceObject')[1])
 
+                    if response.Arg('makeVisible') is not None:
+                        game.world.objects[response.Arg('makeVisible')].visible = True
+
                     if response.isFatal == True:
                         game.state.isDead = True
                         game.quitting = True
 
+                    # TODO: Implement replacement strings
                     m += response.ArgStr('message')
 
                     if response.f is not None:

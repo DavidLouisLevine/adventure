@@ -69,15 +69,34 @@ class WearVerb(StandardVerb):
         kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
         StandardVerb.__init__(self, *args, **kwargs)
 
+class ReadVerb(StandardVerb):
+    def __init__(self, *args, **kwargs):
+        kwargs['notApplicableMessage'] = "I CAN'T READ THAT."
+        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
+        StandardVerb.__init__(self, *args, **kwargs)
+
+class StartVerb(StandardVerb):
+    def __init__(self, *args, **kwargs):
+        kwargs['notApplicableMessage'] = "I CAN'T START THAT."
+        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
+        StandardVerb.__init__(self, *args, **kwargs)
+
+class BreakVerb(StandardVerb):
+    def __init__(self, *args, **kwargs):
+        kwargs['notApplicableMessage'] = "I'M TRYING TO BREAK IT, BUT I CAN'T."
+        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
+        StandardVerb.__init__(self, *args, **kwargs)
+
 customVerbs = (
     (PushVerb('PUSH', 'PUS')),
     (PullVerb('PULL', 'PUL')),
     (InsertVerb('INSERT', 'INS')),
     (OpenVerb('OPEN', 'OPE')),
-    (WearVerb('WEAR', 'WEA', targetInventory=False, targetInRoom=False)),
-    (Verb('READ', 'REA')),
-    (Verb('STA?', 'STA')),
-    (Verb('BREAK?', 'BRE')),
+    (WearVerb('WEAR', 'WEA')),
+    #(WearVerb('WEAR', 'WEA', targetInventory=False, targetInRoom=False)),
+    (ReadVerb('READ', 'REA')),
+    (StartVerb('START', 'STA')),
+    (BreakVerb('BREAK', 'BRE')),
     (Verb('CUT', 'CUT')),
     (Verb('THROW', 'THR')),
     (Verb('CON', 'CON')),

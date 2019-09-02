@@ -2,22 +2,21 @@ from adventure.placement import LocationPlacement, InventoryPlacement
 
 
 class Inventory:
-    def __init__(self, capacity, state, world):
+    def __init__(self, capacity, state):
         self.capacity = capacity
         self.size = 0
         self.state = state
-        self.world = world
 
-    def Get(self):
+    def Get(self, world):
         items = ()
-        for object in self.world.objects:
+        for object in world.objects:
             if object.placement.InInventory():
                 items += (object, )
         return items
 
-    def GetStrings(self):
+    def GetStrings(self, world):
         items = ()
-        for object in self.world.objects:
+        for object in world.objects:
             if object.placement.InInventory():
                 items += (str(object), )
         return items
