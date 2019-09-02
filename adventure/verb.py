@@ -93,9 +93,9 @@ class GetVerb(Verb):
         object = target.value
         if object.placement.location == game.state.location:
             m = None
-            if object.response is not None:
+            if object.moveable and object.response is not None:
                 m = Response.Respond(object.response, self.index, game)
-            if m is None and not object.moveable:
+            if not object.moveable:
                 m = "I CAN'T CARRY THAT!"
             elif game.state.inventory.Has(object):
                 m = "I ALREADY HAVE IT."

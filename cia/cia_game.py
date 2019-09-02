@@ -31,6 +31,7 @@ class CIA(Game):
         self.state['tvConnected'] = False
         self.state.sleepTimer = -1
         self.state.tapeInserted = False
+        self.state.sculptureMessage = False
         self.combination = 12345
         self.guard_ticks = -1
 

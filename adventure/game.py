@@ -1,5 +1,6 @@
 from adventure.target import Target
 from adventure.direction import Direction
+from adventure.placement import NoPlacement
 import numpy as np
 
 class Game:
@@ -154,6 +155,9 @@ class Game:
     def Has(self, object):
         object = self.world.ResolveObject(object)
         return self.state.inventory.Has(object)
+
+    def Exists(self, object):
+        return object.placement != NoPlacement
 
     def __str__(self):
         return str(self.state.location) + str(self.state.inventory)
