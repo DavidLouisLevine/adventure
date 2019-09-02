@@ -1,5 +1,3 @@
-from state import State
-
 class Response:
     def __init__(self, iVerb, f, *args, **kwargs):
         self.iVerb = iVerb

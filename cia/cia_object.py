@@ -1,19 +1,8 @@
-# This is a port of the game "C.I.A. Adventure" downloaded from https://www.myabandonware.com/game/cia-adventure-1ya on 2019-08-25
-# The description on that site reads:
-#   C.I.A. Adventure is a video game published in 1982 on DOS by International PC Owners.
-#   It's an adventure game, set in an interactive fiction, spy / espionage and contemporary themes,
-#   and was also released on Commodore 64.
-
-# The site at http://gamingafter40.blogspot.com/2013/07/adventure-of-week-cia-adventure-1980.html, downloaded 2019-08-31
-# credits the game to Hugh Lampert. That site also has a complete walk through.
-
-from object import Object
-from location import NoPlacement
-from verb import Verb, BuiltInVerbs, CanGet
-from game import Game, World
-from response import Response
-from direction import *
-from state import State
+from adventure.direction import Direction
+from adventure.location import NoPlacement
+from adventure.object import Object
+from adventure.verb import CanGet
+from cia.cia_verb import verbs
 
 def GoBuilding(game, *args, **kwargs):
     if game.state.location==game.world.locations['ON A BUSY STREET']:
@@ -38,12 +27,6 @@ def PushBoxButton(game, *args, **kwargs):
             game.TravelTo('LOBBY')
         m += "NOTHING HAPPENS."
 
-def PushElevatorButton(game, floor, locationName):
-    if game.state.floor != floor:
-        game.state.location.moves[Direction.NORTH] = game.world.locations[locationName].i
-        game.state.floor = floor
-        return "THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."
-
 def PushOne(game, *args, **kwargs):
     return PushElevatorButton(game, 1, 'IN THE LOBBY OF THE BUILDING')
 
@@ -53,88 +36,6 @@ def PushTwo(game, *args, **kwargs):
 def PushThree(game, *args, **kwargs):
     return PushElevatorButton(game, 3, 'IN A SHORT CORRIDOR')
 
-def ArgStr(kwargs, key):
-    return kwargs[key] if key in kwargs else ""
-
-class StandardVerb(Verb):
-    def __init__(self, *args, **kwargs):
-        self.notApplicableMessage = ArgStr(kwargs, 'notApplicableMessage')
-        self.didntWorkMessage = ArgStr(kwargs, 'didntWorkMessage')
-        if 'notApplicableMessage' in kwargs:
-            self.notApplicableMessage = kwargs.pop('notApplicableMessage')
-        if 'didntWorkMessage' in kwargs:
-            self.didntWorkMessage = kwargs.pop('didntWorkMessage')
-        Verb.__init__(self, *args, **kwargs)
-
-    def DoObject(self, target, game):
-        if target.IsObject() and not target.value.response is None:
-            if Response.HasResponse(target.value.response, self.i):
-                m = Response.Respond(target.value.response, self.i, game)
-                if m == "" or m is None:
-                    m = self.didntWorkMessage
-            else:
-                m = self.notApplicableMessage if self.notApplicableMessage is not None else self.didntWorkMessage
-        else:
-            m = ""
-        return m
-
-class PushVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class PullVerb(Verb):
-    def __init__(self, *args, **kwargs):
-        kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class InsertVerb(Verb):
-    def __init__(self, *args, **kwargs):
-        kwargs['didntWorkMessage'] = 'NOTHING HAPPENED.'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-    def DoObject(self, target, game):
-        if target.IsObject() and not target.value.response is None:
-            response = Response.get(target.value.response, self.i);
-            if response is not None:
-                into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
-                if into == response.kwargs['insertedObject']:
-                    m = Response.Respond(target.value.response, self.i, game)
-                    if m == "" or m is None:
-                        m = "NOTHING HAPPENED."
-            else:
-                m = "I CAN'T INSERT THAT!"
-        else:
-            m = ""
-        return m
-
-class OpenVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I CAN'T OPEN THAT!"
-        kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class WearVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I CAN'T WEAR THAT!"
-        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-customVerbs = (
-    (PushVerb('PUSH', 'PUS')),
-    (PullVerb('PULL', 'PUL')),
-    (InsertVerb('INSERT', 'INS')),
-    (OpenVerb('OPEN', 'OPE')),
-    (WearVerb('WEAR', 'WEA', targetInventory=False, targetInRoom=False)),
-    (Verb('READ', 'REA')),
-    (Verb('STA?', 'STA')),
-    (Verb('BREAK?', 'BRE')),
-    (Verb('CUT', 'CUT')),
-    (Verb('THROW', 'THR')),
-    (Verb('CON', 'CON')),
-    (Verb('BOND-007-', 'BON')),)
-
-verbs = BuiltInVerbs(customVerbs)
 push = verbs['PUSH'].MakeResponse
 go = verbs['GO'].MakeResponse
 get = verbs['GET'].MakeResponse
@@ -142,7 +43,6 @@ insert = verbs['INSERT'].MakeResponse
 open = verbs['OPEN'].MakeResponse
 drop = verbs['DROP'].MakeResponse
 look = verbs['LOOK'].MakeResponse
-
 objects = (
     Object('A VIDEO CASSETTE RECORDER', 'RECORDER', 2, (
         look(conditionIsNotSet='batteryInserted', message="THERE'S NO POWER FOR IT."),
@@ -243,59 +143,8 @@ objects = (
     Object('A BUTTON ON A BOX', 'BUTTON', 3, go(PushBoxButton), visible=False),
 )
 
-class CIA(Game):
-    def __init__(self):
-        world = World(objects, verbs)
-        state =  State(world.locations['ON A BUSY STREET'], world)
-        Game.__init__(self, world, state)
-        self.state.inventory.Add(world.objects['BADGE'])
-        self.state['upButtonPushed'] = False
-        self.state.floor = 1
-        self.state.ropeThrown = False
-        self.state['glovesWorn'] = False
-        self.state['fellFromFrame'] = False
-        self.state.pillDropped = False
-        self.state.boxButtonPushed = False
-        self.state.batteryInserted = False
-        self.state['tvConnected'] = False
-        self.state.sleepTimer = -1
-        self.state.tapeInserted = False
-        self.combination = 12345
-        self.guard_ticks = -1
-
-    def Run(self, actions):
-        print("        C.I.A  ADVENTURE")
-        self.Do("LOOK", echo=False)
-        self.playerName = 'JIM'
-        print("ENTER YOUR NAME PARTNER? " + self.playerName)
-        print("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
-        Game.Run(self, sequence)
-
-    def Tick(self):
-        if self.guard_ticks != -1:
-            self.guard_ticks -= 1
-
-sequence = (
-    "GO BUILDING",
-    "INVENTORY",
-    "WEAR BADGE",
-    "DROP BADGE",
-    "INVENTORY",
-    "LOOK",
-    "GO BUILDING",
-    "GO WEST",
-    "LOOK",
-    "GET RECORDER",
-    "LOOK",
-    "INVENTORY",
-    "GO EAST",
-    "GO DOORS",
-    "PUSH BUTTON",
-    "GO DOORS",
-    "PUSH TWO",
-    "PUSH TWO",
-    "GO NORTH")
-sequence = ()
-
-cia = CIA()
-cia.Run(sequence)
+def PushElevatorButton(game, floor, locationName):
+    if game.state.floor != floor:
+        game.state.location.moves[Direction.NORTH] = game.world.locations[locationName].i
+        game.state.floor = floor
+        return "THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."
