@@ -7,7 +7,9 @@ class Objects:
         for i in range(len(items)):
             assert type(items[i]) is Object
             newitem = copy.copy(items[i])
-            newitem.n = i
+            newitem.index = i
+            # if type(newitem.location) == int:
+            #     newitem
             self.items += (newitem,)
 
     def len(self):

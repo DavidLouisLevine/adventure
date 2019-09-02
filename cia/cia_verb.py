@@ -31,14 +31,15 @@ class PushVerb(StandardVerb):
         kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
         StandardVerb.__init__(self, *args, **kwargs)
 
-class PullVerb(Verb):
+class PullVerb(StandardVerb):
     def __init__(self, *args, **kwargs):
         kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
         StandardVerb.__init__(self, *args, **kwargs)
 
-class InsertVerb(Verb):
+class InsertVerb(StandardVerb):
     def __init__(self, *args, **kwargs):
-        kwargs['didntWorkMessage'] = 'NOTHING HAPPENED.'
+        if 'didntWorkMessage' not in kwargs:
+            kwargs['didntWorkMessage'] = 'NOTHING HAPPENED.'
         StandardVerb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
@@ -59,7 +60,7 @@ class InsertVerb(Verb):
 class OpenVerb(StandardVerb):
     def __init__(self, *args, **kwargs):
         kwargs['notApplicableMessage'] = "I CAN'T OPEN THAT!"
-        kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
+        kwargs['didntWorkMessage'] = "I CAN'T DO THAT......YET!"
         StandardVerb.__init__(self, *args, **kwargs)
 
 class WearVerb(StandardVerb):

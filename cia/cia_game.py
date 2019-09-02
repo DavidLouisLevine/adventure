@@ -35,6 +35,7 @@ class CIA(Game):
         self.guard_ticks = -1
 
     def Run(self, actions):
+#        self.world.print()
         print("        C.I.A  ADVENTURE")
         self.Do("LOOK", echo=False)
         self.playerName = 'JIM'

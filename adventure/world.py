@@ -1,4 +1,5 @@
-from adventure.location import Locations, LocationPlacement, NoPlacement, Location
+from adventure.location import Locations, Location
+from adventure.placement import LocationPlacement, NoPlacement
 from adventure.object import Objects, Object
 
 class World:
@@ -7,7 +8,7 @@ class World:
         self.verbs = verbs
         self.objects = Objects(objects)
         for object in self.objects:
-            if type(object.placement) is int:
+            if type(object.placement) is int or type(object.placement) is str:
                 object.placement = LocationPlacement(self.locations[object.placement])
 
     def AtLocation(self, location):
@@ -20,14 +21,18 @@ class World:
     def print(self):
         s = ""
         for i in range(self.locations.len()):
-            print(i + 1, self.locations[i + 1].name, self.locations[i + 1].moves)
+            print("{0} {1}: {2} {3}".format(i + 1, self.locations[i + 1].abbreviation, self.locations[i + 1].name, self.locations[i + 1].moves))
+
+        print()
 
         for i in range(self.objects.len()):
-            o = self.objects[i]
-            print(i, o.name, o.placement)
+            o = self.objects[i + 1]
+            print("{0} {1}: {2}, {3}".format(i + 1, o.abbreviation, o.name, o.placement))
+
+        print()
 
         for i in range(self.verbs.len()):
-            print(i, self.verbs[i].name)
+            print("{0} {1}: {2}".format(i + 1, self.verbs[i + 1].abbreviation, self.verbs[i + 1].name))
 
     def MoveObject(self, object, location):
         object = self.ResolveObject(object)
