@@ -16,8 +16,8 @@ class StandardVerb(Verb):
 
     def DoObject(self, target, game):
         if target.IsObject():
-            if Response.HasResponse(target.value.response, self.index):
-                m = Response.Respond(target.value.response, self.index, game)
+            if Response.HasResponse(target.value.responses, self.index):
+                m = Response.Respond(target.value.responses, self.index, game)
                 if m == "" or m is None:
                     m = self.didntWorkMessage
             else:
@@ -43,12 +43,12 @@ class InsertVerb(StandardVerb):
         StandardVerb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
-        if target.IsObject() and not target.value.response is None:
-            response = Response.get(target.value.response, self.index);
+        if target.IsObject() and not target.value.responses is None:
+            response = Response.get(target.value.responses, self.index);
             if response is not None:
                 into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
                 if into == response.kwargs['insertedObject']:
-                    m = Response.Respond(target.value.response, self.index, game)
+                    m = Response.Respond(target.value.responses, self.index, game)
                     if m == "" or m is None:
                         m = "NOTHING HAPPENED."
             else:

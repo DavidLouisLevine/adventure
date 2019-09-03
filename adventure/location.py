@@ -3,7 +3,7 @@ class Location:
         self.name = name
         self.moves = list(moves)
         self.abbreviation = abbreviation
-        self.response = response
+        self.responses = response
 
     def __str__(self):
         return self.abbreviation

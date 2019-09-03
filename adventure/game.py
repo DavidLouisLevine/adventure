@@ -100,9 +100,9 @@ class Game:
         # Respond to the current location if it changed
         if self.state.location != currentLocation:
             m += self.Look()
-            if self.state.location.response is not None:
+            if self.state.location.responses is not None:
                 currentLocation = self.state.location
-                r = Response.Respond(self.state.location.response, self.world.verbs['GO'].index, self)
+                r = Response.Respond(self.state.location.responses, self.world.verbs['GO'].index, self)
                 if r is not None:
                     if m is not "":
                         m += '\n'

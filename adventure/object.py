@@ -36,17 +36,17 @@ class Object:
         self.name = name
         self.abbreviation = abbreviation
         self.placement = placement
-        self.response = response
+        self.responses = response
         self.moveable = moveable
         self.visible = visible
 
     def Responses(self, iVerb=None):
-        if self.response is None:
+        if self.responses is None:
             responses = ()
-        elif type(self.response) is Response:
-            responses = (self.response, )
+        elif type(self.responses) is Response:
+            responses = (self.responses, )
         else:
-            responses = self.response
+            responses = self.responses
 
         return filter(lambda x: x.iVerb == iVerb, responses)
 
