@@ -1,7 +1,7 @@
 from adventure.direction import Direction
 from adventure.placement import NoPlacement
 from adventure.object import Object
-from cia.cia_verb import push, go, get, insert, open, drop, wear, read, start, break_, cut, throw, connect, look
+from cia.cia_verb import push, pull, go, get, insert, open, drop, wear, read, start, break_, cut, throw, connect, look
 
 def PushBoxButton(game, *args, **kwargs):
     if game.state.inventory.Has('BOX'):
@@ -70,7 +70,9 @@ objects = (
     Object('A SMALL METAL SQUARE ON THE WALL', 'SQUARE', 'GENERATOR',
            push(ifSet='glovesWorn', setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."),
            push(isFatal=True, message="THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!")),
-    Object('A LEVER ON THE SQUARE', 'LEVER', 'GENERATOR'),
+    Object('A LEVER ON THE SQUARE', 'LEVER', 'GENERATOR', (
+        pull(ifNotSet='glovesWorn', isFatal=True, message="THE LEVER HAS ELECTRICITY COURSING THRU IT!\nI'M BEING ELECTROCUTED!"),
+        pull(ifNotSet='electricityOff', setState=('electricityOff', True), message="THE LEVER GOES ALL THE WAY UP AND CLICKS.\nSOMETHING SEEMS DIFFERENT NOW."))),
     Object('AN OLD MAHOGANY DESK', 'DESK', 'CEO', look(message="I CAN SEE A LOCKED DRAWER IN IT.")),
     Object('A BROOM', 'BROOM', 'CLOSET', moveable=True),
     Object('A DUSTPAN', 'DUSTPAN', 'CLOSET', moveable=True),

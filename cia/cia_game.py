@@ -32,11 +32,13 @@ class CIA(Game):
         self.state.boxButtonPushed = False
         self.state.batteryInserted = False
         self.state['tvConnected'] = False
+        self.state['guardAwakened'] = False
         self.state.sleepTimer = -1
         self.state.tapeInserted = False
         self.state.sculptureMessage = False
+        self.state.electricityOff = False
         self.combination = 12345
-        self.guard_ticks = -1
+        self.state['guardTicks'] = -1
 
         self.state.inventory.Add(world.objects['BADGE'])
 
@@ -50,8 +52,15 @@ class CIA(Game):
         Game.Run(self, sequence)
 
     def Tick(self):
-        if self.guard_ticks != -1:
-            self.guard_ticks -= 1
+        m = ""
+        if self.state['guardTicks'] != -1:
+            self.state['guardTicks'] -= 1
+            if self.state['guardTicks'] == 0:
+                self.ReplaceObject(self.world.objects['A SLEEPING SECURITY GUARD'], self.world, objects['AN ALERT SECURITY GUARD'])
+                self.state['guardTicks'] = -1
+                self.state['guardAwakened'] = True
+                m = "I HEAR A NOISE LIKE SOMEONE IS YAWNING."
+        return m
 
 sequence = (
     "GO BUILDING",

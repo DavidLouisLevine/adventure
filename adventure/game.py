@@ -150,7 +150,7 @@ class Game:
                 if expectedMessage is not None and expectedMessage != "":
                     print("ERROR: Actual message is empty but expected message is:", expectedMessage)
 
-            self.Tick()
+            print(self.Tick())
             t += 1
 
         if self.state.isDead:
@@ -167,6 +167,10 @@ class Game:
 
     def CreateHere(self, object):
         self.world.MoveObject(object, self.state.location)
+
+    def ReplaceObject(self, old, new):
+        self.world.RemoveObject(old)
+        self.CreateHere(new)
 
     def Has(self, object):
         object = self.world.ResolveObject(object)

@@ -44,6 +44,12 @@ class Response:
                         for setState in setStates:
                             game.state[setState[0]] = setState[1]
 
+                    if response.Arg('setMove') is not None:
+                        changes = response.Arg('setMove')
+                        for change in changes:
+                            location = game.world.locations[change[0]]
+                            location.moves[change[1]] = change[2]
+
                     if response.Arg('createHere') is not None:
                         for object in MakeTuple(response.Arg('createHere')):
                             game.CreateHere(object)
@@ -52,8 +58,7 @@ class Response:
                         game.world.RemoveObject(response.Arg('removeObject'))
 
                     if response.Arg('replaceObject') is not None:
-                        game.world.RemoveObject(response.Arg('replaceObject')[0])
-                        game.CreateHere(response.Arg('replaceObject')[1])
+                        game.ReplaceObject(response.Arg('replaceObject')[0], response.Arg('replaceObject')[1])
 
                     if response.Arg('makeVisible') is not None:
                         game.world.objects[response.Arg('makeVisible')].visible = True

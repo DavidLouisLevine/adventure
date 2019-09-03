@@ -133,6 +133,7 @@ customVerbs = (
 
 verbs = BuiltInVerbs(customVerbs)
 push = verbs['PUSH'].MakeResponse
+pull = verbs['PULL'].MakeResponse
 go = verbs['GO'].MakeResponse
 get = verbs['GET'].MakeResponse
 insert = verbs['INSERT'].MakeResponse
