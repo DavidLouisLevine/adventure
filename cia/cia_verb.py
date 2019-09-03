@@ -87,6 +87,35 @@ class BreakVerb(StandardVerb):
         kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
         StandardVerb.__init__(self, *args, **kwargs)
 
+class CutVerb(StandardVerb):
+    def __init__(self, *args, **kwargs):
+        kwargs['notApplicableMessage'] = "I'M TRYING. IT DOESN'T WORK."
+        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
+        StandardVerb.__init__(self, *args, **kwargs)
+
+class ThrowVerb(StandardVerb):
+    def __init__(self, *args, **kwargs):
+        kwargs['notApplicableMessage'] = "I CAN'T THROW THAT."
+        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
+        StandardVerb.__init__(self, *args, **kwargs)
+
+class ConnectVerb(StandardVerb):
+    def __init__(self, *args, **kwargs):
+        kwargs['notApplicableMessage'] = "I CAN'T CONNECT THAT."
+        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
+        StandardVerb.__init__(self, *args, **kwargs)
+
+class BondVerb():
+    def __init__(self, *args, **kwargs):
+        Verb.__init__(self, *args, **kwargs)
+
+    def DoObject(self, target, game):
+        if game.state.location != game.world.locations['CAFETERIA']:
+            return "NOTHING HAPPENED."
+        else:
+            game.state.location = game.world.locations['BASEMENT']
+            return "WHOOPS! A TRAP DOOR OPENED UNDERNEATH ME AND\nI FIND MYSELF FALLING."
+
 customVerbs = (
     (PushVerb('PUSH', 'PUS')),
     (PullVerb('PULL', 'PUL')),
@@ -97,9 +126,9 @@ customVerbs = (
     (ReadVerb('READ', 'REA')),
     (StartVerb('START', 'STA')),
     (BreakVerb('BREAK', 'BRE')),
-    (Verb('CUT', 'CUT')),
-    (Verb('THROW', 'THR')),
-    (Verb('CON', 'CON')),
-    (Verb('BOND-007-', 'BON')),)
+    (CutVerb('CUT', 'CUT')),
+    (ThrowVerb('THROW', 'THR')),
+    (ConnectVerb('CON', 'CON', targetInventory=False, targetInRoom=False)),
+    (BondVerb('BOND-007-', 'BON')),)
 
 verbs = BuiltInVerbs(customVerbs)

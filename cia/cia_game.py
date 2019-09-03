@@ -11,14 +11,14 @@ from adventure.game import Game
 from adventure.world import World
 from adventure.state import State
 from cia.cia_verb import verbs
-from cia.cia_object import GetObjects
+from cia.cia_object import objects
 from cia.cia_location import locations
 import random
 
 class CIA(Game):
     def __init__(self):
         state = State()
-        world = World(GetObjects(self), verbs, locations)
+        world = World(objects, verbs, locations)
         Game.__init__(self, world, state)
         state.location = world.locations['ON A BUSY STREET']
         self.state['playerName'] = None

@@ -51,29 +51,33 @@ wear = verbs['WEAR'].MakeResponse
 read = verbs['READ'].MakeResponse
 start = verbs['START'].MakeResponse
 break_ = verbs['BREAK'].MakeResponse
+cut = verbs['CUT'].MakeResponse
+throw = verbs['THROW'].MakeResponse
+connect = verbs['CONNECT'].MakeResponse
 look = verbs['LOOK'].MakeResponse
 
 objects = (
     Object('A VIDEO CASSETTE RECORDER', 'RECORDER', 'VISITOR', (
-        look(conditionIsNotSet='batteryInserted', message="THERE'S NO POWER FOR IT."),
-        look(conditionIsNotSet='tvConnected', message="THERE'S NO T.V. TO WATCH ON."),
-        start(conditionIfNotSet=('batteryInserted', 'tapeInserted', 'tvConnected'),
+        look(ifNotSet='batteryInserted', message="THERE'S NO POWER FOR IT."),
+        look(ifNotSet='tvConnected', message="THERE'S NO T.V. TO WATCH ON."),
+        start(ifNotSet=('batteryInserted', 'tapeInserted', 'tvConnected'),
               setState=('sculptureMessage', True),
               message=("{playerName},\nWE HAVE UNCOVERED A NUMBER THAT MAY HELP YOU.\nTHAT NUMBER IS:{secretCode}. PLEASE WATCH OUT FOR HIDDEN TRAPS.\nALSO, THERE IS SOMETHING IN THE SCULPTURE.")))),
     Object('A VIDEO TAPE', 'TAPE', NoPlacement(), insert(into='RECORDER', moveObject='TAPE', message='O.K. THE TAPE IS IN THE RECORDER.'), moveable=True),
     Object('A LARGE BATTERY', 'BATTERY', NoPlacement(), (insert(into='RECORDER', setState=('batteryInserted', True), removeObject='BATTERY', message='OK')), moveable=True),
     Object('A BLANK CREDIT CARD', 'CARD', NoPlacement(), (
-        insert(into='SLIT', condition=lambda g: g.state.sleepTimer < 0, messsage="THE GUARD WON'T LET ME"),
-        insert(into='SLIT', condition=lambda g: g.state.sleepTimer >= 0, removeObject='CARD', moveObject = ('LOCK', 'CORRIDOR'), message='POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING.')),
+        insert(into='SLIT', ifTrue=lambda g: g.state.sleepTimer < 0, messsage="THE GUARD WON'T LET ME"),
+        insert(into='SLIT', ifTrue=lambda g: g.state.sleepTimer >= 0, removeObject='CARD', moveObject = ('LOCK', 'CORRIDOR'), message='POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING.')),
         moveable=True),
     Object('AN ELECTRONIC LOCK', 'LOCK', NoPlacement(),
-           open(challenge="WHAT'S THE COMBINATION", answer="{secretCode}", removeObject=('LOCK', 'A SOLID LOOKING DOOR, IN A SHORT CORRIDOR'), createHere='AN OPEN DOOR')),
+           open(question="WHAT'S THE COMBINATION", answer="{secretCode}", removeObject=('LOCK', 'A SOLID LOOKING DOOR, IN A SHORT CORRIDOR'), createHere='AN OPEN DOOR',
+                wrong="YOU MUST HAVE THE WRONG COMBINATION OR YOU ARE NOT\nSAYING IT RIGHT.")),
     Object('AN ELABORATE PAPER WEIGHT', 'WEIGHT', 'CEO', (
         look(message="IT LOOKS HEAVY.")),
         moveable=True),
     Object('A LOCKED WOODEN DOOR', 'DOOR', 'ANTEROOM',
        (look(message="IT'S LOCKED."),
-       (open(conditionHas='KEY', replaceObject=('A LOCKED WOODEN DOOR', 'AN OPEN WOODEN DOOR'), message='O.K. I OPENED THE DOOR.')))),
+       (open(ifHas='KEY', replaceObject=('A LOCKED WOODEN DOOR', 'AN OPEN WOODEN DOOR'), message='O.K. I OPENED THE DOOR.')))),
     Object('AN OPEN WOODEN DOOR', 'DOOR', NoPlacement(), go(travelTo='CEO')),
     Object('A SOLID LOOKING DOOR', 'DOOR', 'CORRIDOR', open(message="I CAN'T. IT DOESN'T WORK.")),
     Object('AN OPEN DOOR', 'DOOR', NoPlacement(), go(travelTo='METAL')),
@@ -81,15 +85,17 @@ objects = (
     Object('A SLEEPING SECURITY GUARD', 'GUARD', NoPlacement()),
     Object('A LOCKED MAINTENANCE CLOSET', 'CLOSET', 'CAFETERIA',
         (look(message="IT'S LOCKED."),
-        (open(conditionHas='KEY', replaceObject=('A LOCKED MAINTENANCE CLOSET', 'A MAINTENANCE CLOSET'), message='O.K. I OPENED THE DOOR.')))),
+        (open(ifHas='KEY', replaceObject=('A LOCKED MAINTENANCE CLOSET', 'A MAINTENANCE CLOSET'), message='O.K. I OPENED THE DOOR.')))),
     Object('A MAINTENANCE CLOSET', 'CLOSET', NoPlacement(), go(travelTo='CLOSET')),
     Object('A PLASTIC BAG', 'BAG', 13, (
         open(message="I CAN'T. IT'S TOO STRONG."),
-        look(message="IT'S A VERY STRONG BAG.")),
+        look(message="IT'S A VERY STRONG BAG."),
+        cut(ifHas='BLADE', removeObject='BAG', createHere='TAPE', message="RIP! THE BAG GOES TO PIECES, AND SOMETHING FALLS OUT!"),
+        cut(message="I CAN'T DO THAT YET.")),
         moveable=True),
     Object('AN OLDE FASHIONED KEY', 'KEY', 'ELEVATOR', moveable=True),
     Object('A SMALL METAL SQUARE ON THE WALL', 'SQUARE', 'GENERATOR',
-        push(conditionIsSet='glovesWorn', setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."),
+        push(ifSet='glovesWorn', setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."),
         push(isFatal=True, message="THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!")),
     Object('A LEVER ON THE SQUARE', 'LEVER', 'GENERATOR'),
     Object('AN OLD MAHOGANY DESK', 'DESK', 'CEO', look(message="I CAN SEE A LOCKED DRAWER IN IT.")),
@@ -100,13 +106,15 @@ objects = (
         read(message="IT SAYS{playerName},\n  WE HAVE DISCOVERED ONE OF CHAOSES SECRET WORDS.\nIT IS: BOND-007- .TO BE USED IN A -TASTEFUL- SITUATION.")),
         moveable=True),
     Object('A MAHOGANY DRAWER', 'DRAWER', 'CEO', (
-        open(conditionHas='WEIGHT', message="IT'S STUCK"),
+        open(ifHas='WEIGHT', message="IT'S STUCK"),
         open(message="IT's STUCK"), # Lowercase 's' in original code
         look(message="IT LOOKS FRAGILE"),
         break_(hasObject='WEIGHT', createHere=('BATTERY', 'NOTEBOOK'), makeVisible='DRAWER', message = "IT'S HARD....BUT I GOT IT. TWO THINGS FELL OUT.")),
         moveable=True,
         visible=False),
-    Object('A GLASS CASE ON A PEDESTAL', 'CASE', 'CUBICLE', look(message="I CAN SEE A GLEAMING STONE IN IT.")),
+    Object('A GLASS CASE ON A PEDESTAL', 'CASE', 'CUBICLE', (
+        look(message="I CAN SEE A GLEAMING STONE IN IT."),
+        cut(ifHas='BLADE', createHere='RUBY', message="I CUT THE CASE AND REACH IN TO PULL SOMETHING OUT."))),
     Object('A RAZOR BLADE', 'BLADE', 'BATHROOM', moveable=True),
     Object('A VERY LARGE RUBY', 'RUBY', NoPlacement(), moveable=True),
     Object('A SIGN ON THE SQUARE', 'SIGN', 'GENERATOR', (
@@ -121,17 +129,24 @@ objects = (
         moveable=True),
     Object('A SMALL CAPSULE', 'CAPSULE', NoPlacement(), drop(hasObject='CUP', removeObject='CAPSULE', setState=('capsuleDropped', True)), moveable=True),
     Object('A LARGE SCULPTURE', 'SCULPTURE', 'LOBBY', (
-        (open(condition=lambda g: not g.Exists('QUARTER') and not g.Exists('CARD') and g.state.sculptureMessage, createHere='CARD', message='SOMETHING FALLS OUT.')))),
+        (open(ifTrue=lambda g: not g.Exists('QUARTER') and not g.Exists('CARD') and g.state.sculptureMessage, createHere='CARD', message='SOMETHING FALLS OUT.')))),
     Object('A TALL OFFICE BUILDING', 'BUILDING', 1, go(GoBuilding)),
     Object('A PAIR OF SLIDING DOORS', 'DOORS', 'LOBBY', (
-        go(conditionIsSet='upButtonPushed', travelTo='ELEVATOR'),
-        look(conditionIsSet='upButtonPushed', message="THE DOORS ARE OPEN."))),
+        go(ifSet='upButtonPushed', travelTo='ELEVATOR'),
+        look(ifSet='upButtonPushed', message="THE DOORS ARE OPEN."))),
     Object('A LARGE BUTTON ON THE WALL', 'BUTTON', 'CONTROL'),
     Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PANEL', 'ELEVATOR'),
-    Object('A STRONG NYLON ROPE', 'ROPE', 'SUB-BASEMENT', go(conditionIsSet='ropeThrown', travelTo= 'PIT'), moveable=True),
+    Object('A STRONG NYLON ROPE', 'ROPE', 'BASEMENT', (
+        throw(ifHas='ROPE', question="TELL ME,IN ONE WORD,AT WHAT", answer="HOOK", createHere='ROPE', setState=('ropeThrown', (True, None)), wrong="O.K. I THREW IT.", message="I THREW THE ROPE AND IT SNAGGED ON THE HOOK."),
+        go(ifSet='ropeThrown', travelTo= 'PIT')), moveable=True),
     Object('A LARGE HOOK WITH A ROPE HANGING FROM IT', 'HOOK', 'PIT'),
     Object('A C.I.A. IDENTIFICATION BADGE', 'BADGE', NoPlacement(), moveable=True),
-    Object('A PORTABLE TELEVISION', 'TELEVISION', 7, get(setState=('tvConnected', False)), moveable=True),
+    Object('A PORTABLE TELEVISION', 'TELEVISION', 7, (
+        get(setState=('tvConnected', False)),
+        connect(objectNotAt=('TELEVISION', 'VISITOR'), message="I DON'T SEE THE TELEVISION HERE."),
+        connect(ifSet='tvConnected', message="I DID THAT ALREADY."),
+        connect(notAtLocation='VISITOR', message="I CAN'T DO THAT....YET!"),
+        connect(setState=('tvConnected', True), message="O.K. THE T.V. IS CONNECTED.")), moveable=True),
     Object('A BANK OF MONITORS', 'MONITORS', 'SECURITY',
            look(conditinNotSet='boxButtonPushed', message="THE SCREEN IS DARK."),
            look(message="I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.")),

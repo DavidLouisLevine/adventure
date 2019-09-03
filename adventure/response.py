@@ -24,13 +24,15 @@ class Response:
 
         for response in responses:
             if response.iVerb == iVerb:
-                if (response.Arg('condition') is None or response.Arg('condition')(game))\
+                if (response.Arg('ifTrue') is None or response.Arg('ifTrue')(game))\
                         and\
-                   (response.Arg('conditionIsSet') is None or game.state[response.Arg('conditionIsSet')])\
+                   (response.Arg('ifSet') is None or game.state[response.Arg('ifSet')])\
                         and\
-                   (response.Arg('conditionIsNotSet') is None or not game.state[response.Arg('conditionIsNotSet')])\
+                   (response.Arg('ifNotSet') is None or not game.state[response.Arg('ifNotSet')])\
                         and\
-                   (response.Arg('conditionHas') is None or game.Has(response.Arg('conditionHas'))):
+                   (response.Arg('ifNotAtLocation') is None or not game.AtLocation(game.state[response.Arg('ifNotAtLocation')]))\
+                        and\
+                   (response.Arg('ifHas') is None or game.Has(response.Arg('ifHas'))):
                     m = ""
 
                     if response.Arg('travelTo') is not None:
