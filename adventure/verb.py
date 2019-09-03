@@ -54,6 +54,7 @@ class GoVerb(Verb):
     def Do(self, target, game):
         m = ""
         cant = "I CAN'T GO THAT WAY AT THE MOMENT."
+        currentLocation = game.state.location
         if target.IsDirection():
             move = game.state.location.moves[target.value.d]
             if move == 0:

@@ -1,6 +1,11 @@
+# This is a game engine that was created to emulate the "C.I.A. Adventure" game written by Hugh Lampert circa 1982
+# The game content is is a separate folder
+# The engine could implement many other games
+
 from adventure.target import Target
 from adventure.direction import Direction
 from adventure.placement import NoPlacement
+from adventure.response import Response
 import numpy as np
 
 class Game:
@@ -91,8 +96,19 @@ class Game:
 
         currentLocation = self.state.location
         m = verb.Do(target, self)
+
+        # Respond to the current location if it changed
         if self.state.location != currentLocation:
             m += self.Look()
+            if self.state.location.response is not None:
+                currentLocation = self.state.location
+                r = Response.Respond(self.state.location.response, self.world.verbs['GO'].index, self)
+                if r is not None:
+                    if m is not "":
+                        m += '\n'
+                    m += r
+                    if self.state.location != currentLocation:
+                        m += '\n' + self.Look()
         return m
 
 
@@ -146,7 +162,7 @@ class Game:
     def Look(self):
         return self.world.verbs['LOOK'].Do(None, self)
 
-    def TravelTo(self, location):
+    def GoTo(self, location):
         self.state.location = self.world.ResolveLocation(location)
 
     def CreateHere(self, object):

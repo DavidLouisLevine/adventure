@@ -1,8 +1,9 @@
 class Location:
-    def __init__(self, abbreviation, name, moves):
+    def __init__(self, abbreviation, name, moves, response=None):
         self.name = name
         self.moves = list(moves)
         self.abbreviation = abbreviation
+        self.response = response
 
     def __str__(self):
         return self.abbreviation

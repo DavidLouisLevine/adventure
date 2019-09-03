@@ -15,7 +15,7 @@ class StandardVerb(Verb):
         Verb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
-        if target.IsObject() and not target.value.response is None:
+        if target.IsObject():
             if Response.HasResponse(target.value.response, self.index):
                 m = Response.Respond(target.value.response, self.index, game)
                 if m == "" or m is None:
@@ -132,3 +132,17 @@ customVerbs = (
     (BondVerb('BOND-007-', 'BON')),)
 
 verbs = BuiltInVerbs(customVerbs)
+push = verbs['PUSH'].MakeResponse
+go = verbs['GO'].MakeResponse
+get = verbs['GET'].MakeResponse
+insert = verbs['INSERT'].MakeResponse
+open = verbs['OPEN'].MakeResponse
+drop = verbs['DROP'].MakeResponse
+wear = verbs['WEAR'].MakeResponse
+read = verbs['READ'].MakeResponse
+start = verbs['START'].MakeResponse
+break_ = verbs['BREAK'].MakeResponse
+cut = verbs['CUT'].MakeResponse
+throw = verbs['THROW'].MakeResponse
+connect = verbs['CONNECT'].MakeResponse
+look = verbs['LOOK'].MakeResponse

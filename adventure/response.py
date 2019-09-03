@@ -1,5 +1,4 @@
-def MakeTuple(t):
-    return t if type(t) is tuple else (t, )
+from adventure.util import MakeTuple
 
 class Response:
     def __init__(self, iVerb, f, *args, **kwargs):
@@ -7,7 +6,7 @@ class Response:
         self.f = f
         self.args = args
         self.kwargs = kwargs
-        self.travelTo = None
+        self.goTo = None
         self.isFatal = False
 
     def Arg(self, arg):
@@ -16,11 +15,9 @@ class Response:
     def ArgStr(self, arg):
         return "" if self.Arg(arg) is None else self.Arg(arg)
 
-
     @staticmethod
     def Respond(responses, iVerb, game):
-        if type(responses) is Response:
-            responses = (responses,)
+        responses = MakeTuple(responses)
 
         for response in responses:
             if response.iVerb == iVerb:
@@ -32,11 +29,13 @@ class Response:
                         and\
                    (response.Arg('ifNotAtLocation') is None or not game.AtLocation(game.state[response.Arg('ifNotAtLocation')]))\
                         and\
-                   (response.Arg('ifHas') is None or game.Has(response.Arg('ifHas'))):
+                   (response.Arg('ifHas') is None or game.Has(response.Arg('ifHas'))
+                        and \
+                   (response.Arg('ifNotHas') is None or not game.Has(response.Arg('ifHas')))):
                     m = ""
 
-                    if response.Arg('travelTo') is not None:
-                        game.TravelTo(response.ArgStr('travelTo'))
+                    if response.Arg('goTo') is not None:
+                        game.GoTo(response.ArgStr('goTo'))
 
                     if response.Arg('setState') is not None:
                         setStates = response.Arg('setState')
@@ -86,4 +85,7 @@ class Response:
 
     @staticmethod
     def HasResponse(responses, iVerb):
+        if responses is None:
+            return False
+
         return Response.GetResponse(responses, iVerb) is not None
