@@ -15,9 +15,8 @@ class Game:
         self.state = state
         self.prompt = prompt
         self.quitting = False
-        self.inputFile = open("ciatest.adl", "r")
+        self.inputFile = open(r"..\basic\CIANEW.ADL", "r")
         self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
-        self.inResponse = False
         self.nextLine = None
 
     def NextLine(self):
@@ -173,7 +172,7 @@ class Game:
             if temp is not None:
                 actualMessage = temp + "\n\n"
                 if expectedMessage is not None and expectedMessage != actualMessage and expectedMessage != "":
-                    print("ERROR: Expected Message:\n", expectedMessage)
+                    print("ERROR: Expected Message:\n", expectedMessage, sep='')
                     print("---------")
                     print("ERROR: Actual Message:\n", actualMessage)
                     print("---------")

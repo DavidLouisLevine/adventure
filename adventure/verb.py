@@ -117,7 +117,7 @@ class InventoryVerb(Verb):
         Verb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
-        m = "WE ARE PRESENTLY CARRYING:\n"
+        m = "WE ARE PRESENTLY CARRYING\n"
         objects = game.state.inventory.Get(game.world)
         if len(objects) == 0:
             m += "NOTHING"
@@ -126,8 +126,9 @@ class InventoryVerb(Verb):
             for object in game.state.inventory.Get(game.world):
                 if not first:
                     m += "\n"
+                else:
                     first = False
-                m += object.name
+                m += object.name + " "
         return m
 
 class LookVerb(Verb):

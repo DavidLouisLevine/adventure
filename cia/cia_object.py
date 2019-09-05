@@ -79,14 +79,14 @@ objects = (
     Object('A SPIRAL NOTEBOOK', 'NOTEBOOK', NoPlacement(), (
         look(message="THERE'S WRITING ON IT."),
         read(message="IT SAYS{playerName},\n  WE HAVE DISCOVERED ONE OF CHAOSES SECRET WORDS.\nIT IS: BOND-007- .TO BE USED IN A -TASTEFUL- SITUATION.")),
-           moveable=True),
+        moveable=True),
     Object('A MAHOGANY DRAWER', 'DRAWER', 'CEO', (
-        open(ifHas='WEIGHT', message="IT'S STUCK"),
-        open(message="IT's STUCK"),  # Lowercase 's' in original code
-        look(message="IT LOOKS FRAGILE"),
-        break_(hasObject='WEIGHT', createHere=('BATTERY', 'NOTEBOOK'), makeVisible='DRAWER', message ="IT'S HARD....BUT I GOT IT. TWO THINGS FELL OUT.")),
-           moveable=True,
-           visible=False),
+        open(ifHas='WEIGHT', message="IT'S STUCK."),
+        open(message="IT's STUCK."),  # Lowercase 's' in original code
+        look(message="IT LOOKS FRAGILE."),
+        break_(ifHas='WEIGHT', createHere=('BATTERY', 'NOTEBOOK'), makeVisible='DRAWER', message ="IT'S HARD....BUT I GOT IT. TWO THINGS FELL OUT.")),
+        moveable=True,
+        visible=False),
     Object('A GLASS CASE ON A PEDESTAL', 'CASE', 'CUBICLE', (
         look(message="I CAN SEE A GLEAMING STONE IN IT."),
         cut(ifHas='BLADE', createHere='RUBY', message="I CUT THE CASE AND REACH IN TO PULL SOMETHING OUT."))),
@@ -96,15 +96,15 @@ objects = (
         look(message="THERE'S WRITING ON IT."),
         read(message="IT SAYS: WATCH OUT! DANGEROUS!")), moveable=True),
     Object('A QUARTER', 'QUARTER', NoPlacement(),
-           insert(into='MACHINE', moveObject=('COFFEE', 'HALLWAY'), message='POP! A CUP OF COFFEE COMES OUT OF THE MACHINE.'),
-           moveable=True),
+        insert(into='MACHINE', moveObject=('COFFEE', 'HALLWAY'), message='POP! A CUP OF COFFEE COMES OUT OF THE MACHINE.'),
+        moveable=True),
     Object('A COFFEE MACHINE', 'MACHINE', 'HALLWAY'),
     Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(),
-           drop(setState=('capsuleDropped', False), removeObject='CUP', message='I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES.\nTHE COFFEE SOAKED INTO THE GROUND.'),
-           moveable=True),
-    Object('A SMALL CAPSULE', 'CAPSULE', NoPlacement(), drop(hasObject='CUP', removeObject='CAPSULE', setState=('capsuleDropped', True)), moveable=True),
+        drop(setState=('capsuleDropped', False), removeObject='CUP', message='I DROPPED THE CUP BUT IT BROKE INTO SMALL PEICES.\nTHE COFFEE SOAKED INTO THE GROUND.'),
+        moveable=True),
+    Object('A SMALL CAPSULE', 'CAPSULE', NoPlacement(), drop(ifHas='CUP', removeObject='CAPSULE', setState=('capsuleDropped', True)), moveable=True),
     Object('A LARGE SCULPTURE', 'SCULPTURE', 'LOBBY', (
-        (open(ifTrue=lambda g: not g.Exists('QUARTER') and not g.Exists('CARD') and g.state.sculptureMessage, createHere='CARD', message='SOMETHING FALLS OUT.')))),
+        open(ifTrue=lambda g: not g.Exists('QUARTER') and not g.Exists('CARD') and g.state.sculptureMessage, createHere='CARD', message='SOMETHING FALLS OUT.'))),
     Object('A TALL OFFICE BUILDING', 'BUILDING', 1, go(goTo='LOBBY')),#, go(GoBuilding)),
     Object('A PAIR OF SLIDING DOORS', 'DOORS', 'LOBBY', (
         go(ifSet='upButtonPushed', goTo='ELEVATOR'),
@@ -133,7 +133,7 @@ objects = (
         get(setState=('fellFromFrame', True), createHere='CAPSULE', message='SOMETHING FELL FROM THE FRAME!'))),
     Object('A PAIR OF RUBBER GLOVES', 'GLOVES', 'CLOSET', (
         drop(setState=('glovesWorn', False)),
-        wear(hasObject='GLOVES')), moveable=True),
+        wear(ifHas='GLOVES')), moveable=True),
     Object('A BOX WITH A BUTTON ON IT', 'BOX', 'LAB', moveable=True),
     Object('ONE', 'ONE', 'ELEVATOR', go(PushOne), visible=False),
     Object('TWO', 'TWO', 'ELEVATOR', go(PushTwo), visible=False),

@@ -84,7 +84,7 @@ class StartVerb(StandardVerb):
 class BreakVerb(StandardVerb):
     def __init__(self, *args, **kwargs):
         kwargs['notApplicableMessage'] = "I'M TRYING TO BREAK IT, BUT I CAN'T."
-        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
+        kwargs['didntWorkMessage'] = "I CAN'T DO THAT YET."
         StandardVerb.__init__(self, *args, **kwargs)
 
 class CutVerb(StandardVerb):
