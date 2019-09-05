@@ -83,6 +83,8 @@ class Response:
                             m += m_new
 
                     if response.Arg('look') is not None:
+                        if m != "":
+                            m += '\n'
                         m += game.Look(response.ArgStr('look'))
 
                     return m

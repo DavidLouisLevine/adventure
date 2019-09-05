@@ -136,14 +136,15 @@ class LookVerb(Verb):
         Verb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
-        m = "WE ARE " + game.state.location.name + "."
         if target is not None and target is not '' and target.IsObject():
             object = target.value
+            m = None
             if object.responses is not None:
                 m = Response.Respond(object.responses, self.index, game)
-                if m is None or m == "":
-                    print("I SEE NOTHING OF INTEREST.")
+            if m is None or m == "":
+                m = "I SEE NOTHING OF INTEREST."
         else:
+            m = "WE ARE " + game.state.location.name + "."
             for object in game.world.AtLocation(game.state.location):
                 if object.visible:
                     if not m == "":
