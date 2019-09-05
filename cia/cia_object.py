@@ -109,9 +109,9 @@ objects = (
         drop(setState=('glovesWorn', False)),
         wear(ifHas='GLOVES')), moveable=True),
     Object('A BOX WITH A BUTTON ON IT', 'BOX', 'LAB', moveable=True),
-    Object('ONE', 'ONE', 'ELEVATOR', push(setState=('floor', 1), setMove=('ELEVATOR', 'NORTH', 'LOBBY'), message="THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."), visible=False),
-    Object('TWO', 'TWO', 'ELEVATOR', push(setState=('floor', 2), setMove=('ELEVATOR', 'NORTH', 'HALLWAY'), message="THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."), visible=False),
-    Object('THREE', 'THREE', 'ELEVATOR', push(setState=('floor', 1), setMove=('ELEVATOR', 'NORTH', 'CORRIDOR'), message="THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."), visible=False),
+    Object('ONE', 'ONE', 'ELEVATOR', push(setState=('floor', 1), setMove=('ELEVATOR', 'NORTH', 'LOBBY'), look='', message="THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."), visible=False),
+    Object('TWO', 'TWO', 'ELEVATOR', push(setState=('floor', 2), setMove=('ELEVATOR', 'NORTH', 'HALLWAY'), look='', message="THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."), visible=False),
+    Object('THREE', 'THREE', 'ELEVATOR', push(setState=('floor', 1), setMove=('ELEVATOR', 'NORTH', 'CORRIDOR'), look='', message="THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."), visible=False),
     Object('SLIT', 'SLI', 'CORRIDOR', visible=False),
 
     # These are not in the original game's object list but are included here

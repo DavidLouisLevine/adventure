@@ -193,8 +193,8 @@ class Game:
     def Tick(self, target, game):
         pass
 
-    def Look(self):
-        return self.world.verbs['LOOK'].Do(None, self)
+    def Look(self, at=None):
+        return self.world.verbs['LOOK'].Do(at, self)
 
     def GoTo(self, location):
         self.state.location = self.world.ResolveLocation(location)

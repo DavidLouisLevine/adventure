@@ -137,7 +137,7 @@ class LookVerb(Verb):
 
     def DoObject(self, target, game):
         m = "WE ARE " + game.state.location.name + "."
-        if target is not None and target.IsObject():
+        if target is not None and target is not '' and target.IsObject():
             object = target.value
             if object.responses is not None:
                 m = Response.Respond(object.responses, self.index, game)

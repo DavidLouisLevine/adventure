@@ -81,6 +81,10 @@ class Response:
                         m_new = response.f(game, response.args, response.kwargs)
                         if m_new is not None:
                             m += m_new
+
+                    if response.Arg('look') is not None:
+                        m += game.Look(response.ArgStr('look'))
+
                     return m
 
     @staticmethod
