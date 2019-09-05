@@ -19,7 +19,7 @@ class CIA(Game):
     def __init__(self):
         state = State()
         world = World(objects, verbs, locations)
-        Game.__init__(self, world, state)
+        Game.__init__(self, world, state, 'WHAT DO YOU THINK WE SHOULD DO? ')
         state.location = world.locations['ON A BUSY STREET']
         self.state['playerName'] = None
         self.state['secretCode'] = str(9 * random.choice(range(9)))[1:]

@@ -6,56 +6,87 @@ from adventure.target import Target
 from adventure.direction import Direction
 from adventure.placement import NoPlacement
 from adventure.response import Response
+from adventure.util import StartsWith
 import numpy as np
 
 class Game:
-    def __init__(self, world, state):
+    def __init__(self, world, state, prompt):
         self.world = world
         self.state = state
+        self.prompt = prompt
         self.quitting = False
-        self.inputFile = open("ciatest.adv", "r")
+        self.inputFile = open("ciatest.adl", "r")
         self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
         self.inResponse = False
+        self.nextLine = None
+
+    def NextLine(self):
+        if self.nextLine is not None:
+            l = self.nextLine
+            self.nextLine = None
+            return l
+
+        while True:
+            l = self.inputFile.readline()
+            if l == "":
+                self.inputFile.close()
+                self.inputFile = None
+                break
+            if l[0] != '#':
+                break
+
+        return l
+
+    def ReadToPrompt(self):
+        expected = ""
+        while True:
+            t = self.NextLine()
+            if t == "":
+                break
+            if StartsWith(t, self.prompt):
+                self.nextLine = t
+                break
+            expected += t
+        return expected
 
     def Input(self, prompt):
         expected = None
         if self.inputFile is not None:
             print(prompt + '? ', end='')
-            u = ""
-            while u == "":
-                t = self.inputFile.readline()
-                if t == "":
-                    break
-                if t[0] != '#':
-                    u = t
+            commandLine = self.NextLine()
+            assert StartsWith(commandLine, self.prompt)
+            command = commandLine[len(self.prompt):]
+            expected = self.ReadToPrompt()
+            if command != "":
+                print(command, end='')
 
-            expected = ""
-            while True:
-                t = self.inputFile.readline()
-                if t == "":
-                    break
-
-                if t[:4] == '---@':
-                    break
-
-                if t[0] != '#':
-                    expected += t
-
-            if t == "":
-                self.inputFile.close()
-                self.inputFile = None
-
-            if u != "":
-                print(u, end='')
+            # expected = ""
+            # while True:
+            #     t = self.inputFile.readline()
+            #     if t == "":
+            #         break
+            #
+            #     if t[:4] == '---@':
+            #         break
+            #
+            #     if t[0] != '#':
+            #         expected += t
+            #
+            # if t == "":
+            #     self.inputFile.close()
+            #     self.inputFile = None
+            #
+            # if u != "":
+            #     print(u, end='')
 
         if self.inputFile is None:
-            u = input(prompt)
-            t = None
+            command = input(prompt)
+            expected = None
 
         if self.scriptOutputFile is not None:
-            self.scriptOutputFile.write(u)
+            self.scriptOutputFile.write(command)
 
-        return (u, expected)
+        return command, expected
 
     def DoAction(self, action):
         try:
@@ -70,6 +101,7 @@ class Game:
             return "I DON'T KNOW HOW TO DO THAT."
 
         target = None
+        original_value = None
         if i != -1:
             targetStr = action[i + 1:]
 
@@ -77,8 +109,9 @@ class Game:
             locationSatisfied = not verb.targetInRoom and not verb.targetInventory
             if value is None:
                 value = self.world.objects.Find(targetStr)
+                original_value = value
                 if value is not None and self.state.inventory.Has(value):
-                    self.value = value
+                    #self.value = value
                     if verb.targetInventory:
                         locationSatisfied = True
                 else:
@@ -97,7 +130,7 @@ class Game:
         currentLocation = self.state.location
         m = verb.Do(target, self)
 
-        # Respond to the current location if it changed
+        # If the location changed, execute the new location's response
         if self.state.location != currentLocation:
             m += self.Look()
             if self.state.location.responses is not None:
@@ -125,8 +158,10 @@ class Game:
             return m
 
     def Run(self, actions):
+        self.ReadToPrompt()
+
         t = 0
-        prompt = "\nWHAT DO YOU THINK WE SHOULD DO? "
+        prompt = self.prompt
         while not self.quitting:
             if t < len(actions):
                 str = actions[t]

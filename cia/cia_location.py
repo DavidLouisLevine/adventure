@@ -17,9 +17,11 @@ def GoBuilding(game, *args, **kwargs):
             return m
 
 locations = (
-    Location('STREET', 'ON A BUSY STREET', (0, 0, 0, 0), go(ifHas='RUBY', isWin=True, message="HURRAY! YOU'VE RECOVERED THE RUBY!\nYOU WIN!")),
+    Location('STREET', 'ON A BUSY STREET', (0, 0, 0, 0),
+        go(ifHas='RUBY', isWin=True, message="HURRAY! YOU'VE RECOVERED THE RUBY!\nYOU WIN!")),
     Location('VISITOR', 'IN A VISITOR\'S ROOM', (0,  0,  'LOBBY',  0)),
-    Location('LOBBY', 'IN THE LOBBY OF THE BUILDING', ('STREET', 0, 'ANTEROOM', 'VISITOR'), go(ifHas='BADGE', goTo='STREET', message="THE DOOR MAN LOOKS AT MY BADGE AND THEN THROWS ME OUT.")),
+    Location('LOBBY', 'IN THE LOBBY OF THE BUILDING', ('STREET', 0, 'ANTEROOM', 'VISITOR'),
+         go(ifHas='BADGE', goTo='STREET', message="THE DOOR MAN LOOKS AT MY BADGE AND THEN THROWS ME OUT.")),
     Location('ANTEROOM', 'IN A DINGY ANTE ROOM', (0, 0, 0, 'LOBBY')),
     Location('CEO', 'IN THE COMPANY PRESIDENT\'S OFFICE', (0, 0, 0, 'ANTEROOM')),
     Location('CUBICLE', 'IN A SMALL SOUND PROOFED CUBICLE', (0, 'PLAIN', 0, 0), (
@@ -42,7 +44,7 @@ locations = (
     Location('GENERATOR', 'IN A POWER GENERATOR ROOM', (0, 0, 0, 'SIDE')),
     Location('BASEMENT', 'IN A BASEMENT BELOW THE CHUTE', (0, 0, 'COMPLEX', 0)),
     Location('COMPLEX', 'IN THE ENTRANCE TO THE SECRET COMPLEX', (0, 'LEDGE', 'MONITORING', 'BASEMENT')),
-    Location('MONITORING', 'IN A SECRET MONITORING ROOM', (0, 0, 0, 'COMPLEX')),
+    Location    ('MONITORING', 'IN A SECRET MONITORING ROOM', (0, 0, 0, 'COMPLEX')),
     Location('LEDGE', 'ON A LEDGE IN FRONT OF A METAL PIT 1000\'S OF FEET DEEP', ('COMPLEX', 0, 0, 0)),
     Location('PIT', 'ON THE OTHER SIDE OF THE PIT', ( 0, 0, 'LONG', 0)),
     Location('LONG', 'IN A LONG CORRIDOR', (0, 'NARROW', 'ROOM', 'PIT')),

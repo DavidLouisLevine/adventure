@@ -56,11 +56,11 @@ objects = (
     Object('AN OPEN DOOR', 'DOOR', NoPlacement(), go(goTo='METAL')),
     Object('AN ALERT SECURITY GUARD', 'GUARD', 'CORRIDOR'),
     Object('A SLEEPING SECURITY GUARD', 'GUARD', NoPlacement()),
-    Object('A LOCKED MAINTENANCE CLOSET', 'CLOSET', 'CAFETERIA',
-           (look(message="IT'S LOCKED."),
-            (open(ifHas='KEY', replaceObject=('A LOCKED MAINTENANCE CLOSET', 'A MAINTENANCE CLOSET'), message='O.K. I OPENED THE DOOR.')))),
+    Object('A LOCKED MAINTENANCE CLOSET', 'CLOSET', 'CAFETERIA', (
+            look(message="IT'S LOCKED."),
+            open(ifHas='KEY', replaceObject=('A LOCKED MAINTENANCE CLOSET', 'A MAINTENANCE CLOSET'), message='O.K. I OPENED THE DOOR.'))),
     Object('A MAINTENANCE CLOSET', 'CLOSET', NoPlacement(), go(goTo='CLOSET')),
-    Object('A PLASTIC BAG', 'BAG', 13, (
+    Object('A PLASTIC BAG', 'BAG', 'CLOSET', (
         open(message="I CAN'T. IT'S TOO STRONG."),
         look(message="IT'S A VERY STRONG BAG."),
         cut(ifHas='BLADE', removeObject='BAG', createHere='TAPE', message="RIP! THE BAG GOES TO PIECES, AND SOMETHING FALLS OUT!"),
@@ -121,7 +121,8 @@ objects = (
         connect(objectNotAt=('TELEVISION', 'VISITOR'), message="I DON'T SEE THE TELEVISION HERE."),
         connect(ifSet='tvConnected', message="I DID THAT ALREADY."),
         connect(notAtLocation='VISITOR', message="I CAN'T DO THAT....YET!"),
-        connect(setState=('tvConnected', True), message="O.K. THE T.V. IS CONNECTED.")), moveable=True),
+        connect(setState=('tvConnected', True), message="O.K. THE T.V. IS CONNECTED.")),
+        moveable=True),
     Object('A BANK OF MONITORS', 'MONITORS', 'SECURITY',
            look(conditinNotSet='boxButtonPushed', message="THE SCREEN IS DARK."),
            look(message="I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.")),
