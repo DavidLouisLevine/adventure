@@ -18,7 +18,9 @@ class Locations:
         return len(self.items)
 
     def __getitem__(self, item):
-        if type(item) is str:
+        if type(item) is Location:
+            return item
+        elif type(item) is str:
             for i in range(len(self.items)):
                 if self.items[i].name == item or self.items[i].abbreviation[:3] == item[:3]:
                     return self.items[i]

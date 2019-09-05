@@ -1,4 +1,5 @@
 from adventure.util import MakeTuple
+from adventure.direction import Direction
 
 class Response:
     def __init__(self, iVerb, f, *args, **kwargs):
@@ -15,23 +16,26 @@ class Response:
     def ArgStr(self, arg):
         return "" if self.Arg(arg) is None else self.Arg(arg)
 
+    def IfCondition(self, name, game, condition):
+        arg = self.Arg(name)
+        return arg is None or condition(arg, game)
+
     @staticmethod
     def Respond(responses, iVerb, game):
         responses = MakeTuple(responses)
 
         for response in responses:
             if response.iVerb == iVerb:
-                if (response.Arg('ifTrue') is None or response.Arg('ifTrue')(game))\
-                        and\
-                   (response.Arg('ifSet') is None or game.state[response.Arg('ifSet')])\
-                        and\
-                   (response.Arg('ifNotSet') is None or not game.state[response.Arg('ifNotSet')])\
-                        and\
-                   (response.Arg('ifNotAtLocation') is None or not game.AtLocation(game.state[response.Arg('ifNotAtLocation')]))\
-                        and\
-                   (response.Arg('ifHas') is None or game.Has(response.Arg('ifHas'))
-                        and \
-                   (response.Arg('ifNotHas') is None or not game.Has(response.Arg('ifHas')))):
+                if response.IfCondition('ifTrue', game, lambda a, g: a(g)) and \
+                    response.IfCondition('ifSet', game, lambda a, g: g.state[a]) and\
+                    response.IfCondition('ifNotSet', game, lambda a, g: not g.state[a]) and \
+                    response.IfCondition('ifGE', game, lambda a, g: g.state[a] >= 0) and \
+                    response.IfCondition('ifAtLocation', game, lambda a, g: g.AtLocation(g.state[a])) and \
+                    response.IfCondition('ifNotAtLocation', game, lambda a, g: not g.AtLocation(g.state[a])) and \
+                    response.IfCondition('ifExists', game, lambda a, g: g.Exists(a)) and \
+                    response.IfCondition('ifHas', game, lambda a, g: g.Has(a)) and \
+                    response.IfCondition('ifNotHas', game, lambda a, g: not g.Has(a)):
+
                     m = ""
 
                     if response.Arg('goTo') is not None:
@@ -46,9 +50,10 @@ class Response:
 
                     if response.Arg('setMove') is not None:
                         changes = response.Arg('setMove')
+                        changes = MakeTuple(changes, 1)
                         for change in changes:
                             location = game.world.locations[change[0]]
-                            location.moves[change[1]] = change[2]
+                            location.moves[Direction.FromName(change[1]).d] = change[2]
 
                     if response.Arg('createHere') is not None:
                         for object in MakeTuple(response.Arg('createHere')):

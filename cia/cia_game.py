@@ -24,7 +24,7 @@ class CIA(Game):
         self.state['playerName'] = None
         self.state['secretCode'] = str(9 * random.choice(range(9)))[1:]
         self.state['upButtonPushed'] = False
-        self.state.floor = 1
+        self.state['floor'] = 1
         self.state.ropeThrown = False
         self.state['glovesWorn'] = False
         self.state['fellFromFrame'] = False

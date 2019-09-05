@@ -1,32 +1,6 @@
-from adventure.direction import Direction
 from adventure.placement import NoPlacement
 from adventure.object import Object
 from cia.cia_verb import push, pull, go, get, insert, open, drop, wear, read, start, break_, cut, throw, connect, look
-
-def PushBoxButton(game, *args, **kwargs):
-    if game.state.inventory.Has('BOX'):
-        m = "I PUSH THE BUTTON ON THE BOX AND\n"
-        if game.state.location == game.world.locations['CUBICLE'] or game.state.location == game.world.locations['CONTROL']:
-            m += 'THERE IS A BLINDING FLASH....'
-            game.state.floor = 1
-            game.world.locations['ELEVATOR'].moves[Direction.SOUTH] = 3
-            game.GoTo('LOBBY')
-        m += "NOTHING HAPPENS."
-
-def PushElevatorButton(game, floor, locationName):
-    if game.state.floor != floor:
-        game.state.location.moves[Direction.NORTH] = game.world.locations[locationName].i
-        game.state.floor = floor
-        return "THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."
-
-def PushOne(game, *args, **kwargs):
-    return PushElevatorButton(game, 1, 'IN THE LOBBY OF THE BUILDING')
-
-def PushTwo(game, *args, **kwargs):
-    return PushElevatorButton(game, 2, 'IN A SMALL HALLWAY')
-
-def PushThree(game, *args, **kwargs):
-    return PushElevatorButton(game, 3, 'IN A SHORT CORRIDOR')
 
 objects = (
     Object('A VIDEO CASSETTE RECORDER', 'RECORDER', 'VISITOR', (
@@ -39,8 +13,8 @@ objects = (
     Object('A LARGE BATTERY', 'BATTERY', NoPlacement(), (
         insert(into='RECORDER', setState=('batteryInserted', True), removeObject='BATTERY', message='OK')), moveable=True),
     Object('A BLANK CREDIT CARD', 'CARD', NoPlacement(), (
-        insert(into='SLIT', ifTrue=lambda g: g.state.sleepTimer < 0, messsage="THE GUARD WON'T LET ME"),
-        insert(into='SLIT', ifTrue=lambda g: g.state.sleepTimer >= 0, removeObject='CARD', moveObject = ('LOCK', 'CORRIDOR'), message='POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING.')),
+        insert(into='SLIT', ifGE='sleepTimer', removeObject='CARD', moveObject = ('LOCK', 'CORRIDOR'), message='POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING.'),
+        insert(into='SLIT', messsage="THE GUARD WON'T LET ME")),
            moveable=True),
     Object('AN ELECTRONIC LOCK', 'LOCK', NoPlacement(),
            open(question="WHAT'S THE COMBINATION", answer="{secretCode}", removeObject=('LOCK', 'A SOLID LOOKING DOOR, IN A SHORT CORRIDOR'), createHere='AN OPEN DOOR',
@@ -48,9 +22,9 @@ objects = (
     Object('AN ELABORATE PAPER WEIGHT', 'WEIGHT', 'CEO', (
         look(message="IT LOOKS HEAVY.")),
            moveable=True),
-    Object('A LOCKED WOODEN DOOR', 'DOOR', 'ANTEROOM',
-           (look(message="IT'S LOCKED."),
-            (open(ifHas='KEY', replaceObject=('A LOCKED WOODEN DOOR', 'AN OPEN WOODEN DOOR'), message='O.K. I OPENED THE DOOR.')))),
+    Object('A LOCKED WOODEN DOOR', 'DOOR', 'ANTEROOM', (
+            look(message="IT'S LOCKED."),
+            open(ifHas='KEY', replaceObject=('A LOCKED WOODEN DOOR', 'AN OPEN WOODEN DOOR'), message='O.K. I OPENED THE DOOR.'))),
     Object('AN OPEN WOODEN DOOR', 'DOOR', NoPlacement(), go(goTo='CEO')),
     Object('A SOLID LOOKING DOOR', 'DOOR', 'CORRIDOR', open(message="I CAN'T. IT DOESN'T WORK.")),
     Object('AN OPEN DOOR', 'DOOR', NoPlacement(), go(goTo='METAL')),
@@ -104,7 +78,7 @@ objects = (
         moveable=True),
     Object('A SMALL CAPSULE', 'CAPSULE', NoPlacement(), drop(ifHas='CUP', removeObject='CAPSULE', setState=('capsuleDropped', True)), moveable=True),
     Object('A LARGE SCULPTURE', 'SCULPTURE', 'LOBBY', (
-        open(ifTrue=lambda g: not g.Exists('QUARTER') and not g.Exists('CARD') and g.state.sculptureMessage, createHere='CARD', message='SOMETHING FALLS OUT.'))),
+        open(ifExists='QUARTER', ifSet='sculptureMessage', createHere='CARD', message='SOMETHING FALLS OUT.'))),
     Object('A TALL OFFICE BUILDING', 'BUILDING', 1, go(goTo='LOBBY')),#, go(GoBuilding)),
     Object('A PAIR OF SLIDING DOORS', 'DOORS', 'LOBBY', (
         go(ifSet='upButtonPushed', goTo='ELEVATOR'),
@@ -124,8 +98,8 @@ objects = (
         connect(setState=('tvConnected', True), message="O.K. THE T.V. IS CONNECTED.")),
         moveable=True),
     Object('A BANK OF MONITORS', 'MONITORS', 'SECURITY',
-           look(conditinNotSet='boxButtonPushed', message="THE SCREEN IS DARK."),
-           look(message="I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.")),
+        look(conditinNotSet='boxButtonPushed', message="THE SCREEN IS DARK."),
+        look(message="I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.")),
     Object('A CHAOS I.D. CARD', 'CARD', 'END', moveable=True),
     Object('A BANK OF MONITORS', 'MONITORS', 'MONITORING'),
     Object('A SMALL PAINTING', 'PAINTING', 'ROOM', (
@@ -135,14 +109,17 @@ objects = (
         drop(setState=('glovesWorn', False)),
         wear(ifHas='GLOVES')), moveable=True),
     Object('A BOX WITH A BUTTON ON IT', 'BOX', 'LAB', moveable=True),
-    Object('ONE', 'ONE', 'ELEVATOR', go(PushOne), visible=False),
-    Object('TWO', 'TWO', 'ELEVATOR', go(PushTwo), visible=False),
-    Object('THREE', 'THR', 'ELEVATOR', go(PushThree), visible=False),
+    Object('ONE', 'ONE', 'ELEVATOR', push(setState=('floor', 1), setMove=('ELEVATOR', 'NORTH', 'LOBBY'), message="THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."), visible=False),
+    Object('TWO', 'TWO', 'ELEVATOR', push(setState=('floor', 2), setMove=('ELEVATOR', 'NORTH', 'HALLWAY'), message="THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."), visible=False),
+    Object('THREE', 'THREE', 'ELEVATOR', push(setState=('floor', 1), setMove=('ELEVATOR', 'NORTH', 'CORRIDOR'), message="THE DOORS CLOSE AND I FEEL AS IF THE ROOM IS MOVING.\nSUDDENLY THE DOORS OPEN AGAIN."), visible=False),
     Object('SLIT', 'SLI', 'CORRIDOR', visible=False),
 
     # These are not in the original game's object list but are included here
     # so that every target is a direction or an object.
     # In the game, "BUT" is a special cased string when used for this panel.
     Object('AN UP BUTTON', 'BUTTON', 3, push(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'), visible=False),
-    Object('A BUTTON ON A BOX', 'BUTTON', 3, go(PushBoxButton), visible=False),
+    Object('A BUTTON ON A BOX', 'BUTTON', 3, (
+        push(ifAtLocation=('CUBICLE', 'CONTROL'), setState=('floor', 1), setMove=('ELEVEVATOR', 'SOUTH', 'LOBBY'), goTo='LOBBY', message="I PUSH THE BUTTON ON THE BOX AND\nTHERE IS A BLINDING FLASH...."),
+        push(message="I PUSH THE BUTTON ON THE BOX AND\nNOTHING HAPPENS."),),
+        visible=False),
 )
