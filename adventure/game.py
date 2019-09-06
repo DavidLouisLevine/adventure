@@ -15,7 +15,7 @@ class Game:
         self.state = state
         self.prompt = prompt
         self.quitting = False
-        self.inputFile = open(r"..\basic\CIANEW.ADL", "r")
+        self.inputFile = None
         self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
         self.nextLine = None
 
@@ -156,19 +156,28 @@ class Game:
             print(m)
             return m
 
-    def Run(self, actions):
+    # commands can be either a filename or a list of commands
+    def Run(self, commands):
+        if type(commands) == tuple:
+            actions = commands
+        elif type(commands) == str:
+            self.inputFile = open(commands, "r")
+            actions = ()
+        else:
+            assert "Unknown commands type:" + type(commands)
+
         self.ReadToPrompt()
 
         t = 0
         prompt = self.prompt
         while not self.quitting:
             if t < len(actions):
-                str = actions[t]
-                print(prompt + str)
+                s = actions[t]
+                print(prompt + s)
             else:
-                str, expectedMessage = self.Input(prompt)
+                s, expectedMessage = self.Input(prompt)
 
-            temp = self.Do(str, echo=False)
+            temp = self.Do(s, echo=False)
             if temp is not None:
                 actualMessage = temp + "\n\n"
                 if expectedMessage is not None and expectedMessage != actualMessage and expectedMessage != "":

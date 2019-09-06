@@ -25,31 +25,31 @@ class CIA(Game):
         self.state['secretCode'] = str(9 * random.choice(range(9)))[1:]
         self.state['upButtonPushed'] = False
         self.state['floor'] = 1
-        self.state.ropeThrown = False
+        self.state['ropeThrown'] = False
         self.state['glovesWorn'] = False
         self.state['fellFromFrame'] = False
-        self.state.capsuleDropped = False
-        self.state.boxButtonPushed = False
-        self.state.batteryInserted = False
+        self.state['capsuleDropped'] = False
+        self.state['boxButtonPushed'] = False
+        self.state['batteryInserted'] = False
         self.state['tvConnected'] = False
         self.state['guardAwakened'] = False
-        self.state.sleepTimer = -1
-        self.state.tapeInserted = False
-        self.state.sculptureMessage = False
-        self.state.electricityOff = False
-        self.combination = 12345
+        self.state['sleepTimer'] = -1
+        self.state['tapeInserted'] = False
+        self.state['sculptureMessage'] = False
+        self.state['electricityOff'] = False
+        self.state['combination'] = 12345
         self.state['guardTicks'] = -1
 
         self.state.inventory.Add(world.objects['BADGE'])
 
-    def Run(self, actions):
+    def Run(self, commands):
 #        self.world.print()
         print("        C.I.A  ADVENTURE")
         self.Do("LOOK", echo=False)
         self.playerName = 'JIM'
         print("ENTER YOUR NAME PARTNER? " + self.playerName)
         print("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
-        Game.Run(self, sequence)
+        Game.Run(self, commands)
 
     def Tick(self):
         m = ""
@@ -82,7 +82,6 @@ sequence = (
     "PUSH TWO",
     "PUSH TWO",
     "GO NORTH")
-sequence = ()
 
 cia = CIA()
-cia.Run(sequence)
+cia.Run(r"..\basic\CIANEW.ADL")
