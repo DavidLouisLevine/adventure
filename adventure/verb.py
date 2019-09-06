@@ -40,7 +40,7 @@ class GoVerb(Verb):
         if target.IsDirection():
             move = game.state.location.moves[target.value.d]
             if move == 0:
-                return "I CAN'T GO THAT WAY AT THE MOMENT."
+                return cant
             game.state.location = game.world.locations[move]
             m = ""
         elif target.IsObject():

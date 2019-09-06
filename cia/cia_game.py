@@ -17,6 +17,9 @@ import random
 
 class CIA(Game):
     def __init__(self):
+        self.Init()
+
+    def Init(self):
         state = State()
         world = World(objects, verbs, locations)
         prompts = ('WHAT DO YOU THINK WE SHOULD DO? ', 'ENTER YOUR NAME PARTNER? ')
@@ -48,7 +51,7 @@ class CIA(Game):
         Game.Run(self, commands)
 
     def Start(self):
-        print("        C.I.A  ADVENTURE")
+        self.Output("        C.I.A  ADVENTURE")
         self.Do("LOOK")
         self.state['playerName'], expected = self.Input("ENTER YOUR NAME PARTNER? ")
         self.Output("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
@@ -77,6 +80,8 @@ sequence = (
     "GO WEST")
 
 cia = CIA()
+
 #commands = sequence
 commands = open(r"..\basic\CIANEW.ADL", "r")
+#commands = None
 cia.Run(commands)

@@ -16,7 +16,7 @@ class Game:
         self.prompts = prompts
         self.quitting = False
         self.inputFile = None
-        self.print = False # If False, only print errors
+        self.printWhenStreaming = False # If False, only print errors when commands are being read from the input file
         self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
         self.nextLine = None
 
@@ -38,6 +38,9 @@ class Game:
         return l
 
     def ReadToPrompt(self):
+        if self.inputFile is None:
+            return ""
+
         expected = ""
         while True:
             t = self.NextLine()
@@ -74,7 +77,7 @@ class Game:
         return command, expected
 
     def Output(self, *args, **kwargs):
-        if self.print:
+        if self.inputFile is None or self.printWhenStreaming:
             return print(*args, **kwargs)
 
     def DoAction(self, action):
@@ -221,4 +224,3 @@ class Game:
                 print("ERROR: Actual message is empty but expected message is:", expectedMessage)
                 return False
         return True
-

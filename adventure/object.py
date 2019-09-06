@@ -1,4 +1,3 @@
-import copy
 from adventure.response import Response
 from adventure.item import Items, Item
 

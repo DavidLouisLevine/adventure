@@ -1,6 +1,8 @@
+import copy
+
 class Items(dict):
     def __init__(self, items):
-        self.items = items
+        self.items = copy.copy(items)
 
     def __len__(self):
         return len(self.items)
@@ -20,6 +22,9 @@ class Items(dict):
 
     def Add(self, items):
         self.items += items
+
+    def GetStrings(self):
+        map(lambda x: x, self.items)
 
 class Item:
     def __init__(self, name, abbreviation):
