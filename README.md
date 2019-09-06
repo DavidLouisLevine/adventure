@@ -3,7 +3,8 @@
 The project was inspired by the BASIC computer game "C.I.A. Adventure", written by Hugh Lampert in 1980, and by a tiny four-room adventure world used in a reinforcement learning project by MIT's summer 2019 6.86x machine learning course.
 
 This project is intended to implement:
-- A full-fidelity python version of the entire C.I.A. adventure game
+- An engine for driving text-based adventure games
+- A full-fidelity python version of the entire C.I.A. adventure game that uses the engine
 - A reinforcement learning framework for solving the game
 - A modified original game that reads in a command script, allows further commands to be entered, and writes out a new command script and a text log of all game interactions
 
