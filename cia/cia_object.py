@@ -32,7 +32,7 @@ objects = (
     Object('A SLEEPING SECURITY GUARD', 'GUARD', NoPlacement()),
     Object('A LOCKED MAINTENANCE CLOSET', 'CLOSET', 'CAFETERIA', (
             look(message="IT'S LOCKED."),
-            open(ifHas='KEY', replaceObject=('A LOCKED MAINTENANCE CLOSET', 'A MAINTENANCE CLOSET'), message='O.K. I OPENED THE DOOR.'))),
+            open(ifHas='KEY', replaceObject=('A LOCKED MAINTENANCE CLOSET', 'A MAINTENANCE CLOSET'), message='O.K. THE CLOSET IS OPENED.'))),
     Object('A MAINTENANCE CLOSET', 'CLOSET', NoPlacement(), go(goTo='CLOSET')),
     Object('A PLASTIC BAG', 'BAG', 'CLOSET', (
         open(message="I CAN'T. IT'S TOO STRONG."),
@@ -98,7 +98,7 @@ objects = (
         connect(setState=('tvConnected', True), message="O.K. THE T.V. IS CONNECTED.")),
         moveable=True),
     Object('A BANK OF MONITORS', 'MONITORS', 'SECURITY',
-        look(conditinNotSet='boxButtonPushed', message="THE SCREEN IS DARK."),
+        look(conditionNotSet='boxButtonPushed', message="THE SCREEN IS DARK."),
         look(message="I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.")),
     Object('A CHAOS I.D. CARD', 'CARD', 'END', moveable=True),
     Object('A BANK OF MONITORS', 'MONITORS', 'MONITORING'),
