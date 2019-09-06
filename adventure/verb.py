@@ -1,6 +1,6 @@
 from adventure.direction import Direction
 from adventure.response import Response
-from adventure.items import Items
+from adventure.item import Items, Item
 
 class Verbs(Items):
     def __init__(self, objects):
@@ -9,12 +9,11 @@ class Verbs(Items):
     def Do(self, target, game):
         raise NotImplementedError()
 
-class Verb:
+class Verb(Item):
     # If both targetInventory and targetInRoom are False then there are no restrictions on the target location
     # If either is True then only targets in those locations are allowed.
     def __init__(self, name, abbreviation, targetNever=False, targetOptional=False, targetInventory=True, targetInRoom=True):
-        self.name = name
-        self.abbreviation = abbreviation
+        Item.__init__(self, name, abbreviation)
         self.targetNever = targetNever
         self.targetOptional = targetOptional
         self.targetInventory = targetInventory

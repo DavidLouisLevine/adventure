@@ -20,3 +20,8 @@ class Items(dict):
 
     def Add(self, items):
         self.items += items
+
+class Item:
+    def __init__(self, name, abbreviation):
+        self.name = name
+        self.abbreviation = abbreviation

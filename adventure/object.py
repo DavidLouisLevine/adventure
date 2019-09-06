@@ -1,15 +1,14 @@
 import copy
 from adventure.response import Response
-from adventure.items import Items
+from adventure.item import Items, Item
 
 class Objects(Items):
     def __init__(self, objects):
         Items.__init__(self, objects)
 
-class Object:
+class Object(Item):
     def __init__(self, name, abbreviation, placement, response=None, moveable=False, visible=True):
-        self.name = name
-        self.abbreviation = abbreviation
+        Item.__init__(self, name, abbreviation)
         self.placement = placement
         self.responses = response
         self.moveable = moveable

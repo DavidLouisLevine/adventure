@@ -1,10 +1,9 @@
-from adventure.items import Items
+from adventure.item import Items, Item
 
 class Location:
     def __init__(self, abbreviation, name, moves, response=None):
-        self.name = name
+        Item.__init__(self, name, abbreviation)
         self.moves = list(moves)
-        self.abbreviation = abbreviation
         self.responses = response
 
     def __str__(self):
