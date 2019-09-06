@@ -7,7 +7,6 @@ from adventure.direction import Direction
 from adventure.placement import NoPlacement
 from adventure.response import Response
 from adventure.util import StartsWith
-import numpy as np
 
 class Game:
     def __init__(self, world, state, prompts):
@@ -63,25 +62,6 @@ class Game:
             if command != "":
                 self.Output(command, end='')
 
-            # expected = ""
-            # while True:
-            #     t = self.inputFile.readline()
-            #     if t == "":
-            #         break
-            #
-            #     if t[:4] == '---@':
-            #         break
-            #
-            #     if t[0] != '#':
-            #         expected += t
-            #
-            # if t == "":
-            #     self.inputFile.close()
-            #     self.inputFile = None
-            #
-            # if u != "":
-            #     print(u, end='')
-
         if self.inputFile is None:
             command = input(prompt)
             expected = None
@@ -95,9 +75,6 @@ class Game:
 
     def Output(self, *args, **kwargs):
         if self.print:
-            assert len(args) == 1
-            if len(kwargs) != 0:
-                foo = 'bar'
             return print(*args, **kwargs)
 
     def DoAction(self, action):
@@ -157,10 +134,7 @@ class Game:
         return m
 
 
-    def Do(self, action, echo=True):
-        if echo:
-            self.Output("> ", action)
-
+    def Do(self, action):
         if action[-1] == '\n':
             action = action[:-1]
 
@@ -189,21 +163,8 @@ class Game:
             else:
                 s, expectedMessage = self.Input(prompt)
 
-            temp = self.Do(s, echo=False)
-            if temp is not None:
-                actualMessage = temp + "\n\n"
-                if expectedMessage is not None and expectedMessage != actualMessage and expectedMessage != "":
-                    print("ERROR: Expected Message:\n", expectedMessage, sep='')
-                    print("---------")
-                    print("ERROR: Actual Message:\n", actualMessage)
-                    print("---------")
-                    n = min(len(actualMessage), len(expectedMessage))
-                    k = np.array(list(expectedMessage[:n])) == np.array(list(actualMessage[:n]))
-                    j = np.argwhere(k == False)[0][0]
-                    o = 9
-            else:
-                if expectedMessage is not None and expectedMessage != "":
-                    print("ERROR: Actual message is empty but expected message is:", expectedMessage)
+            message = self.Do(s)
+            self.ValidateOutput(expectedMessage, message)
 
             self.Output(self.Tick())
             t += 1
@@ -239,3 +200,25 @@ class Game:
 
     def __str__(self):
         return str(self.state.location) + self.state.inventory.string(self.world)
+
+    def ValidateOutput(self, expectedMessage, actualMessage):
+        if actualMessage is not None:
+            actualMessage = actualMessage + "\n\n"
+            if expectedMessage is not None and expectedMessage != actualMessage and expectedMessage != "":
+                print("ERROR: Expected Message:\n", expectedMessage, sep='')
+                print("---------")
+                print("ERROR: Actual Message:\n", actualMessage)
+                print("---------")
+                n = min(len(actualMessage), len(expectedMessage))
+                i = 0
+                for i in range(n):
+                    if expectedMessage[i] != actualMessage[i]:
+                        break;
+                    i += 1
+                return False
+        else:
+            if expectedMessage is not None and expectedMessage != "":
+                print("ERROR: Actual message is empty but expected message is:", expectedMessage)
+                return False
+        return True
+

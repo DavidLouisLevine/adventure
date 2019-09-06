@@ -49,7 +49,7 @@ class CIA(Game):
 
     def Start(self):
         print("        C.I.A  ADVENTURE")
-        self.Do("LOOK", echo=False)
+        self.Do("LOOK")
         self.state['playerName'], expected = self.Input("ENTER YOUR NAME PARTNER? ")
         self.Output("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
         return
@@ -74,18 +74,7 @@ sequence = (
     "INVENTORY",
     "LOOK",
     "GO BUILDING",
-    "GO WEST",
-    "LOOK",
-    "GET RECORDER",
-    "LOOK",
-    "INVENTORY",
-    "GO EAST",
-    "GO DOORS",
-    "PUSH BUTTON",
-    "GO DOORS",
-    "PUSH TWO",
-    "PUSH TWO",
-    "GO NORTH")
+    "GO WEST")
 
 cia = CIA()
 #commands = sequence
