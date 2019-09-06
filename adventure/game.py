@@ -134,7 +134,7 @@ class Game:
             m += self.Look()
             if self.state.location.responses is not None:
                 currentLocation = self.state.location
-                r = Response.Respond(self.state.location.responses, self.world.verbs['GO'].index, self)
+                r = Response.Respond(self.state.location.responses, self.world.verbs['GO'], self)
                 if r is not None:
                     if m is not "":
                         m += '\n'

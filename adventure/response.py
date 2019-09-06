@@ -2,8 +2,8 @@ from adventure.util import MakeTuple
 from adventure.direction import Direction
 
 class Response:
-    def __init__(self, iVerb, f, *args, **kwargs):
-        self.iVerb = iVerb
+    def __init__(self, verb, f, *args, **kwargs):
+        self.verb = verb
         self.f = f
         self.args = args
         self.kwargs = kwargs
@@ -21,11 +21,11 @@ class Response:
         return arg is None or condition(arg, game)
 
     @staticmethod
-    def Respond(responses, iVerb, game):
+    def Respond(responses, verb, game):
         responses = MakeTuple(responses)
 
         for response in responses:
-            if response.iVerb == iVerb:
+            if response.verb == verb:
                 if response.IfCondition('ifTrue', game, lambda a, g: a(g)) and \
                     response.IfCondition('ifSet', game, lambda a, g: g.state[a]) and\
                     response.IfCondition('ifNotSet', game, lambda a, g: not g.state[a]) and \
@@ -90,18 +90,18 @@ class Response:
                     return m
 
     @staticmethod
-    def GetResponse(responses, iVerb):
+    def GetResponse(responses, verb):
         if type(responses) is Response:
             responses = (responses,)
         for response in responses:
-            if response.iVerb == iVerb:
+            if response.verb == verb:
                 return response
 
         return None
 
     @staticmethod
-    def HasResponse(responses, iVerb):
+    def HasResponse(responses, verb):
         if responses is None:
             return False
 
-        return Response.GetResponse(responses, iVerb) is not None
+        return Response.GetResponse(responses, verb) is not None

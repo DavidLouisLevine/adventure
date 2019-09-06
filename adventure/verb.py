@@ -1,26 +1,10 @@
 from adventure.direction import Direction
 from adventure.response import Response
+from adventure.items import Items
 
-class Verbs:
-    def __init__(self, verbs):
-        self.items = verbs
-        i = 1
-        for item in self.items:
-            item.index = i
-            i += 1
-
-    def __getitem__(self, item):
-        if type(item) is str:
-            for i in range(len(self.items)):
-                item2 = self.items[i]
-                if item2.name == item or item2.abbreviation[:3] == item[:3]:
-                    return self.items[i]
-            return None
-        else:
-            return self.items[item - 1]
-
-    def len(self):
-        return len(self.items)
+class Verbs(Items):
+    def __init__(self, objects):
+        Items.__init__(self, objects)
 
     def Do(self, target, game):
         raise NotImplementedError()
@@ -35,14 +19,13 @@ class Verb:
         self.targetOptional = targetOptional
         self.targetInventory = targetInventory
         self.targetInRoom = targetInRoom
-        self.index = None
 
     def Do(self, target, game):
         #assert (target is None or target.IsObject())
         return self.DoObject(target, game)
 
     def MakeResponse(self, f=None, *args, **kwargs):
-        return Response(self.index, f, *args, **kwargs)
+        return Response(self, f, *args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -65,7 +48,7 @@ class GoVerb(Verb):
             object = target.value
             if game.state.location == object.placement.location:
                 if object.responses is not None:
-                    m = Response.Respond(object.responses, self.index, game)
+                    m = Response.Respond(object.responses, self, game)
                     if m is None:
                         return cant
                     if m != "":
@@ -95,7 +78,7 @@ class GetVerb(Verb):
         if object.placement.location == game.state.location:
             m = None
             if object.moveable and object.responses is not None:
-                m = Response.Respond(object.responses, self.index, game)
+                m = Response.Respond(object.responses, self, game)
             if not object.moveable:
                 m = "I CAN'T CARRY THAT!"
             elif game.state.inventory.Has(object):
@@ -140,7 +123,7 @@ class LookVerb(Verb):
             object = target.value
             m = None
             if object.responses is not None:
-                m = Response.Respond(object.responses, self.index, game)
+                m = Response.Respond(object.responses, self, game)
             if m is None or m == "":
                 m = "I SEE NOTHING OF INTEREST."
         else:

@@ -79,7 +79,7 @@ objects = (
     Object('A SMALL CAPSULE', 'CAPSULE', NoPlacement(), drop(ifHas='CUP', removeObject='CAPSULE', setState=('capsuleDropped', True)), moveable=True),
     Object('A LARGE SCULPTURE', 'SCULPTURE', 'LOBBY', (
         open(ifExists='QUARTER', ifSet='sculptureMessage', createHere='CARD', message='SOMETHING FALLS OUT.'))),
-    Object('A TALL OFFICE BUILDING', 'BUILDING', 1, go(goTo='LOBBY')),#, go(GoBuilding)),
+    Object('A TALL OFFICE BUILDING', 'BUILDING', 'STREET', go(goTo='LOBBY')),
     Object('A PAIR OF SLIDING DOORS', 'DOORS', 'LOBBY', (
         go(ifSet='upButtonPushed', goTo='ELEVATOR'),
         look(ifSet='upButtonPushed', message="THE DOORS ARE OPEN."))),
@@ -90,7 +90,7 @@ objects = (
         go(ifSet='ropeThrown', goTo='PIT')), moveable=True),
     Object('A LARGE HOOK WITH A ROPE HANGING FROM IT', 'HOOK', 'PIT'),
     Object('A C.I.A. IDENTIFICATION BADGE', 'BADGE', NoPlacement(), moveable=True),
-    Object('A PORTABLE TELEVISION', 'TELEVISION', 7, (
+    Object('A PORTABLE TELEVISION', 'TELEVISION', 'SECURITY', (
         get(setState=('tvConnected', False)),
         connect(objectNotAt=('TELEVISION', 'VISITOR'), message="I DON'T SEE THE TELEVISION HERE."),
         connect(ifSet='tvConnected', message="I DID THAT ALREADY."),
@@ -117,8 +117,8 @@ objects = (
     # These are not in the original game's object list but are included here
     # so that every target is a direction or an object.
     # In the game, "BUT" is a special cased string when used for this panel.
-    Object('AN UP BUTTON', 'BUTTON', 3, push(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'), visible=False),
-    Object('A BUTTON ON A BOX', 'BUTTON', 3, (
+    Object('AN UP BUTTON', 'BUTTON', 'LOBBY', push(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'), visible=False),
+    Object('A BUTTON ON A BOX', 'BUTTON', 'LAB', (
         push(ifAtLocation=('CUBICLE', 'CONTROL'), setState=('floor', 1), setMove=('ELEVEVATOR', 'SOUTH', 'LOBBY'), goTo='LOBBY', message="I PUSH THE BUTTON ON THE BOX AND\nTHERE IS A BLINDING FLASH...."),
         push(message="I PUSH THE BUTTON ON THE BOX AND\nNOTHING HAPPENS."),),
         visible=False),
