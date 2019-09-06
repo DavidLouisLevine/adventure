@@ -19,7 +19,8 @@ class CIA(Game):
     def __init__(self):
         state = State()
         world = World(objects, verbs, locations)
-        Game.__init__(self, world, state, 'WHAT DO YOU THINK WE SHOULD DO? ')
+        prompts = ('WHAT DO YOU THINK WE SHOULD DO? ', 'ENTER YOUR NAME PARTNER? ')
+        Game.__init__(self, world, state, prompts)
         state.location = world.locations['ON A BUSY STREET']
         self.state['playerName'] = None
         self.state['secretCode'] = str(9 * random.choice(range(9)))[1:]
@@ -44,14 +45,17 @@ class CIA(Game):
 
     def Run(self, commands):
 #        self.world.print()
-        print("        C.I.A  ADVENTURE")
-        self.Do("LOOK", echo=False)
-        self.playerName = 'JIM'
-        print("ENTER YOUR NAME PARTNER? " + self.playerName)
-        print("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
         Game.Run(self, commands)
 
+    def Start(self):
+        print("        C.I.A  ADVENTURE")
+        self.Do("LOOK", echo=False)
+        self.state['playerName'], expected = self.Input("ENTER YOUR NAME PARTNER? ")
+        self.Output("WRITING ON THE WALL SAYS\nIF YOU WANT INSTRUCTIONS TYPE:ORDERS PLEASE")
+        return
+
     def Tick(self):
+        k = str(self.state.inventory)
         m = ""
         if self.state['guardTicks'] != -1:
             self.state['guardTicks'] -= 1
@@ -84,4 +88,6 @@ sequence = (
     "GO NORTH")
 
 cia = CIA()
-cia.Run(r"..\basic\CIANEW.ADL")
+#commands = sequence
+commands = open(r"..\basic\CIANEW.ADL", "r")
+cia.Run(commands)

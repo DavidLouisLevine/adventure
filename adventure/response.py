@@ -21,6 +21,17 @@ class Response:
         return arg is None or condition(arg, game)
 
     @staticmethod
+    def ProcessMessage(message, game):
+        while '{' in message:
+            assert '}' in message
+            l = message.index('{')
+            r = message.index('}')
+            key = message[l + 1:r]
+            value = game.state[key]
+            message = message[:l] + str(value) + message[r + 1:]
+        return message
+
+    @staticmethod
     def Respond(responses, verb, game):
         responses = MakeTuple(responses)
 
@@ -73,7 +84,7 @@ class Response:
                         game.quitting = True
 
                     # TODO: Implement replacement strings
-                    m += response.ArgStr('message')
+                    m += Response.ProcessMessage(response.ArgStr('message'), game)
 
                     if response.f is not None:
                         if m != "":

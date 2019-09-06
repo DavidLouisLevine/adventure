@@ -52,7 +52,7 @@ objects = (
     Object('A DUSTPAN', 'DUSTPAN', 'CLOSET', moveable=True),
     Object('A SPIRAL NOTEBOOK', 'NOTEBOOK', NoPlacement(), (
         look(message="THERE'S WRITING ON IT."),
-        read(message="IT SAYS{playerName},\n  WE HAVE DISCOVERED ONE OF CHAOSES SECRET WORDS.\nIT IS: BOND-007- .TO BE USED IN A -TASTEFUL- SITUATION.")),
+        read(message="IT SAYS:\n{playerName},\n  WE HAVE DISCOVERED ONE OF CHAOSES SECRET WORDS.\nIT IS: BOND-007- .TO BE USED IN A -TASTEFUL- SITUATION.")),
         moveable=True),
     Object('A MAHOGANY DRAWER', 'DRAWER', 'CEO', (
         open(ifHas='WEIGHT', message="IT'S STUCK."),

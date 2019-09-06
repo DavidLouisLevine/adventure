@@ -42,5 +42,5 @@ class Inventory:
         else:
             return False
 
-    def __str__(self):
-        return '(' + ', '.join(self.GetStrings()) + ')'
+    def string(self, world):
+        return '(' + ', '.join(self.GetStrings(world)) + ')'

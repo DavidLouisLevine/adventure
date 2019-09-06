@@ -10,12 +10,14 @@ from adventure.util import StartsWith
 import numpy as np
 
 class Game:
-    def __init__(self, world, state, prompt):
+    def __init__(self, world, state, prompts):
         self.world = world
         self.state = state
-        self.prompt = prompt
+        self.prompt = prompts[0]
+        self.prompts = prompts
         self.quitting = False
         self.inputFile = None
+        self.print = False # If False, only print errors
         self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
         self.nextLine = None
 
@@ -42,7 +44,8 @@ class Game:
             t = self.NextLine()
             if t == "":
                 break
-            if StartsWith(t, self.prompt):
+            isPrompt = False
+            if StartsWith(t, self.prompts) is not None:
                 self.nextLine = t
                 break
             expected += t
@@ -51,13 +54,14 @@ class Game:
     def Input(self, prompt):
         expected = None
         if self.inputFile is not None:
-            print(prompt + '? ', end='')
+            self.Output(prompt + '? ', end='')
             commandLine = self.NextLine()
-            assert StartsWith(commandLine, self.prompt)
-            command = commandLine[len(self.prompt):]
+            start = StartsWith(commandLine, self.prompts)
+            assert start is not None
+            command = commandLine[start:]
             expected = self.ReadToPrompt()
             if command != "":
-                print(command, end='')
+                self.Output(command, end='')
 
             # expected = ""
             # while True:
@@ -85,7 +89,16 @@ class Game:
         if self.scriptOutputFile is not None:
             self.scriptOutputFile.write(command)
 
+        if command[-1] == '\n':
+            command = command[:-1]
         return command, expected
+
+    def Output(self, *args, **kwargs):
+        if self.print:
+            assert len(args) == 1
+            if len(kwargs) != 0:
+                foo = 'bar'
+            return print(*args, **kwargs)
 
     def DoAction(self, action):
         try:
@@ -121,7 +134,7 @@ class Game:
                 if value is not None and not locationSatisfied:
                     value = None
 
-            target = Target(value)
+            target = None if value is None else Target(value)
 
         if (target is None or target.value is None) and not (verb.targetOptional or verb.targetNever):
             return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT."
@@ -146,34 +159,33 @@ class Game:
 
     def Do(self, action, echo=True):
         if echo:
-            print("> ", action)
+            self.Output("> ", action)
 
         if action[-1] == '\n':
             action = action[:-1]
 
         m = self.DoAction(action)
         if not m is None and not m == "":
-            print(m)
+            self.Output(m)
             return m
 
-    # commands can be either a filename or a list of commands
+    # commands can be either a file with read access or a list of commands
     def Run(self, commands):
         if type(commands) == tuple:
             actions = commands
-        elif type(commands) == str:
-            self.inputFile = open(commands, "r")
-            actions = ()
         else:
-            assert "Unknown commands type:" + type(commands)
+            self.inputFile = commands
+            actions = ()
 
         self.ReadToPrompt()
 
         t = 0
+        self.Start()
         prompt = self.prompt
         while not self.quitting:
             if t < len(actions):
                 s = actions[t]
-                print(prompt + s)
+                self.Output(prompt + s)
             else:
                 s, expectedMessage = self.Input(prompt)
 
@@ -193,11 +205,14 @@ class Game:
                 if expectedMessage is not None and expectedMessage != "":
                     print("ERROR: Actual message is empty but expected message is:", expectedMessage)
 
-            print(self.Tick())
+            self.Output(self.Tick())
             t += 1
 
         if self.state.isDead:
-            print("I'M DEAD!\nYOU DIDN'T WIN")
+            self.Output("I'M DEAD!\nYOU DIDN'T WIN")
+
+    def Start(self, game):
+        pass
 
     def Tick(self, target, game):
         pass
@@ -223,4 +238,4 @@ class Game:
         return object.placement != NoPlacement
 
     def __str__(self):
-        return str(self.state.location) + str(self.state.inventory)
+        return str(self.state.location) + self.state.inventory.string(self.world)
