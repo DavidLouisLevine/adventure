@@ -9,7 +9,7 @@ from adventure.response import Response
 from adventure.util import StartsWith
 
 class Game:
-    def __init__(self, world, state, prompts):
+    def Init(self, world, state, prompts):
         self.world = world
         self.state = state
         self.prompt = prompts[0]
@@ -19,6 +19,10 @@ class Game:
         self.printWhenStreaming = False # If False, only print errors when commands are being read from the input file
         self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
         self.nextLine = None
+
+    def NewGame(self, quest):
+        self.state.Init()
+        self.quest = quest
 
     def NextLine(self):
         if self.nextLine is not None:
@@ -80,41 +84,9 @@ class Game:
         if self.inputFile is None or self.printWhenStreaming:
             return print(*args, **kwargs)
 
-    def DoAction(self, action):
-        try:
-            i = action.index(' ')
-            verbStr = action[:i]
-        except:
-            i = -1
-            verbStr = action
-
-        verb = self.world.verbs[verbStr]
+    def DoTarget(self, verb, target):
         if verb is None:
             return "I DON'T KNOW HOW TO DO THAT."
-
-        target = None
-        original_value = None
-        if i != -1:
-            targetStr = action[i + 1:]
-
-            value = Direction.FromName(targetStr)
-            locationSatisfied = not verb.targetInRoom and not verb.targetInventory
-            if value is None:
-                value = self.world.objects.Find(targetStr)
-                original_value = value
-                if value is not None and self.state.inventory.Has(value):
-                    #self.value = value
-                    if verb.targetInventory:
-                        locationSatisfied = True
-                else:
-                    value = self.world.objects.Find(targetStr, self.state.location)
-                    if verb.targetInRoom:
-                        locationSatisfied = True
-
-                if value is not None and not locationSatisfied:
-                    value = None
-
-            target = None if value is None else Target(value)
 
         if (target is None or target.value is None) and not (verb.targetOptional or verb.targetNever):
             return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT."
@@ -136,6 +108,40 @@ class Game:
                         m += '\n' + self.Look()
         return m
 
+    def DoAction(self, action):
+        try:
+            i = action.index(' ')
+            verbStr = action[:i]
+        except:
+            i = -1
+            verbStr = action
+
+        verb = self.world.verbs[verbStr]
+        if verb is not None:
+            target = None
+            original_value = None
+            if i != -1:
+                targetStr = action[i + 1:]
+
+                value = Direction.FromName(targetStr)
+                locationSatisfied = not verb.targetInRoom and not verb.targetInventory
+                if value is None:
+                    value = self.world.objects.Find(targetStr)
+                    original_value = value # for debugging
+                    if value is not None and self.state.inventory.Has(value):
+                        if verb.targetInventory:
+                            locationSatisfied = True
+                    else:
+                        value = self.world.objects.Find(targetStr, self.state.location)
+                        if verb.targetInRoom:
+                            locationSatisfied = True
+
+                    if value is not None and not locationSatisfied:
+                        value = None
+
+                target = None if value is None else Target(value)
+
+        return self.DoTarget(verb, target)
 
     def Do(self, action):
         if action[-1] == '\n':
@@ -199,6 +205,7 @@ class Game:
         return self.state.inventory.Has(object)
 
     def Exists(self, object):
+        object = self.world.ResolveObject(object)
         return object.placement != NoPlacement
 
     def __str__(self):

@@ -63,7 +63,7 @@ class DropVerb(Verb):
         Verb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
-        if game.state.inventory.Remove(target.value, game.state.location):
+        if target.IsObject() and game.state.inventory.Remove(target.value, game.state.location):
             return "O.K. I DROPPED IT."
         else:
             return "I DON'T SEEM TO BE CARRYING IT."
@@ -74,7 +74,7 @@ class GetVerb(Verb):
 
     def DoObject(self, target, game):
         object = target.value
-        if object.placement.location == game.state.location:
+        if target.IsObject() and object.placement.location == game.state.location:
             m = None
             if object.moveable and object.responses is not None:
                 m = Response.Respond(object.responses, self, game)
@@ -160,7 +160,7 @@ class BuiltInVerbs(Verbs):
         Verbs.__init__(self, BuiltInVerbs.builtinVerbs + verbs)
 
     builtinVerbs = (
-        (GoVerb('GO', 'GO ')),
+        (GoVerb('GO', 'GO')),
         (GetVerb('GET', 'GET')),
         (DropVerb('DROP', 'DRO')),
 #        (DropVerb('DROP', 'DRO', targetInventory=False, targetInRoom=False)),

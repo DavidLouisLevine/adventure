@@ -17,7 +17,7 @@ objects = (
         insert(into='SLIT', messsage="THE GUARD WON'T LET ME")),
            moveable=True),
     Object('AN ELECTRONIC LOCK', 'LOCK', NoPlacement(),
-           open(question="WHAT'S THE COMBINATION", answer="{secretCode}", removeObject=('LOCK', 'A SOLID LOOKING DOOR, IN A SHORT CORRIDOR'), createHere='AN OPEN DOOR',
+           open(question="WHAT'S THE COMBINATION", answer="{secretCode}", removeObject=('LOCK', 'A SOLID LOOKING DOOR'), createHere='AN OPEN DOOR',
                 wrong="YOU MUST HAVE THE WRONG COMBINATION OR YOU ARE NOT\nSAYING IT RIGHT.")),
     Object('AN ELABORATE PAPER WEIGHT', 'WEIGHT', 'CEO', (
         look(message="IT LOOKS HEAVY.")),
@@ -119,7 +119,7 @@ objects = (
     # In the game, "BUT" is a special cased string when used for this panel.
     Object('AN UP BUTTON', 'BUTTON', 'LOBBY', push(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'), visible=False),
     Object('A BUTTON ON A BOX', 'BUTTON', 'LAB', (
-        push(ifAtLocation=('CUBICLE', 'CONTROL'), setState=('floor', 1), setMove=('ELEVEVATOR', 'SOUTH', 'LOBBY'), goTo='LOBBY', message="I PUSH THE BUTTON ON THE BOX AND\nTHERE IS A BLINDING FLASH...."),
+        push(ifHas='BOX', ifAtLocation=('CUBICLE', 'CONTROL'), setState=('floor', 1), setMove=('ELEVEVATOR', 'SOUTH', 'LOBBY'), goTo='LOBBY', message="I PUSH THE BUTTON ON THE BOX AND\nTHERE IS A BLINDING FLASH...."),
         push(message="I PUSH THE BUTTON ON THE BOX AND\nNOTHING HAPPENS."),),
         visible=False),
 )

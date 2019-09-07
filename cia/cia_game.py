@@ -17,14 +17,18 @@ import random
 
 class CIA(Game):
     def __init__(self):
-        self.Init()
+        Game.__init__(self)
 
     def Init(self):
         state = State()
         world = World(objects, verbs, locations)
         prompts = ('WHAT DO YOU THINK WE SHOULD DO? ', 'ENTER YOUR NAME PARTNER? ')
-        Game.__init__(self, world, state, prompts)
-        state.location = world.locations['ON A BUSY STREET']
+        Game.Init(self, world, state, prompts)
+
+    def NewGame(self, quest):
+        Game.NewGame(self, quest)
+        self.state.location = self.world.locations['ON A BUSY STREET']
+
         self.state['playerName'] = None
         self.state['secretCode'] = str(9 * random.choice(range(9)))[1:]
         self.state['upButtonPushed'] = False
@@ -44,7 +48,8 @@ class CIA(Game):
         self.state['combination'] = 12345
         self.state['guardTicks'] = -1
 
-        self.state.inventory.Add(world.objects['BADGE'])
+        self.state.inventory.Add(self.world.objects['BADGE'])
+        return self.state.location.name, self.quest, False
 
     def Run(self, commands):
 #        self.world.print()
@@ -69,19 +74,22 @@ class CIA(Game):
                 m = "I HEAR A NOISE LIKE SOMEONE IS YAWNING."
         return m
 
-sequence = (
-    "GO BUILDING",
-    "INVENTORY",
-    "WEAR BADGE",
-    "DROP BADGE",
-    "INVENTORY",
-    "LOOK",
-    "GO BUILDING",
-    "GO WEST")
+if __name__ == '__main__':
+    sequence = (
+        "GO BUILDING",
+        "INVENTORY",
+        "WEAR BADGE",
+        "DROP BADGE",
+        "INVENTORY",
+        "LOOK",
+        "GO BUILDING",
+        "GO WEST")
 
-cia = CIA()
+    cia = CIA()
+    cia.Init()
+    cia.NewGame('GET KEY')
 
-#commands = sequence
-commands = open(r"..\basic\CIANEW.ADL", "r")
-#commands = None
-cia.Run(commands)
+    #commands = sequence
+    #commands = open(r"..\basic\CIANEW.ADL", "r")
+    commands = None
+    cia.Run(commands)

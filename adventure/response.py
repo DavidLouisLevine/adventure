@@ -18,7 +18,13 @@ class Response:
 
     def IfCondition(self, name, game, condition):
         arg = self.Arg(name)
-        return arg is None or condition(arg, game)
+        if arg is None:
+            return True
+        arg = MakeTuple(arg)
+        for a in arg:
+            if not condition(a, game):
+                return False
+        return True
 
     @staticmethod
     def ProcessMessage(message, game):
@@ -71,13 +77,16 @@ class Response:
                             game.CreateHere(object)
 
                     if response.Arg('removeObject') is not None:
-                        game.world.RemoveObject(response.Arg('removeObject'))
+                        for object in MakeTuple(response.Arg('removeObject')):
+                            game.world.RemoveObject(object)
 
                     if response.Arg('replaceObject') is not None:
-                        game.ReplaceObject(response.Arg('replaceObject')[0], response.Arg('replaceObject')[1])
+                        for old, new in MakeTuple(response.Arg('replaceObject'), 1):
+                            game.ReplaceObject(old, new)
 
                     if response.Arg('makeVisible') is not None:
-                        game.world.objects[response.Arg('makeVisible')].visible = True
+                        for object in MakeTuple(response.Arg('makeVisible')):
+                            game.world.objects[object].visible = True
 
                     if response.isFatal == True:
                         game.state.isDead = True

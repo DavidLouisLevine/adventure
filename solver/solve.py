@@ -5,9 +5,9 @@ import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
-#from tqdm import tqdm
-#import framework
-import utils
+from tqdm import tqdm
+import solver.framework as framework
+import solver.utils as utils
 
 DEBUG = False
 
@@ -179,12 +179,13 @@ def run():
 
 
 if __name__ == '__main__':
-    state_texts = utils.load_data('game.tsv')
-    dictionary = utils.bag_of_words(state_texts)
-    state_dim = len(dictionary)
 
     # set up the game
     framework.load_game_data()
+
+    #state_texts = utils.load_data('game.tsv')
+    dictionary = utils.bag_of_words(framework.get_descriptions())
+    state_dim = len(dictionary)
 
     epoch_rewards_test = []  # shape NUM_RUNS * NUM_EPOCHS
 

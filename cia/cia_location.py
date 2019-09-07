@@ -36,7 +36,7 @@ locations = (
            setState=(('capsuleDropped', False), ('guardTicks', 5 + int(10*random.choice(range(10))))),
            message="THE GUARD TAKES MY COFFEE\nAND FALLS TO SLEEP RIGHT AWAY."),
         go(ifSet='guardAwakened', isFatal=True, message="THE GUARD DRAWS HIS GUN AND SHOOTS ME!"))),
-    Location('METAL', 'IN A HALLWAY MADE OF METAL', (0, 0, 'PLAIN', 'CORRIDOR', go(ifNotSet='electricityOff', isFatal=True, message="THE FLOOR IS WIRED WITH ELECDRICITY!\nI'M BEING ELECTROCUTED!"))),
+    Location('METAL', 'IN A HALLWAY MADE OF METAL', (0, 0, 'PLAIN', 'CORRIDOR'), go(ifNotSet='electricityOff', isFatal=True, message="THE FLOOR IS WIRED WITH ELECDRICITY!\nI'M BEING ELECTROCUTED!")),
     Location('PLAIN', 'IN A SMALL PLAIN ROOM', ('CUBICLE', 0, 0, 'METAL')),
     Location('CLOSET', 'IN A MAINTENANCE CLOSET', (0, 0, 'CAFETERIA', 0)),
     Location('CAFETERIA', 'IN A CAFETERIA', ('HALLWAY', 0, 0, 0)),

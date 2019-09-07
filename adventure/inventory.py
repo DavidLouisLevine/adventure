@@ -1,5 +1,4 @@
-from adventure.placement import LocationPlacement, InventoryPlacement
-
+from adventure.placement import LocationPlacement, InventoryPlacement, NoPlacement
 
 class Inventory:
     def __init__(self, capacity, state):

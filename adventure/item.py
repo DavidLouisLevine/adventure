@@ -1,8 +1,15 @@
 import copy
 
-class Items(dict):
+class Items():
     def __init__(self, items):
-        self.items = copy.copy(items)
+        self.items = dict()
+        self.index = ()
+        i = 0
+        for item in items:
+            self.items[Items.Abbreviate(item.abbreviation)] = item
+            self.index += (item, )
+            item.i = i
+            i += 1
 
     def __len__(self):
         return len(self.items)
@@ -11,20 +18,39 @@ class Items(dict):
         return self.Find(item)
 
     def __iter__(self):
-        return self.items.__iter__()
+        #return self.items.__iter__()
+        for item in self.index:
+            yield item
+
+    @staticmethod
+    def Abbreviate(name):
+        return name[:3]
 
     def Find(self, item, location=None):
-        for i in self.items:
-            if i.name == item or i.abbreviation[:3] == item[:3]:
-                if location is None or i.placement.location == location:
-                    return i
+        i = None
+        if type(item) == str:
+            abbreviation = Items.Abbreviate(item)
+            if abbreviation in self.items:
+                i = self.items[abbreviation]
+            else:
+                for ii in self.index:
+                    if ii.name == item:
+                        i = ii
+                        break
+        elif type(item) == int:
+            i = self.index[item]
+
+        if i is not None and (location is None or i.placement.location == location):
+            return i
+
         return None
 
-    def Add(self, items):
-        self.items += items
+    def GetAbbreviations(self):
+        return list(self.items.keys())
 
-    def GetStrings(self):
-        map(lambda x: x, self.items)
+    def GetNames(self):
+        for item in self.index:
+            yield item.name
 
 class Item:
     def __init__(self, name, abbreviation):

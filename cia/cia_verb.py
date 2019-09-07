@@ -43,18 +43,17 @@ class InsertVerb(StandardVerb):
         StandardVerb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
+        m = ""
         if target.IsObject() and not target.value.responses is None:
-            response = Response.get(target.value.responses, self);
+            response = Response.GetResponse(target.value.responses, self);
             if response is not None:
-                into = game.objects[game.input("TELL ME, IN ONE WORD, INTO WHAT")]
-                if into == response.kwargs['insertedObject']:
+                into = game.world.objects[game.Input("TELL ME, IN ONE WORD, INTO WHAT")]
+                if 'insertedObject' in response.kwargs and into == response.kwargs['insertedObject']:
                     m = Response.Respond(target.value.responses, self, game)
-                    if m == "" or m is None:
-                        m = "NOTHING HAPPENED."
+                if m == "" or m is None:
+                    m = "NOTHING HAPPENED."
             else:
                 m = "I CAN'T INSERT THAT!"
-        else:
-            m = ""
         return m
 
 class OpenVerb(StandardVerb):
@@ -105,7 +104,7 @@ class ConnectVerb(StandardVerb):
         kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
         StandardVerb.__init__(self, *args, **kwargs)
 
-class BondVerb():
+class BondVerb(Verb):
     def __init__(self, *args, **kwargs):
         Verb.__init__(self, *args, **kwargs)
 
