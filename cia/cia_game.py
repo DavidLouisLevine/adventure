@@ -22,7 +22,7 @@ class CIA(Game):
     def Init(self):
         state = State()
         world = World(objects, verbs, locations)
-        prompts = ('WHAT DO YOU THINK WE SHOULD DO? ', 'ENTER YOUR NAME PARTNER? ')
+        prompts = ('WHAT DO YOU THINK WE SHOULD DO? ', 'ENTER YOUR NAME PARTNER? ', 'TELL ME,IN ONE WORD,AT WHAT? ')
         Game.Init(self, world, state, prompts)
 
     def NewGame(self, quest):
