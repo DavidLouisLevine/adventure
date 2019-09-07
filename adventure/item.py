@@ -40,10 +40,7 @@ class Items():
         elif type(item) == int:
             i = self.index[item]
 
-        if i is not None and (location is None or i.placement.location == location):
-            return i
-
-        return None
+        return i
 
     def GetAbbreviations(self):
         return list(self.items.keys())

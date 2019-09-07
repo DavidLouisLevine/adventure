@@ -97,11 +97,13 @@ objects = (
         connect(notAtLocation='VISITOR', message="I CAN'T DO THAT....YET!"),
         connect(setState=('tvConnected', True), message="O.K. THE T.V. IS CONNECTED.")),
         moveable=True),
-    Object('A BANK OF MONITORS', 'MONITORS', 'SECURITY',
-        look(conditionNotSet='boxButtonPushed', message="THE SCREEN IS DARK."),
-        look(message="I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.")),
+    Object('A BANK OF MONITORS', 'MONITORS', 'SECURITY', (
+        look(ifSet='boxButtonPushed', message="THE SCREEN IS DARK."),
+        look(message="I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.\nON THE OTHER SIDE OF THE PIT,I SEE A LARGE HOOK."))),
     Object('A CHAOS I.D. CARD', 'CARD', 'END', moveable=True),
-    Object('A BANK OF MONITORS', 'MONITORS', 'MONITORING'),
+    Object('A BANK OF MONITORS', 'MONITORS', 'MONITORING', (
+        look(ifSet='boxButtonPushed', message="THE SCREEN IS DARK."),
+        look(message="I SEE A ROOM WITH A CASE ON A PEDESTAL IN IT."))),
     Object('A SMALL PAINTING', 'PAINTING', 'ROOM', (
         look(message="I SEE A PICTURE OF A GRINNING JACKAL."),
         get(setState=('fellFromFrame', True), createHere='CAPSULE', message='SOMETHING FELL FROM THE FRAME!'))),

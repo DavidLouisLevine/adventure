@@ -113,7 +113,7 @@ class BondVerb(Verb):
             return "NOTHING HAPPENED."
         else:
             game.state.location = game.world.locations['BASEMENT']
-            return "WHOOPS! A TRAP DOOR OPENED UNDERNEATH ME AND\nI FIND MYSELF FALLING."
+            return "WHOOPS! A TRAP DOOR OPENED UNDERNEATH ME AND\nI FIND MYSELF FALLING.\n"
 
 customVerbs = (
     (PushVerb('PUSH', 'PUS')),
@@ -128,7 +128,7 @@ customVerbs = (
     (CutVerb('CUT', 'CUT')),
     (ThrowVerb('THROW', 'THR')),
     (ConnectVerb('CON', 'CON', targetInventory=False, targetInRoom=False)),
-    (BondVerb('BOND-007-', 'BON')),)
+    (BondVerb('BOND-007-', 'BON', targetOptional=True)),)
 
 verbs = BuiltInVerbs(customVerbs)
 push = verbs['PUSH'].MakeResponse

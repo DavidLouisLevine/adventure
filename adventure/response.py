@@ -47,8 +47,8 @@ class Response:
                     response.IfCondition('ifSet', game, lambda a, g: g.state[a]) and\
                     response.IfCondition('ifNotSet', game, lambda a, g: not g.state[a]) and \
                     response.IfCondition('ifGE', game, lambda a, g: g.state[a] >= 0) and \
-                    response.IfCondition('ifAtLocation', game, lambda a, g: g.AtLocation(g.state[a])) and \
-                    response.IfCondition('ifNotAtLocation', game, lambda a, g: not g.AtLocation(g.state[a])) and \
+                    response.IfCondition('ifAtLocation', game, lambda a, g: g.AtLocation(a)) and \
+                    response.IfCondition('ifNotAtLocation', game, lambda a, g: not g.AtLocation(a)) and \
                     response.IfCondition('ifExists', game, lambda a, g: g.Exists(a)) and \
                     response.IfCondition('ifHas', game, lambda a, g: g.Has(a)) and \
                     response.IfCondition('ifNotHas', game, lambda a, g: not g.Has(a)):

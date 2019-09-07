@@ -90,6 +90,6 @@ if __name__ == '__main__':
     cia.NewGame('GET KEY')
 
     #commands = sequence
-    #commands = open(r"..\basic\CIANEW.ADL", "r")
-    commands = None
+    commands = open(r"..\basic\CIANEW.ADL", "r")
+    #commands = None
     cia.Run(commands)

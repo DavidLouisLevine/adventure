@@ -4,7 +4,7 @@
 
 from adventure.target import Target
 from adventure.direction import Direction
-from adventure.placement import NoPlacement
+from adventure.placement import NoPlacement, InventoryPlacement
 from adventure.response import Response
 from adventure.util import StartsWith
 
@@ -124,23 +124,13 @@ class Game:
                 targetStr = action[i + 1:]
 
                 value = Direction.FromName(targetStr)
-                locationSatisfied = not verb.targetInRoom and not verb.targetInventory
                 if value is None:
-                    value = self.world.objects.Find(targetStr)
-                    original_value = value # for debugging
-                    if value is not None and self.state.inventory.Has(value):
-                        if verb.targetInventory:
-                            locationSatisfied = True
-                    else:
-                        value = self.world.objects.Find(targetStr, self.state.location)
-                        if verb.targetInRoom:
-                            locationSatisfied = True
-
-                    if value is not None and not locationSatisfied:
-                        value = None
+                    value = self.world.objects.Find(targetStr, self.state.location)
 
                 target = None if value is None else Target(value)
 
+        if action == "BOND-007-":
+            j = 99
         return self.DoTarget(verb, target)
 
     def Do(self, action):
@@ -207,6 +197,9 @@ class Game:
     def Exists(self, object):
         object = self.world.ResolveObject(object)
         return object.placement != NoPlacement
+
+    def AtLocation(self, location):
+        return self.state.location == location
 
     def __str__(self):
         return str(self.state.location) + self.state.inventory.string(self.world)

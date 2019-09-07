@@ -1,13 +1,28 @@
 from adventure.response import Response
 from adventure.item import Items, Item
+from adventure.placement import InventoryPlacement
+
 
 class Objects(Items):
     def __init__(self, objects):
         Items.__init__(self, objects)
 
+    def Find(self, item, location=None):
+        i = None
+        if type(item) == str:
+            abbreviation = Items.Abbreviate(item)
+            for ii in self.index:
+                if (ii.name == item or Items.Abbreviate(ii.abbreviation) == abbreviation) and (location is None or ii.placement.location == location or type(ii.placement) == InventoryPlacement):
+                    i = ii
+                    break
+        elif type(item) == int:
+            i = self.index[item]
+
+        return i
+
 class Object(Item):
     def __init__(self, name, abbreviation, placement, response=None, moveable=False, visible=True):
-        Item.__init__(self, name, abbreviation)
+        super().__init__(name, abbreviation)
         self.placement = placement
         self.responses = response
         self.moveable = moveable
