@@ -34,21 +34,6 @@ class World:
         for i in range(self.verbs.len()):
             print("{0} {1}: {2}".format(i + 1, self.verbs[i + 1].abbreviation, self.verbs[i + 1].name))
 
-    def MoveObject(self, object, location):
-        original_object = object
-        object = self.ResolveObject(object)
-        if object is None:
-            object = self.ResolveOwerbject(original_object)
-        location = self.ResolveLocation(location)
-        object.placement = LocationPlacement(location)
-
-    def RemoveObject(self, object):
-        original_object = object
-        object = self.ResolveObject(object)
-        if object is None:
-            object = self.ResolveObject(original_object) # for debug
-        object.placement = NoPlacement()
-
     @staticmethod
     def Resolve(item, t, list):
         if type(item) is t:

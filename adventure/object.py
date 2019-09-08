@@ -21,10 +21,10 @@ class Objects(Items):
         return i
 
 class Object(Item):
-    def __init__(self, name, abbreviation, placement, response=None, moveable=False, visible=True):
+    def __init__(self, name, abbreviation, placement, responses=None, moveable=False, visible=True):
         super().__init__(name, abbreviation)
         self.placement = placement
-        self.responses = response
+        self.responses = responses
         self.moveable = moveable
         self.visible = visible
 

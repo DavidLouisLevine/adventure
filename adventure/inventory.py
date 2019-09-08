@@ -1,4 +1,4 @@
-from adventure.placement import LocationPlacement, InventoryPlacement, NoPlacement
+from adventure.placement import InventoryPlacement, NoPlacement
 
 class Inventory:
     def __init__(self, capacity, state):
@@ -23,6 +23,7 @@ class Inventory:
     def Has(self, object):
         return object.placement.InInventory()
 
+
     def Add(self, object):
         if self.size != self.capacity:
             object.placement = InventoryPlacement()
@@ -32,10 +33,10 @@ class Inventory:
         else:
             return False
 
-    def Remove(self, object, location):
+    def Remove(self, object):
         if self.Has(object):
-            object.placement = LocationPlacement(location)
             self.size -= 1
+            object.placement = NoPlacement()
             assert(self.size >= 0)
             return True
         else:

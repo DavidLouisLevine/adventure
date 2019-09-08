@@ -41,9 +41,7 @@ objects = (
         cut(message="I CAN'T DO THAT YET.")),
            moveable=True),
     Object('AN OLDE FASHIONED KEY', 'KEY', 'ELEVATOR', moveable=True),
-    Object('A SMALL METAL SQUARE ON THE WALL', 'SQUARE', 'GENERATOR',
-           push(ifSet='glovesWorn', setState=('boxButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."),
-           push(isFatal=True, message="THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!")),
+    Object('A SMALL METAL SQUARE ON THE WALL', 'SQUARE', 'GENERATOR', push(isFatal=True, message="THERE'S ELECTRICITY COURSING THRU THE SQUARE!\nI'M BEING ELECTROCUTED!")),
     Object('A LEVER ON THE SQUARE', 'LEVER', 'GENERATOR', (
         pull(ifNotSet='glovesWorn', isFatal=True, message="THE LEVER HAS ELECTRICITY COURSING THRU IT!\nI'M BEING ELECTROCUTED!"),
         pull(ifNotSet='electricityOff', setState=('electricityOff', True), message="THE LEVER GOES ALL THE WAY UP AND CLICKS.\nSOMETHING SEEMS DIFFERENT NOW."))),
@@ -83,7 +81,8 @@ objects = (
     Object('A PAIR OF SLIDING DOORS', 'DOORS', 'LOBBY', (
         go(ifSet='upButtonPushed', goTo='ELEVATOR'),
         look(ifSet='upButtonPushed', message="THE DOORS ARE OPEN."))),
-    Object('A LARGE BUTTON ON THE WALL', 'BUTTON', 'CONTROL'),
+    Object('A LARGE BUTTON ON THE WALL', 'BUTTON', 'CONTROL', (
+        push(ifNotSet='wallButtonPushed', setState=('wallButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."))),
     Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PANEL', 'ELEVATOR'),
     Object('A STRONG NYLON ROPE', 'ROPE', 'BASEMENT', (
         throw(ifHas='ROPE', question="TELL ME,IN ONE WORD,AT WHAT", answer="HOOK", createHere='ROPE', setState=('ropeThrown', (True, None)), wrong="O.K. I THREW IT.", message="I THREW THE ROPE AND IT SNAGGED ON THE HOOK."),
@@ -98,15 +97,16 @@ objects = (
         connect(setState=('tvConnected', True), message="O.K. THE T.V. IS CONNECTED.")),
         moveable=True),
     Object('A BANK OF MONITORS', 'MONITORS', 'SECURITY', (
-        look(ifSet='boxButtonPushed', message="THE SCREEN IS DARK."),
+        look(ifSet='wallButtonPushed', message="THE SCREEN IS DARK."),
         look(message="I SEE A METAL PIT 1000'S OF FEET DEEP ON ONE MONITOR.\nON THE OTHER SIDE OF THE PIT,I SEE A LARGE HOOK."))),
     Object('A CHAOS I.D. CARD', 'CARD', 'END', moveable=True),
     Object('A BANK OF MONITORS', 'MONITORS', 'MONITORING', (
-        look(ifSet='boxButtonPushed', message="THE SCREEN IS DARK."),
+        look(ifSet='wallButtonPushed', message="THE SCREEN IS DARK."),
         look(message="I SEE A ROOM WITH A CASE ON A PEDESTAL IN IT."))),
-    Object('A SMALL PAINTING', 'PAINTING', 'ROOM', (
+    Object('A SMALL PAINTING', 'PAINTING', 'LARGE', (
         look(message="I SEE A PICTURE OF A GRINNING JACKAL."),
-        get(setState=('fellFromFrame', True), createHere='CAPSULE', message='SOMETHING FELL FROM THE FRAME!'))),
+        get(ifNotSet='fellFromFrame', setState=('fellFromFrame', True), createHere='CAPSULE', message='SOMETHING FELL FROM THE FRAME!')),
+        moveable=True),
     Object('A PAIR OF RUBBER GLOVES', 'GLOVES', 'CLOSET', (
         drop(setState=('glovesWorn', False)),
         wear(ifHas='GLOVES')), moveable=True),
@@ -122,6 +122,6 @@ objects = (
     Object('AN UP BUTTON', 'BUTTON', 'LOBBY', push(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'), visible=False),
     Object('A BUTTON ON A BOX', 'BUTTON', 'LAB', (
         push(ifHas='BOX', ifAtLocation=('CUBICLE', 'CONTROL'), setState=('floor', 1), setMove=('ELEVEVATOR', 'SOUTH', 'LOBBY'), goTo='LOBBY', message="I PUSH THE BUTTON ON THE BOX AND\nTHERE IS A BLINDING FLASH...."),
-        push(message="I PUSH THE BUTTON ON THE BOX AND\nNOTHING HAPPENS."),),
+        push(ifHas='BOX', message="I PUSH THE BUTTON ON THE BOX AND\nNOTHING HAPPENS."),),
         visible=False),
 )

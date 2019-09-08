@@ -1,6 +1,7 @@
 from adventure.direction import Direction
 from adventure.response import Response
 from adventure.item import Items, Item
+from adventure.placement import InventoryPlacement
 
 class Verbs(Items):
     def __init__(self, objects):
@@ -63,7 +64,8 @@ class DropVerb(Verb):
         Verb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
-        if target.IsObject() and game.state.inventory.Remove(target.value, game.state.location):
+        if target.IsObject() and game.state.inventory.Remove(target.value):
+            game.CreateHere(target.value)
             return "O.K. I DROPPED IT."
         else:
             return "I DON'T SEEM TO BE CARRYING IT."
@@ -74,25 +76,27 @@ class GetVerb(Verb):
 
     def DoObject(self, target, game):
         object = target.value
-        if target.IsObject() and object.placement.location == game.state.location:
+        if target.IsObject() and\
+                (type(object.placement) == InventoryPlacement or object.placement.location == game.state.location):
             m = None
-            if object.moveable and object.responses is not None:
-                m = Response.Respond(object.responses, self, game)
             if not object.moveable:
                 m = "I CAN'T CARRY THAT!"
             elif game.state.inventory.Has(object):
                 m = "I ALREADY HAVE IT."
             elif game.state.inventory.capacity == len(game.state.inventory.Get(game.world)):
                 m = "I CAN'T CARRY ANYMORE."
-            else:
+            elif object.moveable:
+                if Response.HasResponse(object.responses, self):
+                    m = Response.Respond(object.responses, self, game)
                 game.state.inventory.Add(object)
-                m = "O.K."
+                if m is None:
+                    m = ""
+                if m != "":
+                    m = '\n' + m
+                m = "O.K." + m
         else:
             m = "I DON'T SEE THAT HERE."
         return m
-
-def CanGet(game, *args, **kwargs):
-    return ""
 
 class InventoryVerb(Verb):
     def __init__(self, *args, **kwargs):

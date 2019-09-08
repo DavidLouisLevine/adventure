@@ -1,5 +1,6 @@
 from adventure.response import Response
 from adventure.verb import Verb, BuiltInVerbs
+from adventure.util import MakeTuple
 
 def ArgStr(kwargs, key):
     return kwargs[key] if key in kwargs else ""
@@ -22,6 +23,27 @@ class StandardVerb(Verb):
                     m = self.didntWorkMessage
             else:
                 m = self.notApplicableMessage if self.notApplicableMessage is not None else self.didntWorkMessage
+        else:
+            m = ""
+        return m
+
+class ResponseVerb(Verb):
+    def __init__(self, name, abbreviation, responses):
+        self.responses = responses
+        for response in self.responses:
+            response.verb = self
+        Verb.__init__(self, name, abbreviation)
+
+    def DoObject(self, target, game):
+        m = ""
+        if Response.HasResponse(self.responses, self):
+            m = Response.Respond(self.responses, self, game, target.value)
+            if m is not None and m != "":
+                return m
+
+        if target.IsObject():
+            if Response.HasResponse(target.value.responses, self):
+                m = Response.Respond(target.value.responses, self, game)
         else:
             m = ""
         return m
@@ -113,22 +135,29 @@ class BondVerb(Verb):
             return "NOTHING HAPPENED."
         else:
             game.state.location = game.world.locations['BASEMENT']
-            return "WHOOPS! A TRAP DOOR OPENED UNDERNEATH ME AND\nI FIND MYSELF FALLING.\n"
+            return "WHOOPS! A TRAP DOOR OPENED UNDERNEATH ME. AND\nI FIND MYSELF FALLING.\n"
+
+def VerbResponse(*args, **kwargs):
+    return Response(None, None, *args, **kwargs)
 
 customVerbs = (
-    (PushVerb('PUSH', 'PUS')),
-    (PullVerb('PULL', 'PUL')),
-    (InsertVerb('INSERT', 'INS')),
-    (OpenVerb('OPEN', 'OPE')),
-    (WearVerb('WEAR', 'WEA')),
+    ResponseVerb('PUSH', 'PUS', (
+        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE"),
+        VerbResponse(ifNoObjectResponse=True, message="NOTHING HAPPENS."))),
+    PullVerb('PULL', 'PUL'),
+    InsertVerb('INSERT', 'INS'),
+    OpenVerb('OPEN', 'OPE'),
+    ResponseVerb('WEAR', 'WEA', (
+        VerbResponse(ifNotHas=True, message="I CAN'T WEAR THAT!"),
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T WEAR THAT!"))),
     #(WearVerb('WEAR', 'WEA', targetInventory=False, targetInRoom=False)),
-    (ReadVerb('READ', 'REA')),
-    (StartVerb('START', 'STA')),
-    (BreakVerb('BREAK', 'BRE')),
-    (CutVerb('CUT', 'CUT')),
-    (ThrowVerb('THROW', 'THR')),
-    (ConnectVerb('CON', 'CON', targetInventory=False, targetInRoom=False)),
-    (BondVerb('BOND-007-', 'BON', targetOptional=True)),)
+    ReadVerb('READ', 'REA'),
+    StartVerb('START', 'STA'),
+    BreakVerb('BREAK', 'BRE'),
+    CutVerb('CUT', 'CUT'),
+    ThrowVerb('THROW', 'THR'),
+    ConnectVerb('CON', 'CON', targetInventory=False, targetInRoom=False),
+    BondVerb('BOND-007-', 'BON', targetOptional=True))
 
 verbs = BuiltInVerbs(customVerbs)
 push = verbs['PUSH'].MakeResponse

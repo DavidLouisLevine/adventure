@@ -16,14 +16,19 @@ class Response:
     def ArgStr(self, arg):
         return "" if self.Arg(arg) is None else self.Arg(arg)
 
-    def IfCondition(self, name, game, condition):
+    # If the response arg is None then use object
+    def IfCondition(self, name, game, condition, object=None):
         arg = self.Arg(name)
-        if arg is None:
-            return True
-        arg = MakeTuple(arg)
-        for a in arg:
-            if not condition(a, game):
-                return False
+        if arg is True:
+            if object is not None:
+                return condition(object, game)
+            else:
+                return True
+        if arg is not None:
+            arg = MakeTuple(arg)
+            for a in arg:
+                if not condition(a, game):
+                    return False
         return True
 
     @staticmethod
@@ -37,21 +42,40 @@ class Response:
             message = message[:l] + str(value) + message[r + 1:]
         return message
 
+    def IfQuestion(self, game):
+        if 'question' not in self.kwargs:
+            return True
+        question = self.kwargs['question']
+        assert 'answer' in self.kwargs
+        expectedAnswer = self.kwargs['answer']
+        actualAnswer = game.Input(question, readExpected=False)[0]
+        return expectedAnswer == actualAnswer
+
+    def IfNoObjectResponse(self, verb, object):
+        if object is None or self.Arg('ifNoObjectResponse') is None:
+            return True
+
+        return not Response.HasResponse(object.responses, verb)
+
     @staticmethod
-    def Respond(responses, verb, game):
+    def Respond(responses, verb, game, object=None):
         responses = MakeTuple(responses)
 
         for response in responses:
             if response.verb == verb:
-                if response.IfCondition('ifTrue', game, lambda a, g: a(g)) and \
-                    response.IfCondition('ifSet', game, lambda a, g: g.state[a]) and\
-                    response.IfCondition('ifNotSet', game, lambda a, g: not g.state[a]) and \
-                    response.IfCondition('ifGE', game, lambda a, g: g.state[a] >= 0) and \
-                    response.IfCondition('ifAtLocation', game, lambda a, g: g.AtLocation(a)) and \
-                    response.IfCondition('ifNotAtLocation', game, lambda a, g: not g.AtLocation(a)) and \
-                    response.IfCondition('ifExists', game, lambda a, g: g.Exists(a)) and \
-                    response.IfCondition('ifHas', game, lambda a, g: g.Has(a)) and \
-                    response.IfCondition('ifNotHas', game, lambda a, g: not g.Has(a)):
+                if response.IfQuestion(game) and\
+                    response.IfNoObjectResponse(verb, object) and\
+                    response.IfCondition('ifTrue', game, lambda a, g: a(g), object) and \
+                    response.IfCondition('ifSet', game, lambda a, g: g.state[a], object) and\
+                    response.IfCondition('ifNotSet', game, lambda a, g: not g.state[a], object) and \
+                    response.IfCondition('ifGE', game, lambda a, g: g.state[a] >= 0, object) and \
+                    response.IfCondition('ifAtLocation', game, lambda a, g: g.AtLocation(a), object) and \
+                    response.IfCondition('ifNotAtLocation', game, lambda a, g: not g.AtLocation(a), object) and \
+                    response.IfCondition('ifExists', game, lambda a, g: g.Exists(a), object) and \
+                    response.IfCondition('ifHere', game, lambda a, g: g.IsHere(a), object) and \
+                    response.IfCondition('ifNotHere', game, lambda a, g: not g.IsHere(a), object) and \
+                    response.IfCondition('ifHas', game, lambda a, g: g.Has(a), object) and \
+                    response.IfCondition('ifNotHas', game, lambda a, g: not g.Has(a), object):
 
                     m = ""
 

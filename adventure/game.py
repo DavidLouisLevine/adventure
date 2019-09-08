@@ -4,7 +4,7 @@
 
 from adventure.target import Target
 from adventure.direction import Direction
-from adventure.placement import NoPlacement, InventoryPlacement
+from adventure.placement import NoPlacement, InventoryPlacement, LocationPlacement
 from adventure.response import Response
 from adventure.util import StartsWith
 
@@ -16,7 +16,7 @@ class Game:
         self.prompts = prompts
         self.quitting = False
         self.inputFile = None
-        self.printWhenStreaming = False # If False, only print errors when commands are being read from the input file
+        self.printWhenStreaming = True # If False, only print errors when commands are being read from the input file
         self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
         self.nextLine = None
 
@@ -50,14 +50,13 @@ class Game:
             t = self.NextLine()
             if t == "":
                 break
-            isPrompt = False
             if StartsWith(t, self.prompts) is not None:
                 self.nextLine = t
                 break
             expected += t
         return expected
 
-    def Input(self, prompt):
+    def Input(self, prompt, readExpected=True):
         expected = None
         if self.inputFile is not None:
             self.Output(prompt + '? ', end='')
@@ -65,7 +64,8 @@ class Game:
             start = StartsWith(commandLine, self.prompts)
             assert start is not None
             command = commandLine[start:]
-            expected = self.ReadToPrompt()
+            if readExpected:
+                expected = self.ReadToPrompt()
             if command != "":
                 self.Output(command, end='')
 
@@ -109,10 +109,10 @@ class Game:
         return m
 
     def DoAction(self, action):
-        try:
+        if ' ' in action:
             i = action.index(' ')
             verbStr = action[:i]
-        except:
+        else:
             i = -1
             verbStr = action
 
@@ -128,9 +128,6 @@ class Game:
                     value = self.world.objects.Find(targetStr, self.state.location)
 
                 target = None if value is None else Target(value)
-
-        if action == "BOND-007-":
-            j = 99
         return self.DoTarget(verb, target)
 
     def Do(self, action):
@@ -162,8 +159,12 @@ class Game:
             else:
                 s, expectedMessage = self.Input(prompt)
 
-            message = self.Do(s)
-            self.ValidateOutput(expectedMessage, message)
+            if s != "":
+                message = self.Do(s)
+                if expectedMessage=="":
+                    expectedMessage = self.ReadToPrompt() # Occurs when a question is prompted after the command
+
+                self.ValidateOutput(expectedMessage, message)
 
             self.Output(self.Tick())
             t += 1
@@ -184,10 +185,11 @@ class Game:
         self.state.location = self.world.ResolveLocation(location)
 
     def CreateHere(self, object):
-        self.world.MoveObject(object, self.state.location)
+        object = self.world.ResolveObject(object)
+        self.MoveObject(object, self.state.location)
 
     def ReplaceObject(self, old, new):
-        self.world.RemoveObject(old)
+        self.RemoveObject(old)
         self.CreateHere(new)
 
     def Has(self, object):
@@ -196,10 +198,32 @@ class Game:
 
     def Exists(self, object):
         object = self.world.ResolveObject(object)
-        return object.placement != NoPlacement
+        return type(object.placement) != NoPlacement
+
+    def IsHere(self, object):
+        object = self.world.ResolveObject(object)
+        return type(object.placement) == InventoryPlacement or\
+               (type(object.placement) == LocationPlacement and object.placement.location == self.state.location)
 
     def AtLocation(self, location):
         return self.state.location == location
+
+    def RemoveObject(self, object):
+        object = self.world.ResolveObject(object)
+        self.state.inventory.Remove(object)
+        original_object = object
+        if object is None:
+            object = self.world.ResolveObject(original_object) # for debug
+        object.placement = NoPlacement()
+
+    def MoveObject(self, object, location):
+        self.state.inventory.Remove(object)
+        original_object = object
+        object = self.world.ResolveObject(object)
+        if object is None:
+            object = self.world.ResolveOwerbject(original_object)
+        location = self.world.ResolveLocation(location)
+        object.placement = LocationPlacement(location)
 
     def __str__(self):
         return str(self.state.location) + self.state.inventory.string(self.world)

@@ -43,6 +43,7 @@ class CIA(Game):
         self.state['guardAwakened'] = False
         self.state['sleepTimer'] = -1
         self.state['tapeInserted'] = False
+        self.state['wallButtonPushed'] = False
         self.state['sculptureMessage'] = False
         self.state['electricityOff'] = False
         self.state['combination'] = 12345
@@ -63,6 +64,7 @@ class CIA(Game):
         return
 
     def Tick(self):
+        assert len(self.state.inventory.GetStrings(self.world)) == self.state.inventory.size
         k = str(self.state.inventory)
         m = ""
         if self.state['guardTicks'] != -1:
