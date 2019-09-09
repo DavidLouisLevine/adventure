@@ -126,6 +126,6 @@ objects = (
     Object('A BUTTON ON A BOX', 'BUTTON', 'LAB', (
         push(ifNotHas='BOX', message="I DON'T SEE THAT HERE."),
         push(ifHas='BOX', ifAtLocation=('CUBICLE', 'CONTROL'), setState=('floor', 1), setMove=('ELEVEVATOR', 'SOUTH', 'LOBBY'), goTo='LOBBY', message="I PUSH THE BUTTON ON THE BOX AND\nTHERE IS A BLINDING FLASH...."),
-        push(ifHas='BOX', message="I PUSH THE BUTTON ON THE BOX AND\nNOTHING HAPPENS."),),
+        push(message="I PUSH THE BUTTON ON THE BOX AND\nNOTHING HAPPENS."),),
         visible=False),
 )

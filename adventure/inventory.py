@@ -21,8 +21,10 @@ class Inventory:
         return items
 
     def Has(self, object):
-        return object.placement.InInventory()
-
+        if object is not None:
+            return object.placement.InInventory()
+        else:
+            return False
 
     def Add(self, object):
         if self.size != self.capacity:

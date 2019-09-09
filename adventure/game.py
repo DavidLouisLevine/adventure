@@ -116,8 +116,8 @@ class Game:
             i = -1
             verbStr = action
         verb = self.world.verbs[verbStr]
+        target = None
         if verb is not None:
-            target = None
             original_value = None
             if i != -1:
                 targetStr = action[i + 1:]
@@ -132,8 +132,6 @@ class Game:
         return self.DoTarget(verb, target)
 
     def Do(self, action):
-        if action == "BOND-007-":
-            jj = 99
         if action[-1] == '\n':
             action = action[:-1]
 
