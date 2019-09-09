@@ -51,6 +51,12 @@ class Response:
         actualAnswer = game.Input(question, readExpected=False)[0]
         return expectedAnswer == actualAnswer
 
+    def IfObjectResponse(self, verb, object):
+        if object is None or self.Arg('ifObjectResponse') is None:
+            return True
+
+        return Response.HasResponse(object.responses, verb)
+
     def IfNoObjectResponse(self, verb, object):
         if object is None or self.Arg('ifNoObjectResponse') is None:
             return True
@@ -63,7 +69,7 @@ class Response:
 
         for response in responses:
             if response.verb == verb:
-                if response.IfQuestion(game) and\
+                if response.IfObjectResponse(verb, object) and\
                     response.IfNoObjectResponse(verb, object) and\
                     response.IfCondition('ifTrue', game, lambda a, g: a(g), object) and \
                     response.IfCondition('ifSet', game, lambda a, g: g.state[a], object) and\
@@ -75,7 +81,8 @@ class Response:
                     response.IfCondition('ifHere', game, lambda a, g: g.IsHere(a), object) and \
                     response.IfCondition('ifNotHere', game, lambda a, g: not g.IsHere(a), object) and \
                     response.IfCondition('ifHas', game, lambda a, g: g.Has(a), object) and \
-                    response.IfCondition('ifNotHas', game, lambda a, g: not g.Has(a), object):
+                    response.IfCondition('ifNotHas', game, lambda a, g: not g.Has(a), object) and\
+                    response.IfQuestion(game):
 
                     m = ""
 

@@ -9,11 +9,12 @@ objects = (
         start(ifNotSet=('batteryInserted', 'tapeInserted', 'tvConnected'),
               setState=('sculptureMessage', True),
               message=("{playerName},\nWE HAVE UNCOVERED A NUMBER THAT MAY HELP YOU.\nTHAT NUMBER IS:{secretCode}. PLEASE WATCH OUT FOR HIDDEN TRAPS.\nALSO, THERE IS SOMETHING IN THE SCULPTURE.")))),
-    Object('A VIDEO TAPE', 'TAPE', NoPlacement(), insert(into='RECORDER', moveObject='TAPE', message='O.K. THE TAPE IS IN THE RECORDER.'), moveable=True),
+    Object('A VIDEO TAPE', 'TAPE', NoPlacement(),
+       insert(question="TELL ME, IN ONE WORD, INTO WHAT", answer="RECORDER", moveObject='TAPE', message='O.K. THE TAPE IS IN THE RECORDER.'), moveable=True),
     Object('A LARGE BATTERY', 'BATTERY', NoPlacement(), (
-        insert(into='RECORDER', setState=('batteryInserted', True), removeObject='BATTERY', message='OK')), moveable=True),
+        insert(question="TELL ME, IN ONE WORD, INTO WHAT", answer="RECORDER", setState=('batteryInserted', True), removeObject='BATTERY', message='OK')), moveable=True),
     Object('A BLANK CREDIT CARD', 'CARD', NoPlacement(), (
-        insert(into='SLIT', ifGE='sleepTimer', removeObject='CARD', moveObject = ('LOCK', 'CORRIDOR'), message='POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING.'),
+        insert(into='SLIT', question="TELL ME, IN ONE WORD, INTO WHAT", answer="SLIT", ifGE='sleepTimer', removeObject='CARD', moveObject = ('LOCK', 'CORRIDOR'), message='POP! A SECTION OF THE WALL OPENS.....\nREVEALING SOMETHING VERY INTERESTING.'),
         insert(into='SLIT', messsage="THE GUARD WON'T LET ME")),
            moveable=True),
     Object('AN ELECTRONIC LOCK', 'LOCK', NoPlacement(),
@@ -56,7 +57,8 @@ objects = (
         open(ifHas='WEIGHT', message="IT'S STUCK."),
         open(message="IT's STUCK."),  # Lowercase 's' in original code
         look(message="IT LOOKS FRAGILE."),
-        break_(ifHas='WEIGHT', createHere=('BATTERY', 'NOTEBOOK'), makeVisible='DRAWER', message ="IT'S HARD....BUT I GOT IT. TWO THINGS FELL OUT.")),
+        break_(ifHas='WEIGHT', createHere=('BATTERY', 'NOTEBOOK'), makeVisible='DRAWER', message ="IT'S HARD....BUT I GOT IT. TWO THINGS FELL OUT."),
+        break_(message="I CAN'T DO THAT YET.")),
         moveable=True,
         visible=False),
     Object('A GLASS CASE ON A PEDESTAL', 'CASE', 'CUBICLE', (
@@ -68,7 +70,7 @@ objects = (
         look(message="THERE'S WRITING ON IT."),
         read(message="IT SAYS: WATCH OUT! DANGEROUS!")), moveable=True),
     Object('A QUARTER', 'QUARTER', NoPlacement(),
-        insert(into='MACHINE', moveObject=('COFFEE', 'HALLWAY'), message='POP! A CUP OF COFFEE COMES OUT OF THE MACHINE.'),
+        insert(question="TELL ME, IN ONE WORD, INTO WHAT", answer="MACHINE", oveObject=('COFFEE', 'HALLWAY'), message='POP! A CUP OF COFFEE COMES OUT OF THE MACHINE.'),
         moveable=True),
     Object('A COFFEE MACHINE', 'MACHINE', 'HALLWAY'),
     Object('A CUP OF STEAMING HOT COFFEE', 'CUP', NoPlacement(),
@@ -82,7 +84,8 @@ objects = (
         go(ifSet='upButtonPushed', goTo='ELEVATOR'),
         look(ifSet='upButtonPushed', message="THE DOORS ARE OPEN."))),
     Object('A LARGE BUTTON ON THE WALL', 'BUTTON', 'CONTROL', (
-        push(ifNotSet='wallButtonPushed', setState=('wallButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."))),
+        push(ifNotSet='wallButtonPushed', setState=('wallButtonPushed', True), message="THE BUTTON ON THE WALL GOES IN .....\nCLICK! SOMETHING SEEMS DIFFFERENT NOW."),\
+        push(message="NOTHING HAPPENS."))),
     Object('A PANEL OF BUTTONS NUMBERED ONE THRU THREE', 'PANEL', 'ELEVATOR'),
     Object('A STRONG NYLON ROPE', 'ROPE', 'BASEMENT', (
         throw(ifHas='ROPE', question="TELL ME,IN ONE WORD,AT WHAT", answer="HOOK", createHere='ROPE', setState=('ropeThrown', (True, None)), wrong="O.K. I THREW IT.", message="I THREW THE ROPE AND IT SNAGGED ON THE HOOK."),
@@ -121,6 +124,7 @@ objects = (
     # In the game, "BUT" is a special cased string when used for this panel.
     Object('AN UP BUTTON', 'BUTTON', 'LOBBY', push(setState=('upButtonPushed', True), message='THE DOORS OPEN WITH A WHOOSH!'), visible=False),
     Object('A BUTTON ON A BOX', 'BUTTON', 'LAB', (
+        push(ifNotHas='BOX', message="I DON'T SEE THAT HERE."),
         push(ifHas='BOX', ifAtLocation=('CUBICLE', 'CONTROL'), setState=('floor', 1), setMove=('ELEVEVATOR', 'SOUTH', 'LOBBY'), goTo='LOBBY', message="I PUSH THE BUTTON ON THE BOX AND\nTHERE IS A BLINDING FLASH...."),
         push(ifHas='BOX', message="I PUSH THE BUTTON ON THE BOX AND\nNOTHING HAPPENS."),),
         visible=False),

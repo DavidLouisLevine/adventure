@@ -2,162 +2,72 @@ from adventure.response import Response
 from adventure.verb import Verb, BuiltInVerbs
 from adventure.util import MakeTuple
 
-def ArgStr(kwargs, key):
-    return kwargs[key] if key in kwargs else ""
-
-class StandardVerb(Verb):
-    def __init__(self, *args, **kwargs):
-        self.notApplicableMessage = ArgStr(kwargs, 'notApplicableMessage')
-        self.didntWorkMessage = ArgStr(kwargs, 'didntWorkMessage')
+class ResponseVerb(Verb):
+    def __init__(self, name, abbreviation, responses=None, *args, **kwargs):
+        if responses is not None:
+            self.responses = MakeTuple(responses)
+            for response in self.responses:
+                response.verb = self
+        else:
+            self.responses = None
         if 'notApplicableMessage' in kwargs:
             self.notApplicableMessage = kwargs.pop('notApplicableMessage')
+        else:
+            self.notApplicableMessage = None
         if 'didntWorkMessage' in kwargs:
             self.didntWorkMessage = kwargs.pop('didntWorkMessage')
-        Verb.__init__(self, *args, **kwargs)
-
-    def DoObject(self, target, game):
-        if target.IsObject():
-            if Response.HasResponse(target.value.responses, self):
-                m = Response.Respond(target.value.responses, self, game)
-                if m == "" or m is None:
-                    m = self.didntWorkMessage
-            else:
-                m = self.notApplicableMessage if self.notApplicableMessage is not None else self.didntWorkMessage
         else:
-            m = ""
-        return m
-
-class ResponseVerb(Verb):
-    def __init__(self, name, abbreviation, responses):
-        self.responses = responses
-        for response in self.responses:
-            response.verb = self
-        Verb.__init__(self, name, abbreviation)
+            self.didntWorkMessage = None
+        Verb.__init__(self, name, abbreviation, *args, **kwargs)
 
     def DoObject(self, target, game):
         m = ""
         if Response.HasResponse(self.responses, self):
-            m = Response.Respond(self.responses, self, game, target.value)
+            m = Response.Respond(self.responses, self, game, target.value if target is not None else None)
             if m is not None and m != "":
                 return m
 
-        if target.IsObject():
-            if Response.HasResponse(target.value.responses, self):
-                m = Response.Respond(target.value.responses, self, game)
-        else:
-            m = ""
+        if target.IsObject() and Response.HasResponse(target.value.responses, self):
+            m = Response.Respond(target.value.responses, self, game)
+            if m is None or m == "":
+                m = self.didntWorkMessage
+        elif self.notApplicableMessage is not None:
+            m = self.notApplicableMessage
         return m
-
-class PushVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class PullVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['didntWorkMessage'] = 'NOTHING HAPPENS.'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class InsertVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        if 'didntWorkMessage' not in kwargs:
-            kwargs['didntWorkMessage'] = 'NOTHING HAPPENED.'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-    def DoObject(self, target, game):
-        m = ""
-        if target.IsObject() and not target.value.responses is None:
-            response = Response.GetResponse(target.value.responses, self);
-            if response is not None:
-                into = game.world.objects[game.Input("TELL ME, IN ONE WORD, INTO WHAT")]
-                if 'insertedObject' in response.kwargs and into == response.kwargs['insertedObject']:
-                    m = Response.Respond(target.value.responses, self, game)
-                if m == "" or m is None:
-                    m = "NOTHING HAPPENED."
-            else:
-                m = "I CAN'T INSERT THAT!"
-        return m
-
-class OpenVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I CAN'T OPEN THAT!"
-        kwargs['didntWorkMessage'] = "I CAN'T DO THAT......YET!"
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class WearVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I CAN'T WEAR THAT!"
-        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class ReadVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I CAN'T READ THAT."
-        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class StartVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I CAN'T START THAT."
-        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class BreakVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I'M TRYING TO BREAK IT, BUT I CAN'T."
-        kwargs['didntWorkMessage'] = "I CAN'T DO THAT YET."
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class CutVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I'M TRYING. IT DOESN'T WORK."
-        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class ThrowVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I CAN'T THROW THAT."
-        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class ConnectVerb(StandardVerb):
-    def __init__(self, *args, **kwargs):
-        kwargs['notApplicableMessage'] = "I CAN'T CONNECT THAT."
-        kwargs['didntWorkMessage'] = 'SHOULD NOT SEE THIS MESSAGE'
-        StandardVerb.__init__(self, *args, **kwargs)
-
-class BondVerb(Verb):
-    def __init__(self, *args, **kwargs):
-        Verb.__init__(self, *args, **kwargs)
-
-    def DoObject(self, target, game):
-        if game.state.location != game.world.locations['CAFETERIA']:
-            return "NOTHING HAPPENED."
-        else:
-            game.state.location = game.world.locations['BASEMENT']
-            return "WHOOPS! A TRAP DOOR OPENED UNDERNEATH ME. AND\nI FIND MYSELF FALLING.\n"
 
 def VerbResponse(*args, **kwargs):
     return Response(None, None, *args, **kwargs)
 
 customVerbs = (
     ResponseVerb('PUSH', 'PUS', (
-        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE"),
+        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE."),
         VerbResponse(ifNoObjectResponse=True, message="NOTHING HAPPENS."))),
-    PullVerb('PULL', 'PUL'),
-    InsertVerb('INSERT', 'INS'),
-    OpenVerb('OPEN', 'OPE'),
+    ResponseVerb('PULL', 'PUL', VerbResponse(ifNoObjectResponse=True, message="NOTHING HAPPENS.")),
+    ResponseVerb('INSERT', 'INS',
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T INSERT THAT!"),
+        didntWorkMessage="NOTHING HAPPENED."),
+    ResponseVerb('OPEN', 'OPE', (
+        VerbResponse(ifNotHere=True, message="I CAN'T OPEN THAT!"),
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T OPEN THAT!")),
+        didntWorkMessage="I CAN'T DO THAT......YET!"),
     ResponseVerb('WEAR', 'WEA', (
         VerbResponse(ifNotHas=True, message="I CAN'T WEAR THAT!"),
         VerbResponse(ifNoObjectResponse=True, message="I CAN'T WEAR THAT!"))),
-    #(WearVerb('WEAR', 'WEA', targetInventory=False, targetInRoom=False)),
-    ReadVerb('READ', 'REA'),
-    StartVerb('START', 'STA'),
-    BreakVerb('BREAK', 'BRE'),
-    CutVerb('CUT', 'CUT'),
-    ThrowVerb('THROW', 'THR'),
-    ConnectVerb('CON', 'CON', targetInventory=False, targetInRoom=False),
-    BondVerb('BOND-007-', 'BON', targetOptional=True))
+    ResponseVerb('READ', 'REA', (
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T READ THAT!"),
+        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE."))),
+    ResponseVerb('START', 'STA', (
+        VerbResponse(ifNotHas=True, message="I CAN'T START THAT!"),
+        VerbResponse(ifNoObjectResponse=True, message="SHOULD NOT SEE THIS MESSAGE"))),
+    ResponseVerb('BREAK', 'BRE', (
+        VerbResponse(ifNoObjectResponse=True, message="I'M TRYING TO BREAK IT, BUT I CAN'T."))),
+    ResponseVerb('CUT', 'CUT', VerbResponse(ifNotHas=True, message="I'M TRYING. IT DOESN'T WORK.")),
+    ResponseVerb('THROW', 'THR', VerbResponse(ifNotHas=True, message="I CAN'T THROW THAT.")),
+    ResponseVerb('CON', 'CON', VerbResponse(ifNotHas=True, message="I CAN'T CONNECT THAT.")),
+    ResponseVerb('BOND-007-', 'BON', (
+        VerbResponse(ifAtLocation='CAFETERIA', goTo='BASEMENT', message="WHOOPS! A TRAP DOOR OPENED UNDERNEATH ME AND\nI FIND MYSELF FALLING.\n"),
+        VerbResponse(message="NOTHING HAPPENED.")),
+        targetOptional=True))
 
 verbs = BuiltInVerbs(customVerbs)
 push = verbs['PUSH'].MakeResponse

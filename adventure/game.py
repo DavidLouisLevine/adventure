@@ -16,7 +16,7 @@ class Game:
         self.prompts = prompts
         self.quitting = False
         self.inputFile = None
-        self.printWhenStreaming = True # If False, only print errors when commands are being read from the input file
+        self.printWhenStreaming = False # If False, only print errors when commands are being read from the input file
         self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
         self.nextLine = None
 
@@ -76,7 +76,7 @@ class Game:
         if self.scriptOutputFile is not None:
             self.scriptOutputFile.write(command)
 
-        if command[-1] == '\n':
+        if command != "" and command[-1] == '\n':
             command = command[:-1]
         return command, expected
 
@@ -115,7 +115,6 @@ class Game:
         else:
             i = -1
             verbStr = action
-
         verb = self.world.verbs[verbStr]
         if verb is not None:
             target = None
@@ -126,11 +125,15 @@ class Game:
                 value = Direction.FromName(targetStr)
                 if value is None:
                     value = self.world.objects.Find(targetStr, self.state.location)
+                    if value is None:
+                        value = self.world.objects[targetStr]
 
                 target = None if value is None else Target(value)
         return self.DoTarget(verb, target)
 
     def Do(self, action):
+        if action == "BOND-007-":
+            jj = 99
         if action[-1] == '\n':
             action = action[:-1]
 
@@ -206,7 +209,7 @@ class Game:
                (type(object.placement) == LocationPlacement and object.placement.location == self.state.location)
 
     def AtLocation(self, location):
-        return self.state.location == location
+        return self.state.location == self.world.ResolveLocation(location)
 
     def RemoveObject(self, object):
         object = self.world.ResolveObject(object)
@@ -221,7 +224,7 @@ class Game:
         original_object = object
         object = self.world.ResolveObject(object)
         if object is None:
-            object = self.world.ResolveOwerbject(original_object)
+            object = self.world.ResolveObject(original_object)
         location = self.world.ResolveLocation(location)
         object.placement = LocationPlacement(location)
 
