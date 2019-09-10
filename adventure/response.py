@@ -136,7 +136,7 @@ class Response:
                     if response.Arg('look') is not None:
                         if m != "":
                             m += '\n'
-                        m += game.Look(response.ArgStr('look'))
+                        m += game.Look(response.ArgStr('look'))[0]
 
                     return m
 

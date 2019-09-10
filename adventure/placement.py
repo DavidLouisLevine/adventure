@@ -24,6 +24,15 @@ class InventoryPlacement(Placement):
     def __str__(self):
         return 'Inventory'
 
+class AtLargePlacement(Placement):
+    def __init__(self):
+        self.location = None
+        self.inventory = False
+        self.exists = True
+
+    def __str__(self):
+        return 'AtLarge'
+
 class NoPlacement(Placement):
     def __init__(self):
         self.location = None

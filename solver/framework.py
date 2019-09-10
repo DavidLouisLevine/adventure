@@ -1,5 +1,4 @@
 from cia.cia_game import CIA
-from adventure.world import World
 from adventure.direction import Direction
 from adventure.target import Target
 
@@ -31,5 +30,12 @@ def step_game(current_room_desc, current_quest_desc, action_index, object_index)
         target = Target(Direction(objects[object_index]))
     else:
         target = Target(game.world.objects[object_index])
-    message = game.DoTarget(verb, target)
-    return message, game.quest, 0, False
+    message, reward = game.DoTarget(verb, target)
+    return message, game.quest, reward, False
+
+def get_action_name(action_index):
+    return game.world.verbs[int(action_index)]
+
+
+def get_object_name(object_index):
+    return game.world.objects[int(object_index)]

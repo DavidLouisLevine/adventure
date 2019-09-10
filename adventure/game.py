@@ -19,6 +19,7 @@ class Game:
         self.printWhenStreaming = False # If False, only print errors when commands are being read from the input file
         self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
         self.nextLine = None
+        self.quest=None
 
     def NewGame(self, quest):
         self.state.Init()
@@ -86,17 +87,17 @@ class Game:
 
     def DoTarget(self, verb, target):
         if verb is None:
-            return "I DON'T KNOW HOW TO DO THAT."
+            return "I DON'T KNOW HOW TO DO THAT.", -1
 
         if (target is None or target.value is None) and not (verb.targetOptional or verb.targetNever):
-            return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT."
+            return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT.", -1
 
         currentLocation = self.state.location
-        m = verb.Do(target, self)
+        m, reward = verb.Do(target, self)
 
         # If the location changed, execute the new location's response
         if self.state.location != currentLocation:
-            m += self.Look()
+            m += self.Look()[0]
             if self.state.location.responses is not None:
                 currentLocation = self.state.location
                 r = Response.Respond(self.state.location.responses, self.world.verbs['GO'], self)
@@ -105,8 +106,10 @@ class Game:
                         m += '\n'
                     m += r
                     if self.state.location != currentLocation:
-                        m += '\n' + self.Look()
-        return m
+                        m += '\n' + self.Look()[0]
+        if m is None or m == "":
+            m = self.Look()
+        return m, reward
 
     def DoAction(self, action):
         if ' ' in action:
@@ -129,7 +132,8 @@ class Game:
                         value = self.world.objects[targetStr]
 
                 target = None if value is None else Target(value)
-        return self.DoTarget(verb, target)
+        m, reward = self.DoTarget(verb, target)
+        return m
 
     def Do(self, action):
         if action[-1] == '\n':

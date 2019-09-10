@@ -1,6 +1,6 @@
 from adventure.response import Response
 from adventure.item import Items, Item
-from adventure.placement import InventoryPlacement
+from adventure.placement import InventoryPlacement, AtLargePlacement
 
 
 class Objects(Items):
@@ -12,7 +12,8 @@ class Objects(Items):
         if type(item) == str:
             abbreviation = Items.Abbreviate(item)
             for ii in self.index:
-                if (ii.name == item or Items.Abbreviate(ii.abbreviation) == abbreviation) and (location is None or ii.placement.location == location or type(ii.placement) == InventoryPlacement):
+                if (ii.name == item or Items.Abbreviate(ii.abbreviation) == abbreviation) and\
+                        (location is None or ii.placement.location == location or type(ii.placement) == InventoryPlacement or type(ii.placement) == AtLargePlacement):
                     i = ii
                     break
         elif type(item) == int:

@@ -129,6 +129,7 @@ def run_episode(for_training):
 
         action_index, object_index =  epsilon_greedy(current_state_vector, epsilon)
         (next_room_desc, next_quest_desc, reward, terminal) = framework.step_game(current_room_desc, current_quest_desc, action_index, object_index)
+        print(framework.get_action_name(action_index), framework.get_object_name(object_index), '->', next_room_desc)
         next_state_vector = utils.extract_bow_feature_vector(next_room_desc + next_quest_desc, dictionary)
 
         if for_training:

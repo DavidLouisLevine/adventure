@@ -41,7 +41,7 @@ class GoVerb(Verb):
         if target.IsDirection():
             move = game.state.location.moves[target.value.d]
             if move == 0:
-                return cant
+                return cant, 0
             game.state.location = game.world.locations[move]
             m = ""
         elif target.IsObject():
@@ -50,14 +50,14 @@ class GoVerb(Verb):
                 if object.responses is not None:
                     m = Response.Respond(object.responses, self, game)
                     if m is None:
-                        return cant
+                        return cant, 0
                     if m != "":
                         pass # m = m + "\n"
                 else:
-                    return cant
+                    return cant, 0
             else:
-                return "I DON'T SEE THAT HERE."
-        return m
+                return "I DON'T SEE THAT HERE.", 0
+        return m, 0
 
 class DropVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -66,9 +66,9 @@ class DropVerb(Verb):
     def DoObject(self, target, game):
         if target.IsObject() and game.state.inventory.Remove(target.value):
             game.CreateHere(target.value)
-            return "O.K. I DROPPED IT."
+            return "O.K. I DROPPED IT.", 0
         else:
-            return "I DON'T SEEM TO BE CARRYING IT."
+            return "I DON'T SEEM TO BE CARRYING IT.", 0
 
 class GetVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -96,7 +96,7 @@ class GetVerb(Verb):
                 m = "O.K." + m
         else:
             m = "I DON'T SEE THAT HERE."
-        return m
+        return m, 0
 
 class InventoryVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -115,7 +115,7 @@ class InventoryVerb(Verb):
                 else:
                     first = False
                 m += object.name + " "
-        return m
+        return m, 0
 
 class LookVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -147,7 +147,7 @@ class LookVerb(Verb):
             else:
                 m += "\n"
             m += "\n>" + '-' * 62 + "<"
-        return m
+        return m, 0
 
 class QuitVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -157,7 +157,7 @@ class QuitVerb(Verb):
         m = "WHAT? YOU WOULD LEAVE ME HERE TO DIE ALONE?\n"
         m += "JUST FOR THAT, I'M GOING TO DESTROY THE GAME.\n\n\n\nBOOOOOOOOOOOOM!"
         game.quitting = True
-        return m
+        return m, 0
 
 class BuiltInVerbs(Verbs):
     def __init__(self, verbs):

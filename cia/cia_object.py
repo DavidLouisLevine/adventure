@@ -1,4 +1,4 @@
-from adventure.placement import NoPlacement
+from adventure.placement import NoPlacement, AtLargePlacement
 from adventure.object import Object
 from cia.cia_verb import push, pull, go, get, insert, open, drop, wear, read, start, break_, cut, throw, connect, look
 

@@ -23,9 +23,9 @@ class ResponseVerb(Verb):
     def DoObject(self, target, game):
         m = ""
         if Response.HasResponse(self.responses, self):
-            m = Response.Respond(self.responses, self, game, target.value if target is not None else None)
+            m = Response.Respond(self.responses, self, game, target.value if target is not None and target.IsObject() else None)
             if m is not None and m != "":
-                return m
+                return m, 0
 
         if target.IsObject() and Response.HasResponse(target.value.responses, self):
             m = Response.Respond(target.value.responses, self, game)
@@ -33,7 +33,7 @@ class ResponseVerb(Verb):
                 m = self.didntWorkMessage
         elif self.notApplicableMessage is not None:
             m = self.notApplicableMessage
-        return m
+        return m, 0
 
 def VerbResponse(*args, **kwargs):
     return Response(None, None, *args, **kwargs)
