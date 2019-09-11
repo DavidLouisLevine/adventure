@@ -9,6 +9,9 @@ from tqdm import tqdm
 import solver.framework as framework
 import solver.utils as utils
 
+# This is the agent_dqn.py file from 6.86x adapted to the adventure module. The only different between this file
+# and the original is the first few lines of __main__
+
 DEBUG = False
 
 GAMMA = 0.5  # discounted factor
@@ -38,14 +41,10 @@ def epsilon_greedy(state_vector, epsilon):
     Returns:
         (int, int): the indices describing the action/object to take
     """
-    if np.random.random() <= epsilon:
-        action_index, object_index = np.random.choice(range(NUM_ACTIONS)), np.random.choice(range(NUM_OBJECTS))
-    else:
-        with torch.no_grad():
-            q_action, q_object = model(state_vector)
-        action_index, object_index = q_action.argmax(), q_object.argmax()
+    # TODO Your code here
+    action_index, object_index = None, None
+    return (action_index, object_index)
 
-    return action_index, object_index
 
 class DQN(nn.Module):
     """A home deep Q network implementation.
@@ -81,32 +80,19 @@ def deep_q_learning(current_state_vector, action_index, object_index, reward,
     Returns:
         None
     """
-    with torch.no_grad():
-        q_values_action_next, q_values_object_next = model(torch.FloatTensor(next_state_vector))
-    maxq_next = avg(q_values_action_next.max(), q_values_object_next.max())
+    q_values_action_next, q_values_object_next = model(next_state_vector)
+    maxq_next = 1 / 2 * (q_values_action_next.max()
+                         + q_values_object_next.max())
 
-    q_values_action_current, q_values_object_current = model(current_state_vector)
-    current = avg(q_values_action_current[action_index], q_values_object_current[object_index])
-#    current = torch.FloatTensor([avg(q_values_action_current[action_index], q_values_object_current[object_index])])
+    q_value_cur_state = model(current_state_vector)
 
-    # if terminal:
-    #     target = (1 - ALPHA) * current + ALPHA * reward
-    #     #target = reward
-    # else:
-    #     target = (1 - ALPHA) * current + ALPHA * (reward + GAMMA * maxq_next)
-    maxq = 0 if terminal else maxq_next
-    target = torch.FloatTensor([reward + (GAMMA * maxq)])
-        #target = reward + GAMMA * maxq_next
+    # TODO Your code here
 
-    #target = torch.FloatTensor([target])
-    #loss = F.mse_loss(current.requires_grad_(True), target.requires_grad_(True))
-    loss = 0.5 * (target.requires_grad_(True) - current.requires_grad_(True))**2
-    #loss = F.cross_entropy(current, target)
+    loss = None
 
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-
 # pragma: coderesponse end
 
 
@@ -117,31 +103,32 @@ def run_episode(for_training):
         If for testing, computes and return cumulative discounted reward
     """
     epsilon = TRAINING_EP if for_training else TESTING_EP
-    epi_reward = 0
+    epi_reward = None
 
     # initialize for each episode
-    t = 0
+    # TODO Your code here
+
     (current_room_desc, current_quest_desc, terminal) = framework.newGame()
     while not terminal:
         # Choose next action and execute
-        current_state = current_room_desc + ' ' + framework.get_quest_name()
-        current_state_vector = torch.FloatTensor(utils.extract_bow_feature_vector(current_state, dictionary))
+        current_state = current_room_desc + current_quest_desc
+        current_state_vector = torch.FloatTensor(
+            utils.extract_bow_feature_vector(current_state, dictionary))
 
-        action_index, object_index =  epsilon_greedy(current_state_vector, epsilon)
-        (next_room_desc, next_quest_desc, reward, terminal) = framework.step_game(current_room_desc, current_quest_desc, action_index, object_index)
-        next_state_vector = utils.extract_bow_feature_vector(next_room_desc + next_quest_desc, dictionary)
+        # TODO Your code here
 
         if for_training:
             # update Q-function.
-            deep_q_learning(current_state_vector, action_index, object_index, reward, next_state_vector, terminal)
+            # TODO Your code here
+            pass
 
         if not for_training:
             # update reward
-            epi_reward += reward * GAMMA ** t
+            # TODO Your code here
+            pass
 
         # prepare next step
-        (current_room_desc, current_quest_desc) = (next_room_desc, next_quest_desc)
-        t += 1
+        # TODO Your code here
 
     if not for_training:
         return epi_reward
@@ -183,7 +170,6 @@ if __name__ == '__main__':
     # set up the game
     framework.load_game_data()
 
-    #state_texts = utils.load_data('game.tsv')
     dictionary = utils.bag_of_words(framework.get_descriptions())
     state_dim = len(dictionary)
 
