@@ -48,7 +48,7 @@ def epsilon_greedy(state_vector, epsilon):
     return action_index, object_index
 
 class DQN(nn.Module):
-    """A simple deep Q network implementation.
+    """A home deep Q network implementation.
     Computes Q values for each (action, object) tuple given an input state vector
     """
 

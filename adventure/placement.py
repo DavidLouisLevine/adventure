@@ -13,7 +13,7 @@ class LocationPlacement(Placement):
         Placement.__init__(self)
 
     def __str__(self):
-        return self.location.name
+        return self.location.Name()
 
 class InventoryPlacement(Placement):
     def __init__(self):

@@ -50,7 +50,7 @@ class CIA(Game):
         self.state['guardTicks'] = -1
 
         self.state.inventory.Add(self.world.objects['BADGE'])
-        return self.state.location.name, self.quest, False
+        return self.state.location.Name(), self.quest, False
 
     def Run(self, commands):
 #        self.world.print()

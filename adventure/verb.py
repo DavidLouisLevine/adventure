@@ -130,7 +130,7 @@ class LookVerb(Verb):
             if m is None or m == "":
                 m = "I SEE NOTHING OF INTEREST."
         else:
-            m = "WE ARE " + game.state.location.name + "."
+            m = "WE ARE " + game.state.location.Name() + "."
             for object in game.world.AtLocation(game.state.location):
                 if object.visible:
                     if not m == "":
@@ -160,8 +160,9 @@ class QuitVerb(Verb):
         return m, 0
 
 class BuiltInVerbs(Verbs):
-    def __init__(self, verbs):
-        Verbs.__init__(self, BuiltInVerbs.builtinVerbs + verbs)
+    def __init__(self, verbs, f=None):
+        filtered = BuiltInVerbs.builtinVerbs if f is None else list(filter(lambda x:x.abbreviation in f, BuiltInVerbs.builtinVerbs))
+        Verbs.__init__(self, list(filtered) + list(verbs))
 
     builtinVerbs = (
         (GoVerb('GO', 'GO')),
@@ -172,3 +173,5 @@ class BuiltInVerbs(Verbs):
         (QuitVerb('QUIT', 'QUI', targetNever=True)),
         (InventoryVerb('INVENTORY', 'INV', targetNever=True))
     )
+
+    builtinVerbsList = Verbs(builtinVerbs)

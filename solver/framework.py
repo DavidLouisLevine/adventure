@@ -1,10 +1,18 @@
-from cia.cia_game import CIA
+#from cia.cia_game import CIA
+from home.home_game import Home
 from adventure.direction import Direction
 from adventure.target import Target
 
-# This class mimics the methods in the  MIT x6.86 framework class
+# This class supports the methods in the MIT x6.86 framework class
 
-game = CIA()
+DEFAULT_REWARD = -0.01 # Negative reward for each non-terminal step
+JUNK_CMD_REWARD = -0.1 # Negative reward for invalid commands
+QUEST_REWARD = 1 # positive reward for finishing quest
+STEP_COUNT = 0  #count the number of steps in current episode
+MAX_STEPS = 20
+
+#game = CIA()
+game = Home()
 game.Init()
 
 def load_game_data():
@@ -26,16 +34,19 @@ def step_game(current_room_desc, current_quest_desc, action_index, object_index)
     verb = game.world.verbs[int(action_index)]
     objects = get_objects()
     object_index = int(object_index)
-    if object_index > len(objects) - 4:
+    if object_index >= len(objects) - 4:
         target = Target(Direction(objects[object_index]))
     else:
         target = Target(game.world.objects[object_index])
     message, reward = game.DoTarget(verb, target)
-    return message, game.quest, reward, False
+    return game.state.location.Name(), game.quest, reward, False
 
 def get_action_name(action_index):
     return game.world.verbs[int(action_index)]
 
-
 def get_object_name(object_index):
-    return game.world.objects[int(object_index)]
+    objects = get_objects()
+    if object_index >= len(objects) - 4:
+        return Direction(object_index - len(objects) + 4).Name()
+    else:
+        return game.world.objects[int(object_index)]

@@ -7,6 +7,7 @@ from adventure.direction import Direction
 from adventure.placement import NoPlacement, InventoryPlacement, LocationPlacement
 from adventure.response import Response
 from adventure.util import StartsWith
+from adventure.verb import BuiltInVerbs
 
 class Game:
     def Init(self, world, state, prompts):
@@ -107,8 +108,8 @@ class Game:
                     m += r
                     if self.state.location != currentLocation:
                         m += '\n' + self.Look()[0]
-        if m is None or m == "":
-            m = self.Look()
+            if m is None or m == "":
+                m = self.Look()
         return m, reward
 
     def DoAction(self, action):
@@ -184,7 +185,13 @@ class Game:
         pass
 
     def Look(self, at=None):
-        return self.world.verbs['LOOK'].Do(at, self)
+        if 'LOOK ' in self.world.verbs:
+            verb = self.world.verbs['LOOK']
+        else:
+            verb = BuiltInVerbs.builtinVerbsList['LOOK']
+
+        return verb.Do(at, self)
+
 
     def GoTo(self, location):
         self.state.location = self.world.ResolveLocation(location)
