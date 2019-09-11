@@ -87,30 +87,38 @@ class Game:
             return print(*args, **kwargs)
 
     def DoTarget(self, verb, target):
+        if target.IsDirection() and verb != self.BaseVerb('GO'):
+            return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT.", 0, Response.IllegalCommand
+
         if verb is None:
-            return "I DON'T KNOW HOW TO DO THAT.", -1
+            return "I DON'T KNOW HOW TO DO THAT.", 0, Response.IllegalCommand
 
         if (target is None or target.value is None) and not (verb.targetOptional or verb.targetNever):
-            return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT.", -1
+            return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT.", 0, Response.IllegalCommand
 
         currentLocation = self.state.location
-        m, reward = verb.Do(target, self)
+        m, reward, result = verb.Do(target, self)
 
         # If the location changed, execute the new location's response
         if self.state.location != currentLocation:
             m += self.Look()[0]
             if self.state.location.responses is not None:
                 currentLocation = self.state.location
-                r = Response.Respond(self.state.location.responses, self.world.verbs['GO'], self)
-                if r is not None:
+                m2, reward2, result = Response.Respond(self.state.location.responses, self.world.verbs['GO'], self)
+                if m2 is not None:
                     if m is not "":
                         m += '\n'
-                    m += r
+                    m += m2
+                    reward += reward2
                     if self.state.location != currentLocation:
                         m += '\n' + self.Look()[0]
             if m is None or m == "":
                 m = self.Look()
-        return m, reward
+
+        if result == Response.Success and self.quest[0] == verb.i and target.IsObject() and self.quest[1] == target.value.i:
+            result = Response.CompletedQuest
+
+        return m, reward, result
 
     def DoAction(self, action):
         if ' ' in action:
@@ -184,14 +192,15 @@ class Game:
     def Tick(self, target, game):
         pass
 
-    def Look(self, at=None):
-        if 'LOOK ' in self.world.verbs:
-            verb = self.world.verbs['LOOK']
+    def BaseVerb(self, verbStr):
+        if verbStr in self.world.verbs:
+            verb = self.world.verbs[verbStr]
         else:
-            verb = BuiltInVerbs.builtinVerbsList['LOOK']
+            verb = BuiltInVerbs.builtinVerbsList[verbStr]
+        return verb
 
-        return verb.Do(at, self)
-
+    def Look(self, at=None):
+        return self.BaseVerb('LOOK').Do(at, self)
 
     def GoTo(self, location):
         self.state.location = self.world.ResolveLocation(location)
@@ -236,6 +245,9 @@ class Game:
             object = self.world.ResolveObject(original_object)
         location = self.world.ResolveLocation(location)
         object.placement = LocationPlacement(location)
+
+    def QuestName(self):
+        return self.world.verbs[self.quest[0]].abbreviation + ' ' + self.world.objects[self.quest[1]].abbreviation
 
     def __str__(self):
         return str(self.state.location) + self.state.inventory.string(self.world)

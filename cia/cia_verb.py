@@ -21,19 +21,19 @@ class ResponseVerb(Verb):
         Verb.__init__(self, name, abbreviation, *args, **kwargs)
 
     def DoObject(self, target, game):
-        m = ""
+        m, reward, result = "", 0, Response.IllegalCommand
         if Response.HasResponse(self.responses, self):
-            m = Response.Respond(self.responses, self, game, target.value if target is not None and target.IsObject() else None)
+            m, reward, result = Response.Respond(self.responses, self, game, target.value if target is not None and target.IsObject() else None)
             if m is not None and m != "":
                 return m, 0
 
         if target.IsObject() and Response.HasResponse(target.value.responses, self):
-            m = Response.Respond(target.value.responses, self, game)
+            m, reward, result = Response.Respond(target.value.responses, self, game)
             if m is None or m == "":
                 m = self.didntWorkMessage
         elif self.notApplicableMessage is not None:
             m = self.notApplicableMessage
-        return m, 0
+        return m, reward, result
 
 def VerbResponse(*args, **kwargs):
     return Response(None, None, *args, **kwargs)

@@ -46,8 +46,9 @@ class Items():
         return list(self.items.keys())
 
     def GetNames(self):
-        for item in self.index:
-            yield item.name
+        return list(map(lambda x: x.name, self.index))
+        # for item in self.index:
+        #     yield item.name
 
 class Item:
     def __init__(self, name, abbreviation):

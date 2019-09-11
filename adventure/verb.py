@@ -35,29 +35,26 @@ class GoVerb(Verb):
         Verb.__init__(self, *args, **kwargs)
 
     def Do(self, target, game):
-        m = ""
+        m, reward, result = "", 0, Response.IllegalCommand
         cant = "I CAN'T GO THAT WAY AT THE MOMENT."
         currentLocation = game.state.location
         if target.IsDirection():
             move = game.state.location.moves[target.value.d]
             if move == 0:
-                return cant, 0
+                return cant, 0, Response.IllegalCommand
             game.state.location = game.world.locations[move]
             m = ""
+            result = Response.Success
         elif target.IsObject():
             object = target.value
             if game.state.location == object.placement.location:
-                if object.responses is not None:
-                    m = Response.Respond(object.responses, self, game)
-                    if m is None:
-                        return cant, 0
-                    if m != "":
-                        pass # m = m + "\n"
+                if Response.HasResponse(object.responses, self):
+                    return Response.Respond(object.responses, self, game)
                 else:
-                    return cant, 0
+                    return cant, 0, Response.IllegalCommand
             else:
-                return "I DON'T SEE THAT HERE.", 0
-        return m, 0
+                return "I DON'T SEE THAT HERE.", 0, Response.IllegalCommand
+        return m, reward, result
 
 class DropVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -76,6 +73,7 @@ class GetVerb(Verb):
 
     def DoObject(self, target, game):
         object = target.value
+        m, reward, result = "", 0, Response.IllegalCommand
         if target.IsObject() and\
                 (type(object.placement) == InventoryPlacement or object.placement.location == game.state.location):
             m = None
@@ -87,7 +85,7 @@ class GetVerb(Verb):
                 m = "I CAN'T CARRY ANYMORE."
             elif object.moveable:
                 if Response.HasResponse(object.responses, self):
-                    m = Response.Respond(object.responses, self, game)
+                    m, reward, result = Response.Respond(object.responses, self, game)
                 game.state.inventory.Add(object)
                 if m is None:
                     m = ""
@@ -96,7 +94,7 @@ class GetVerb(Verb):
                 m = "O.K." + m
         else:
             m = "I DON'T SEE THAT HERE."
-        return m, 0
+        return m, reward, result
 
 class InventoryVerb(Verb):
     def __init__(self, *args, **kwargs):
@@ -122,11 +120,12 @@ class LookVerb(Verb):
         Verb.__init__(self, *args, **kwargs)
 
     def DoObject(self, target, game):
+        m, reward, result = "", 0, Response.IllegalCommand
         if target is not None and target is not '' and target.IsObject():
             object = target.value
             m = None
             if object.responses is not None:
-                m = Response.Respond(object.responses, self, game)
+                m, reward, result = Response.Respond(object.responses, self, game)
             if m is None or m == "":
                 m = "I SEE NOTHING OF INTEREST."
         else:
@@ -147,7 +146,7 @@ class LookVerb(Verb):
             else:
                 m += "\n"
             m += "\n>" + '-' * 62 + "<"
-        return m, 0
+        return m, reward, result
 
 class QuitVerb(Verb):
     def __init__(self, *args, **kwargs):

@@ -124,12 +124,11 @@ def run_episode(for_training):
     (current_room_desc, current_quest_desc, terminal) = framework.newGame()
     while not terminal:
         # Choose next action and execute
-        current_state = current_room_desc + current_quest_desc
+        current_state = current_room_desc + ' ' + framework.get_quest_name()
         current_state_vector = torch.FloatTensor(utils.extract_bow_feature_vector(current_state, dictionary))
 
         action_index, object_index =  epsilon_greedy(current_state_vector, epsilon)
         (next_room_desc, next_quest_desc, reward, terminal) = framework.step_game(current_room_desc, current_quest_desc, action_index, object_index)
-        print(framework.get_action_name(action_index), framework.get_object_name(object_index), '->', next_room_desc)
         next_state_vector = utils.extract_bow_feature_vector(next_room_desc + next_quest_desc, dictionary)
 
         if for_training:

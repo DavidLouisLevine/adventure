@@ -10,6 +10,11 @@ class Response:
         self.goTo = None
         self.isFatal = False
 
+    Success = 0
+    CompletedQuest = 1
+    IllegalCommand = 2
+    Fatal = 3
+
     def Arg(self, arg):
         return None if arg not in self.kwargs else self.kwargs[arg]
 
@@ -66,6 +71,9 @@ class Response:
     @staticmethod
     def Respond(responses, verb, game, object=None):
         responses = MakeTuple(responses)
+        m = ""
+        reward = 0
+        result = Response.Success
 
         for response in responses:
             if response.verb == verb:
@@ -123,7 +131,6 @@ class Response:
                         game.state.isDead = True
                         game.quitting = True
 
-                    # TODO: Implement replacement strings
                     m += Response.ProcessMessage(response.ArgStr('message'), game)
 
                     if response.f is not None:
@@ -138,7 +145,14 @@ class Response:
                             m += '\n'
                         m += game.Look(response.ArgStr('look'))[0]
 
-                    return m
+                    if response.Arg('result') is not None:
+                        result = response.Arg('result')
+
+                    if response.Arg('result') is not None:
+                        result = response.Arg('result')
+
+                    return m, reward, result
+        return m, reward, result
 
     @staticmethod
     def GetResponse(responses, verb):
