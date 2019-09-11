@@ -22,9 +22,8 @@ class Game:
         self.nextLine = None
         self.quest=None
 
-    def NewGame(self, quest):
+    def NewGame(self):
         self.state.Init()
-        self.quest = quest
 
     def NextLine(self):
         if self.nextLine is not None:

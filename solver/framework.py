@@ -4,6 +4,7 @@ from adventure.direction import Direction
 from adventure.target import Target
 from adventure.response import Response
 import adventure.util as util
+import random
 
 # This class supports the methods in the MIT x6.86 framework class
 
@@ -39,8 +40,8 @@ num_actions = len(game.world.verbs)
 def newGame():
     global STEP_COUNT
     STEP_COUNT = 0
-    return game.NewGame((get_action_index('eat'), get_object_index('apple')))
-#    current = game.NewGame(random.choice(range(num_acu)))
+    return game.NewGame()
+    return start
 
 def step_game(current_room_desc, current_quest_desc, action_index, object_index):
     global STEP_COUNT

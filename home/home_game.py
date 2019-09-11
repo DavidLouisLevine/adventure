@@ -25,8 +25,11 @@ class Home(Game):
         prompts = ('WHAT DO YOU THINK WE SHOULD DO? ', 'ENTER YOUR NAME PARTNER? ', 'TELL ME,IN ONE WORD,AT WHAT? ')
         Game.Init(self, world, state, prompts)
 
-    def NewGame(self, quest):
-        Game.NewGame(self, quest)
+    def NewGame(self):
+        Game.NewGame(self)
+        q = random.choice((('eat', 'apple'), ('exercise', 'bike'), ('sleep', 'bed'), ('watch', 'tv')))
+        self.quest = self.world.verbs[q[0]].i, self.world.objects[q[1]].i
+
         self.state.location = self.world.locations['Bedroom']
 
         return self.state.location.Name(), self.quest, False
