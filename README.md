@@ -15,6 +15,9 @@ Current status:
 - The python implementation of the CIA game is complete, with very high fidelity to the original game
 - The reinforcement learning framework is rewritten to be more modular and to allow differnt DQN topologies
 - The modified original BASIC game is fully functional
+- Redactions:
+  Parts of solve/solver.py and solve/DecoupledPredictor.py are redacted because they are part student responses in the 6.86x course.
+  The solver won't work without those pieces but the games are otherwise fully playable.
 
 To run:
   cia/cia_game.py     Play the CIA game
