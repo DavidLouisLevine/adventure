@@ -1,0 +1,2 @@
+./redact solve/solver.py
+./redact solve/decoupled_predictor.py

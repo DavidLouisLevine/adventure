@@ -7,6 +7,8 @@ def TupleDownTo(t, depth=0):
         return False
 
 def MakeTuple(t, depth=0):
+    if t is None:
+        return ()
     return t if TupleDownTo(t, depth) else (t, )
 
 # Returns None if string s doesn't start with any of the strings in tuple b

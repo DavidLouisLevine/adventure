@@ -1,0 +1,2 @@
+perl -p0e 's/#<---private.*?#private--->/# TODO Your code here/sg' $1 > tempfile
+mv tempfile $1

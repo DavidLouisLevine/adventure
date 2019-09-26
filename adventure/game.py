@@ -6,24 +6,34 @@ from adventure.target import Target
 from adventure.direction import Direction
 from adventure.placement import NoPlacement, InventoryPlacement, LocationPlacement
 from adventure.response import Response
-from adventure.util import StartsWith
+from adventure.util import StartsWith, MakeTuple
 from adventure.verb import BuiltInVerbs
+from copy import copy, deepcopy
 
 class Game:
-    def Init(self, world, state, prompts):
-        self.world = world
-        self.state = state
+    def Init(self, world, state, prompts, outputFile=None):
+        self.startingWorld = world
+        self.world = deepcopy(self.startingWorld)
+        self.startingState = state
+        self.state = deepcopy(self.startingState)
         self.prompt = prompts[0]
         self.prompts = prompts
         self.quitting = False
         self.inputFile = None
-        self.printWhenStreaming = False # If False, only print errors when commands are being read from the input file
-        self.scriptOutputFile = open(r"c:\users\david\onedrive\documents\programming\cia\ciascript.adv", "w")
+        self.printWhenStreaming = True # If False, only print errors when commands are being read from the input file
+        self.scriptOutputFile = outputFile
         self.nextLine = None
-        self.quest=None
+        self.questCommand = None
+        self.rewards = {}
 
     def NewGame(self):
         self.state.Init()
+        self.world = deepcopy(self.startingWorld)
+        self.state = deepcopy(self.startingState)
+        for object in self.world.objects:
+            object.seen = False
+        for location in self.world.locations:
+            location.seen = False
 
     def NextLine(self):
         if self.nextLine is not None:
@@ -86,13 +96,26 @@ class Game:
             return print(*args, **kwargs)
 
     def DoTarget(self, verb, target):
-        if target.IsDirection() and verb != self.BaseVerb('GO'):
-            return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT.", 0, Response.IllegalCommand
+        # if verb is not None and verb.name == 'PUSH' and target is not None and target.IsObject() and target.value.i == self.world.objects['AN UP BUTTON'].i and \
+        #     self.state.location.abbreviation == 'LOBBY':
+        #     print("PUSH UP BUTTON!!!!!!!!!!!!")
+
+        # if verb is not None and verb.name == 'GET' and target is not None and target.IsObject() and target.value.i == self.world.objects['KEY'].i and \
+        #     self.state.location.abbreviation == 'ELEVATOR':
+        #     print("GET KEY!!!!!!!!!!!!")
+
+        self.PreCommand(verb, target)
 
         if verb is None:
             return "I DON'T KNOW HOW TO DO THAT.", 0, Response.IllegalCommand
 
+        if target is not None and target.value is not None and verb.targetNever:
+            return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT.", 0, Response.IllegalCommand
+
         if (target is None or target.value is None) and not (verb.targetOptional or verb.targetNever):
+            return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT.", 0, Response.IllegalCommand
+
+        if target is not None and target.IsDirection() and verb != self.BaseVerb('GO'):
             return "I DON'T KNOW WHAT IT IS YOU ARE TALKING ABOUT.", 0, Response.IllegalCommand
 
         currentLocation = self.state.location
@@ -104,7 +127,7 @@ class Game:
             if self.state.location.responses is not None:
                 currentLocation = self.state.location
                 m2, reward2, result = Response.Respond(self.state.location.responses, self.world.verbs['GO'], self)
-                if m2 is not None:
+                if m2 is not None and m2 != "":
                     if m is not "":
                         m += '\n'
                     m += m2
@@ -114,12 +137,28 @@ class Game:
             if m is None or m == "":
                 m = self.Look()
 
-        if result == Response.Success and self.quest[0] == verb.i and target.IsObject() and self.quest[1] == target.value.i:
-            result = Response.CompletedQuest
-
+        reward += self.UpdateSeen(verb)
         return m, reward, result
 
+    def UpdateSeen(self, verb):
+        reward = 0
+        if not self.state.location.seen:
+            reward += self.rewards[Response.NewlySeen]
+            self.state.location.    seen = True
+
+        for object in self.world.objects:
+            if not object.seen and (object.placement.location == self.state.location or object.placement == InventoryPlacement):
+                reward += self.rewards[Response.NewlySeen]
+                object.seen = True
+
+        if verb is not None:
+            verb.seen = True
+
+        return reward
+
     def DoAction(self, action):
+        if action == "GO BUILDING":
+            jj = 9
         if ' ' in action:
             i = action.index(' ')
             verbStr = action[:i]
@@ -131,7 +170,9 @@ class Game:
         if verb is not None:
             original_value = None
             if i != -1:
-                targetStr = action[i + 1:]
+                while action[i] == ' ':
+                    i += 1
+                targetStr = action[i:]
 
                 value = Direction.FromName(targetStr)
                 if value is None:
@@ -140,20 +181,22 @@ class Game:
                         value = self.world.objects[targetStr]
 
                 target = None if value is None else Target(value)
-        m, reward = self.DoTarget(verb, target)
-        return m
+        m, reward, result = self.DoTarget(verb, target)
+        return m, result, (verb, target)
 
     def Do(self, action):
         if action[-1] == '\n':
             action = action[:-1]
 
-        m = self.DoAction(action)
+        m, result, action = self.DoAction(action)
         if not m is None and not m == "":
             self.Output(m)
-            return m
+            return m, result, action
 
-    # commands can be either a file with read access or a list of commands
-    def Run(self, commands):
+        return "", Response.IllegalCommand, None
+
+    # Command input can come from a sequence of strings, from a file open for reading, or entirely from the user
+    def Run(self, commands, steps=None):
         if type(commands) == tuple:
             actions = commands
         else:
@@ -162,25 +205,46 @@ class Game:
 
         self.ReadToPrompt()
 
-        t = 0
+        t = 1
+        completed_actions = []
         self.Start()
-        prompt = self.prompt
         while not self.quitting:
             if t < len(actions):
-                s = actions[t]
-                self.Output(prompt + s)
+                commandStr = actions[t]
+                self.Output(self.prompt + commandStr)
             else:
-                s, expectedMessage = self.Input(prompt)
+                commandStr, expectedMessage = self.Input(self.prompt)
 
-            if s != "":
-                message = self.Do(s)
+            preTickMessage, preTickResult = self.PreTick()
+            if preTickMessage is not None and preTickMessage != "":
+                preTickMessage = '\n' + preTickMessage
+                self.Output(preTickMessage)
+                message += preTickMessage
+
+            t += 1
+
+            if preTickResult == Response.QuestCompleted:
+                self.End()
+
+            if commandStr != "":
+                message, result, action = self.Do(commandStr)
+                completed_actions += action
                 if expectedMessage=="":
                     expectedMessage = self.ReadToPrompt() # Occurs when a question is prompted after the command
 
-                self.ValidateOutput(expectedMessage, message)
+            postTickMessage, postTickResult = self.PostTick()
+            if postTickMessage is not None and postTickMessage != "":
+                postTickMessage = '\n' + postTickMessage
+                self.Output(postTickMessage)
+                message += postTickMessage
 
-            self.Output(self.Tick())
-            t += 1
+            if result == Response.QuestCompleted or postTickResult == Response.QuestCompleted:
+                self.End()
+
+            if steps is not None and t > steps:
+                self.End()
+
+            self.ValidateOutput(expectedMessage, message)
 
         if self.state.isDead:
             self.Output("I'M DEAD!\nYOU DIDN'T WIN")
@@ -188,8 +252,23 @@ class Game:
     def Start(self, game):
         pass
 
-    def Tick(self, target, game):
-        pass
+    def End(self):
+        self.Output("Your quest is completed!")
+        if self.Input("WOULD YOU LIKE TO TRY AGAIN (Y/N)")[0] == 'Y':
+            self.NewGame()
+            self.Start()
+            t = 0
+        else:
+            self.quitting = True
+
+    def PreTick(self):
+        return "", Response.Success
+
+    def PostTick(self):
+        return "", Response.Success
+
+    def PreCommand(self, verb, target):
+        return "", Response.Success
 
     def BaseVerb(self, verbStr):
         if verbStr in self.world.verbs:
@@ -207,6 +286,11 @@ class Game:
     def CreateHere(self, object):
         object = self.world.ResolveObject(object)
         self.MoveObject(object, self.state.location)
+
+    def CreateMine(self, object):
+        object = self.world.ResolveObject(object)
+        self.CreateHere(object)
+        self.state.inventory.Add(object)
 
     def ReplaceObject(self, old, new):
         self.RemoveObject(old)
@@ -226,7 +310,17 @@ class Game:
                (type(object.placement) == LocationPlacement and object.placement.location == self.state.location)
 
     def AtLocation(self, location):
-        return self.state.location == self.world.ResolveLocation(location)
+        for location in MakeTuple(location):
+            if self.state.location == self.world.ResolveLocation(location):
+                return True
+        return False
+
+    def ObjectAtLocation(self, object, location):
+        object = self.world.ResolveObject(object)
+        location = self.world.ResolveLocation(location)
+        if type(object.placement) == LocationPlacement:
+            return object.placement.location == location
+        return False
 
     def RemoveObject(self, object):
         object = self.world.ResolveObject(object)
@@ -244,9 +338,6 @@ class Game:
             object = self.world.ResolveObject(original_object)
         location = self.world.ResolveLocation(location)
         object.placement = LocationPlacement(location)
-
-    def QuestName(self):
-        return self.world.verbs[self.quest[0]].abbreviation + ' ' + self.world.objects[self.quest[1]].abbreviation
 
     def __str__(self):
         return str(self.state.location) + self.state.inventory.string(self.world)
@@ -271,3 +362,15 @@ class Game:
                 print("ERROR: Actual message is empty but expected message is:", expectedMessage)
                 return False
         return True
+
+    def Trim(self, commands, steps):
+        self.Run(commands, steps)
+        for object in self.world.objects:
+            if not object.seen:
+                self.startingWorld.objects.Remove(object.name)
+        for location in self.world.locations:
+            if not location.seen:
+                self.startingWorld.locations.Remove(location.name)
+        for verb in self.world.verbs:
+            if not verb.seen:
+                self.startingWorld.verbs.Remove(verb.name)

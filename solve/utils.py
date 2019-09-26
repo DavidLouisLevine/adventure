@@ -1,14 +1,42 @@
 from string import punctuation, digits
 import csv
 import numpy as np
-import matplotlib.pyplot as plt
-
+import random
 import sys
+from operator import mul
+from functools import reduce
 
 if sys.version_info[0] < 3:
     PYTHON3 = False
 else:
     PYTHON3 = True
+
+def avg(x):
+    return sum(x)/len(x)
+
+def product(l):
+    return reduce(mul, l)
+
+def are_close(a, b, epsilon=0.000001):
+    return abs(a - b) < epsilon
+
+def argmax(a, epsilon=0.00001):
+    m = None
+    l = []
+    i = 0
+    for i in range(len(a) - 1, -1, -1):
+        if m is None or a[i] > m + epsilon:
+            m = a[i]
+            l = [i]
+        elif abs(a[i] - m) < epsilon:
+            l += [i]
+        i += 1
+    return random.choice(l)
+
+def linear_interpolate(p1, p2, x):
+    m = (p2[1] - p1[1]) / (p2[0] - p1[0])
+    b = p1[1] - m * p1[0]
+    return x * m + b
 
 def load_data(path_data):
     """Return a dictionary for the state descriptions displayed to player"""
@@ -77,5 +105,8 @@ def extract_bow_feature_vector(state_desc, dictionary):
     for word in word_list:
         if word in dictionary:
             state_vector[dictionary[word]] += 1
+        else:
+            print("MISSING WORD:" + word)
+            #assert word in dictionary, "Missing word:" + word
 
     return state_vector

@@ -10,6 +10,11 @@ class World:
         for object in self.objects:
             if type(object.placement) is int or type(object.placement) is str:
                 object.placement = LocationPlacement(self.locations[object.placement])
+            object.seen = False
+        for location in self.locations:
+            location.seen = False
+        for verb in self.verbs:
+            verb.seen = False
 
     def AtLocation(self, location):
         l = ()
@@ -38,7 +43,7 @@ class World:
     def Resolve(item, t, list):
         if type(item) is t:
             return item
-        elif type(item) is str:
+        elif type(item) is str or type(item) is int:
             return list[item]
         else:
             assert 'Unknown object type to resolved:', type(item)

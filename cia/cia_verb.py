@@ -1,72 +1,55 @@
 from adventure.response import Response
-from adventure.verb import Verb, BuiltInVerbs
+from adventure.verb import Verb, BuiltInVerbs, ResponseVerb, VerbResponse
 from adventure.util import MakeTuple
+from adventure.target import Target
 
-class ResponseVerb(Verb):
+class PushVerb(ResponseVerb):
     def __init__(self, name, abbreviation, responses=None, *args, **kwargs):
-        if responses is not None:
-            self.responses = MakeTuple(responses)
-            for response in self.responses:
-                response.verb = self
-        else:
-            self.responses = None
-        if 'notApplicableMessage' in kwargs:
-            self.notApplicableMessage = kwargs.pop('notApplicableMessage')
-        else:
-            self.notApplicableMessage = None
-        if 'didntWorkMessage' in kwargs:
-            self.didntWorkMessage = kwargs.pop('didntWorkMessage')
-        else:
-            self.didntWorkMessage = None
-        Verb.__init__(self, name, abbreviation, *args, **kwargs)
+        super().__init__(name, abbreviation, responses, *args, **kwargs)
 
     def DoObject(self, target, game):
-        m, reward, result = "", 0, Response.IllegalCommand
-        if Response.HasResponse(self.responses, self):
-            m, reward, result = Response.Respond(self.responses, self, game, target.value if target is not None and target.IsObject() else None)
-            if m is not None and m != "":
-                return m, 0
-
-        if target.IsObject() and Response.HasResponse(target.value.responses, self):
-            m, reward, result = Response.Respond(target.value.responses, self, game)
-            if m is None or m == "":
-                m = self.didntWorkMessage
-        elif self.notApplicableMessage is not None:
-            m = self.notApplicableMessage
-        return m, reward, result
-
-def VerbResponse(*args, **kwargs):
-    return Response(None, None, *args, **kwargs)
+        # The original game logic says that "BUT" always refers to the box button when it is possessed
+        if target is not None and target.IsObject() and target.value.abbreviation[:3] == "BUT":
+            if game.Has('BOX'):
+                target = Target(game.world.objects['A BUTTON ON A BOX'])
+                m, reward, result = Response.Respond(target.value.responses, self, game)
+                return m, reward, result
+        return super().DoObject(target, game)
 
 customVerbs = (
-    ResponseVerb('PUSH', 'PUS', (
-        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE."),
-        VerbResponse(ifNoObjectResponse=True, message="NOTHING HAPPENS."))),
-    ResponseVerb('PULL', 'PUL', VerbResponse(ifNoObjectResponse=True, message="NOTHING HAPPENS.")),
-    ResponseVerb('INSERT', 'INS',
-        VerbResponse(ifNoObjectResponse=True, message="I CAN'T INSERT THAT!"),
+    PushVerb('PUSH', 'PUS', (
+        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE.", result=Response.IllegalCommand),
+        VerbResponse(ifNoObjectResponse=True, message="NOTHING HAPPENS.", result=Response.IllegalCommand))),
+    ResponseVerb('PULL', 'PUL', VerbResponse(ifNoObjectResponse=True, message="NOTHING HAPPENS.", result=Response.IllegalCommand)),
+    ResponseVerb('INSERT', 'INS',(
+        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE.", result=Response.IllegalCommand),
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T INSERT THAT!", result=Response.IllegalCommand)),
         didntWorkMessage="NOTHING HAPPENED."),
     ResponseVerb('OPEN', 'OPE', (
-        VerbResponse(ifNotHere=True, message="I CAN'T OPEN THAT!"),
-        VerbResponse(ifNoObjectResponse=True, message="I CAN'T OPEN THAT!")),
+        VerbResponse(ifNotHere=True, message="I CAN'T OPEN THAT!", result=Response.IllegalCommand),
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T OPEN THAT!", result=Response.IllegalCommand)),
         didntWorkMessage="I CAN'T DO THAT......YET!"),
     ResponseVerb('WEAR', 'WEA', (
-        VerbResponse(ifNotHas=True, message="I CAN'T WEAR THAT!"),
-        VerbResponse(ifNoObjectResponse=True, message="I CAN'T WEAR THAT!"))),
+        VerbResponse(ifNotHas=True, message="I CAN'T WEAR THAT!", result=Response.IllegalCommand),
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T WEAR THAT!", result=Response.IllegalCommand))),
     ResponseVerb('READ', 'REA', (
-        VerbResponse(ifNoObjectResponse=True, message="I CAN'T READ THAT!"),
-        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE."))),
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T READ THAT!", result=Response.IllegalCommand),
+        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE.", result=Response.IllegalCommand))),
     ResponseVerb('START', 'STA', (
-        VerbResponse(ifNotHas=True, message="I CAN'T START THAT!"),
-        VerbResponse(ifNoObjectResponse=True, message="SHOULD NOT SEE THIS MESSAGE"))),
+        VerbResponse(ifNotHere=True, message="I DON'T SEE THAT HERE.", result=Response.IllegalCommand),
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T START THAT.", result=Response.IllegalCommand))),
     ResponseVerb('BREAK', 'BRE', (
-        VerbResponse(ifNoObjectResponse=True, message="I'M TRYING TO BREAK IT, BUT I CAN'T."))),
-    ResponseVerb('CUT', 'CUT', VerbResponse(ifNotHas=True, message="I'M TRYING. IT DOESN'T WORK.")),
-    ResponseVerb('THROW', 'THR', VerbResponse(ifNotHas=True, message="I CAN'T THROW THAT.")),
-    ResponseVerb('CON', 'CON', VerbResponse(ifNotHas=True, message="I CAN'T CONNECT THAT.")),
+        VerbResponse(ifNoObjectResponse=True, message="I'M TRYING TO BREAK IT, BUT I CAN'T.", result=Response.IllegalCommand))),
+    ResponseVerb('CUT', 'CUT', VerbResponse(ifNoObjectResponse=True, message="I'M TRYING. IT DOESN'T WORK.", result=Response.IllegalCommand)),
+    ResponseVerb('THROW', 'THR', (
+        VerbResponse(ifNotHas=True, message="I CAN'T THROW THAT.", result=Response.IllegalCommand),
+        VerbResponse(ifNoObjectResponse =True, message="I CAN'T THROW THAT.", result=Response.IllegalCommand))),
+    ResponseVerb('CONNECT', 'CON', (
+        VerbResponse(ifNotHere=True, message="I CAN'T CONNECT THAT.", result=Response.IllegalCommand),
+        VerbResponse(ifNoObjectResponse=True, message="I CAN'T CONNECT THAT.", result=Response.IllegalCommand))),
     ResponseVerb('BOND-007-', 'BON', (
         VerbResponse(ifAtLocation='CAFETERIA', goTo='BASEMENT', message="WHOOPS! A TRAP DOOR OPENED UNDERNEATH ME AND\nI FIND MYSELF FALLING.\n"),
-        VerbResponse(message="NOTHING HAPPENED.")),
+        VerbResponse(message="NOTHING HAPPENED.", result=Response.IllegalCommand)),
         targetOptional=True))
 
 verbs = BuiltInVerbs(customVerbs)

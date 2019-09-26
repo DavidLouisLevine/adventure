@@ -28,7 +28,8 @@
 280 CLS
 1000 REM  Translated from TRS-80 version on CPMNET BBS
 1010 REM  Pete Wohlmut 10-3-82
-1020 DEF SEG= &H40
+1020 REM  Modified to dump the world data by David Louis Levine on 2019-08-28
+1025 DEF SEG= &H40
 1030 POKE(&H17),PEEK(&H17) OR &H20  ' set Num Lock
 1040 POKE (&H17),PEEK(&H17) OR &H40 ' set Caps Lock
 1050 DEF SEG

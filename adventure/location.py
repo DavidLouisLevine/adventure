@@ -1,7 +1,7 @@
 from adventure.item import Items, Item
 import random
 
-class Location:
+class Location(Item):
     def __init__(self, abbreviation, name, moves, response=None):
         Item.__init__(self, name, abbreviation)
         self.moves = list(moves)
@@ -24,5 +24,5 @@ class Locations(Items):
     def __init__(self, objects):
         Items.__init__(self, objects)
 
-    def Do(self, target, game):
-        raise NotImplementedError()
+    # def Do(self, target, game):
+    #     raise NotImplementedError()

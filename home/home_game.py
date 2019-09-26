@@ -1,15 +1,9 @@
-# This is a port of the game "C.I.A. Adventure" downloaded from https://www.myabandonware.com/game/cia-adventure-1ya on 2019-08-25
-# The description on that site reads:
-#   C.I.A. Adventure is a video game published in 1982 on DOS by International PC Owners.
-#   It's an adventure game, set in an interactive fiction, spy / espionage and contemporary themes,
-#   and was also released on Commodore 64.
-
-# The site at http://gamingafter40.blogspot.com/2013/07/adventure-of-week-cia-adventure-1980.html, downloaded 2019-08-31
-# credits the game to Hugh Lampert. That site also has a complete walk through.
+# This is a simple four-room adventure, originally from MIT's 6.86x Machine Learning course
 
 from adventure.game import Game
 from adventure.world import World
 from adventure.state import State
+from adventure.response import Response
 from home.home_verb import verbs
 from home.home_object import objects
 from home.home_location import locations
@@ -18,21 +12,37 @@ import random
 class Home(Game):
     def __init__(self):
         Game.__init__(self)
+        self.quests = (('watch', 'tv'), ('exercise', 'bike'), ('eat', 'apple'), ('sleep', 'bed'))
+        self.questNames = ('You are bored.', 'You are getting fat.', 'You are hungry.','You are sleepy.')
 
     def Init(self):
         state = State()
         world = World(objects, verbs, locations)
         prompts = ('WHAT DO YOU THINK WE SHOULD DO? ', 'ENTER YOUR NAME PARTNER? ', 'TELL ME,IN ONE WORD,AT WHAT? ')
-        Game.Init(self, world, state, prompts)
+        outputFile = None
+        Game.Init(self, world, state, prompts, outputFile=outputFile)
 
     def NewGame(self):
         Game.NewGame(self)
-        q = random.choice((('eat', 'apple'), ('exercise', 'bike'), ('sleep', 'bed'), ('watch', 'tv')))
-        self.quest = self.world.verbs[q[0]].i, self.world.objects[q[1]].i
+        n = random.choice(range(len(self.quests)))
+        q = self.quests[n]
+        self.questCommand = self.world.verbs[q[0]].i, self.world.objects[q[1]].i
+        self.questName = self.questNames[n]
+        self.prompt = self.questName + ":"
 
-        self.state.location = self.world.locations['Bedroom']
+        self.state['quest'] = self.world.verbs[self.questCommand[0]].abbreviation + ' ' + self.world.objects[self.questCommand[1]].abbreviation
 
-        return self.state.location.Name(), self.quest, False
+        self.defaultReward = -0.01
+        self.rewards = {
+            Response.Success: self.defaultReward,
+            Response.QuestCompleted: 1,
+            Response.IllegalCommand: -0.1 + self.defaultReward,
+            Response.NewlySeen: 0,
+        }
+
+        self.state.location = self.world.locations[random.choice(range(len(self.world.locations)))]
+
+        return self.state.location.Name(), self.questName, False
 
     def Run(self, commands):
 #        self.world.print()
@@ -40,11 +50,8 @@ class Home(Game):
 
     def Start(self):
         self.Output("        Welcome Home!")
-        self.Do("LOOK")
+        self.Output(self.Look()[0])
         return
-
-    def Tick(self):
-        pass
 
 if __name__ == '__main__':
     sequence = (
@@ -53,10 +60,9 @@ if __name__ == '__main__':
 
     home = Home()
     home.Init()
-    home.NewGame(('sleep',  'bed'))
+    home.NewGame()
 
     #commands = sequence
-    #commands = open(r"..\basic\CIANEW.ADL", "r")
     commands = None
-    # commands can be None, a sequence of text commands, or a file containing text commands
+
     home.Run(commands)
