@@ -1,6 +1,6 @@
 # This is a game engine that was created to emulate the "C.I.A. Adventure" game written by Hugh Lampert circa 1982
-# The game content is is a separate folder
-# The engine could implement many other games
+# The game content is in separate folders
+# The engine is designed to implement many different adventure games
 
 from adventure.target import Target
 from adventure.direction import Direction
@@ -30,6 +30,9 @@ class Game:
         self.state.Init()
         self.world = deepcopy(self.startingWorld)
         self.state = deepcopy(self.startingState)
+        self.nextLine = None
+        self.quitting = False
+        self.inputFile = None
         for object in self.world.objects:
             object.seen = False
         for location in self.world.locations:
@@ -249,6 +252,9 @@ class Game:
         if self.state.isDead:
             self.Output("I'M DEAD!\nYOU DIDN'T WIN")
 
+        if self.inputFile is not None:
+            self.inputFile.close()
+
     def Start(self, game):
         pass
 
@@ -343,6 +349,7 @@ class Game:
         return str(self.state.location) + self.state.inventory.string(self.world)
 
     def ValidateOutput(self, expectedMessage, actualMessage):
+        """Print an error if the input messages don't match"""
         if actualMessage is not None:
             actualMessage = actualMessage + "\n\n"
             if expectedMessage is not None and expectedMessage != actualMessage and expectedMessage != "":
@@ -364,6 +371,11 @@ class Game:
         return True
 
     def Trim(self, commands, steps):
+        """Simplify the game by removing any objects, locations, or verbs not seen
+        after running the input command sequence for the specified number of steps.
+
+        Warning: It takes some care to ensure that all potentially visible items have been
+        seen in the specified number of steps. For example, all accessible rooms should be visited. """
         self.Run(commands, steps)
         for object in self.world.objects:
             if not object.seen:

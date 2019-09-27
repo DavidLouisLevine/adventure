@@ -9,14 +9,13 @@ from solve.predictor import Predictor
 # This predictor considers the resultant action and resultant object as dependent on each other
 
 class ModelPerVerbPredictor(Predictor):
-    def __init__(self, hidden_size=200):
-        self.hidden_size = hidden_size
-        self.width = None
+    def __init__(self, dqn):
+        self.dqn = dqn
 
     def Init(self, solverData, num_actions, num_objects, state_dim):
         self.num_actions = num_actions
         self.num_objects = num_objects
-        self.models = list(map(lambda: DQNStacked(state_dim, (num_objects, ), 1000, 1000), range(num_actions)))
+        self.models = list(map(lambda x: self.dqn(state_dim, (num_objects, ), solverData), range(num_actions)))
         self.optimizers = list(map(lambda x: optim.SGD(x.parameters(), lr=solverData['ALPHA']), self.models))
 
     def q_max(self, state_vector, no_grad=False):
@@ -42,14 +41,13 @@ class ModelPerVerbPredictor(Predictor):
         self.optimizers[action_index].step()
 
 class ModelPerObjectPredictor(Predictor):
-    def __init__(self, hidden_size=200):
-        self.hidden_size = hidden_size
-        self.width = None
+    def __init__(self, dqn):
+        self.dqn = dqn
 
     def Init(self, solverData, num_actions, num_objects, state_dim):
         self.num_actions = num_actions
         self.num_objects = num_objects
-        self.models = list(map(lambda x: DQN(state_dim, (num_actions, ), self.hidden_size), range(num_objects)))
+        self.models = list(map(lambda x: self.dqn(state_dim, (num_actions, ), solverData), range(num_objects)))
         self.optimizers = list(map(lambda x: optim.SGD(x.parameters(), lr=solverData['ALPHA']), self.models))
 
     def q_max(self, state_vector, no_grad=False):
@@ -75,19 +73,17 @@ class ModelPerObjectPredictor(Predictor):
         self.optimizers[object_index].step()
 
 class ModelPerActionPredictor(Predictor):
-    def __init__(self, strategy, hidden_size=200):
-        self.hidden_size = hidden_size
-        self.strategy = strategy
-        self.width = None
+    def __init__(self, dqn):
+        self.dqn = dqn
 
     def NFromActionObject(self, action_index, object_index):
         return action_index * self.num_objects + object_index
 
-    def Init(self, solverData, num_actions, num_objects, state_dim):
+    def Init(self, solverData,  num_actions, num_objects, state_dim):
         self.num_actions = num_actions
         self.num_objects = num_objects
         self.num_models = num_actions * num_objects
-        self.models = list(map(lambda x: DQN(state_dim, (1, ), self.hidden_size), range(self.num_models)))
+        self.models = list(map(lambda x: self.dqn(state_dim, (1, ), solverData), range(self.num_models)))
         self.optimizers = list(map(lambda x: optim.SGD(x.parameters(), lr=solverData['ALPHA']), self.models))
 
     def q_max(self, state_vector, no_grad=False):
@@ -111,5 +107,4 @@ class ModelPerActionPredictor(Predictor):
         self.optimizers[self.NFromActionObject(action_index, object_index)].zero_grad()
         loss.backward()
         self.optimizers[self.NFromActionObject(action_index, object_index)].step()
-
 

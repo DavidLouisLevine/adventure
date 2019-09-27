@@ -136,11 +136,14 @@ if __name__ == '__main__':
     cia = CIA()
     cia.Init()
     cia.NewGame()
+    cia.printWhenStreaming = False
+    cia.Trim(open(r"..\basic\CIA_WALK.ADL", "r"), steps=25)
+    cia.NewGame()
 
     #commands = sequence
 
     # This is a complete walkthrough of the adventure, along with all output from the original game
-    commands = open(r"..\basic\CIA_WALK.ADL", "r")
-    #commands = None
+    #commands = open(r"..\basic\CIA_WALK.ADL", "r")
+    commands = None
 
     cia.Run(commands)

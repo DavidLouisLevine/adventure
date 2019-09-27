@@ -3,6 +3,7 @@ from cia.cia_strategy import CIAStrategy
 import solve.framework as framework
 from solve.decoupled_predictor import DecoupledPredictor
 from solve.coupled_predictor import ModelPerVerbPredictor, ModelPerActionPredictor, ModelPerObjectPredictor
+from solve.dqn import DQN, DQNStacked
 from solve.solver_data import SolverData
 from solve.solver import Solver
 from solve.plotter import Plotter
@@ -12,6 +13,10 @@ game = CIA()
 framework.load_game_data(game)
 framework.new_game()
 game.printWhenStreaming = False
+
+# CIA_WALK.ADL is a log of an entire game walkthrough.
+# Trim reduces the size of the game to the items seen in the specified number of steps
+# Set steps to None to use the entire game
 game.Trim(open(r"..\basic\CIA_WALK.ADL", "r"), steps=25)
 framework.new_game()
 
@@ -33,12 +38,6 @@ solverData['NUM_RUNS'] = 1
 
 strategy = CIAStrategy(game)
 
-solverData['NUM_EPIS_TRAIN'] = 30
-solverData['NUM_EPOCHS'] = 4
-solverData['MAX_STEPS'] = 18
-solverData['NUM_EPIS_TEST'] = 2
-solverData['NUM_TRIES'] = 6
-
 tune = False
 if tune:
     tuners = Tuners([
@@ -48,6 +47,12 @@ if tune:
         # Tuner('TESTING_EP', 0.02, 0.06, 0.02),
         Tuner('HIDDEN_SIZE', 500, 2000, 500)
     ])
+
+    solverData['NUM_EPIS_TRAIN'] = 30
+    solverData['NUM_EPOCHS'] = 4
+    solverData['MAX_STEPS'] = 18
+    solverData['NUM_EPIS_TEST'] = 2
+    solverData['NUM_TRIES'] = 6
 
     values, score, records = tuners.tune(solverData, lambda: Solver(framework, ModelPerVerbPredictor(strategy, hidden_size=solverData['HIDDEN_SIZE']), solverData, strategy))
 
@@ -60,19 +65,21 @@ if tune:
 
     tuners.update_to_values(values)
 else:
+    # Tuned values
     solverData['ALPHA'] = 0.7
     solverData['GAMMA'] = 0.7
     solverData['TRAINING_EP'] = 0.65
     solverData['HIDDEN_SIZE'] = 1500
 
-solverData['HIDDEN_SIZE'] = 200
+solverData['HIDDEN_SIZE'] = 1500
 solverData['NUM_EPIS_TRAIN'] = 30
 solverData['NUM_EPOCHS'] = 10000
 solverData['MAX_STEPS'] = 40
 
-#solver = Solver(framework, ModelPerActionPredictor(hidden_size=250), solverData, strategy)
-#solver = Solver(framework, ModelPerVerbPredictor(hidden_size=solverData['HIDDEN_SIZE']), solverData, strategy)
-solver = Solver(framework, ModelPerObjectPredictor(hidden_size=solverData['HIDDEN_SIZE']), solverData, strategy)
+#solver = Solver(framework, ModelPerActionPredictor(DQN), solverData, strategy)
+#solver = Solver(framework, ModelPerVerbPredictor(DQN), solverData, strategy)
+#solver = Solver(framework, ModelPerObjectPredictor(DQN), solverData, strategy)
+solver = Solver(framework, DecoupledPredictor(DQN), solverData, strategy)
 
 Plotter(solver.execute(), solverData)
 

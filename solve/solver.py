@@ -22,9 +22,9 @@ best_reward = None
 def ToggleLog(k):
     global log_training, log_testing
     if hasattr(k, 'name'):
-        if k.name == "f2":
+        if k.name == "f7":
             log_training = not log_training
-        if k.name == "f3":
+        if k.name == "f8":
             log_testing = not log_testing
 
 def DoNothing(_):
@@ -109,7 +109,7 @@ class Solver():
         if for_training:
             if t >= self.longest_progress:
                 epsilon = utils.linear_interpolate((self.longest_progress, self.solverData['TRAINING_EP']), (
-                self.solverData['MAX_STEPS'] - 1, self.solverData['TRAINING_EP_MAX']), t)
+                self.solverData['MAX_STEPS'], self.solverData['TRAINING_EP_MAX']), t)
             else:
                 epsilon = utils.linear_interpolate((0, self.solverData['TRAINING_EP_MIN']),
                                                    (self.longest_progress, self.solverData['TRAINING_EP']), t)
@@ -133,7 +133,6 @@ class Solver():
 
         commands = []
         states = {}
-        current_state = None
 
         # initialize for each episode
         t = 0
@@ -143,15 +142,12 @@ class Solver():
             epsilon = self.get_epsilon(for_training, t)
 
             # Choose next action and execute
-            if current_state is None:
-                current_state = self.strategy.get_state(current_room_desc)
+            current_state = self.strategy.get_state(current_room_desc)
             current_state_vector = self.state_vector_from_state(current_state)
 
             # TODO Your code here
 
             # update reward
-            current_state = self.strategy.get_state(current_room_desc)
-
             if next_state in states:
                 reward += self.solverData['ALREADY_SEEN_PENALTY']
             else:

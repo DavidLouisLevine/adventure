@@ -34,6 +34,10 @@ def argmax(a, epsilon=0.00001):
     return random.choice(l)
 
 def linear_interpolate(p1, p2, x):
+    if (are_close(p1[0], p2[0])):
+        assert are_close(p1[1], p2[1])
+        return p1[1]
+
     m = (p2[1] - p1[1]) / (p2[0] - p1[0])
     b = p1[1] - m * p1[0]
     return x * m + b

@@ -10,13 +10,13 @@ from solve.predictor import Predictor
 # PM this project to get access
 
 class DecoupledPredictor(Predictor):
-    def __init__(self, hidden_size=200):
-        self.hidden_size = hidden_size
+    def __init__(self, dqn):
+        self.dqn = dqn
 
     def Init(self, solverData, num_actions, num_objects, state_dim):
         self.num_actions = num_actions
         self.num_objects = num_objects
-        self.model = DQN(state_dim, (num_actions, num_objects), self.hidden_size)
+        self.model = self.dqn(state_dim, (num_actions, num_objects), solverData)
         self.optimizer = optim.SGD(self.model.parameters(), lr=solverData['ALPHA'])
 
     def combined_q(self, q_action, q_object):
