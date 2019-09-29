@@ -34,7 +34,7 @@ class Tuners:
         for value in self.values():
             self.update_to_values(self.get_value_pairs(value))
             scores = []
-            for _ in range(solver_data['NUM_TRIES']):
+            for _ in range(solver_data['NUM_TUNING_TRIES']):
                 self.solver = solver_fn()
                 run_scores = self.solver.execute()
                 scores += [max(run_scores[-1])]

@@ -146,12 +146,16 @@ class Game:
     def UpdateSeen(self, verb):
         reward = 0
         if not self.state.location.seen:
-            reward += self.rewards[Response.NewlySeen]
-            self.state.location.    seen = True
+            #reward += self.rewards[Response.NewlySeen]
+            if reward == 0:
+                reward = self.rewards[Response.NewlySeen]
+            self.state.location.seen = True
 
         for object in self.world.objects:
             if not object.seen and (object.placement.location == self.state.location or object.placement == InventoryPlacement):
-                reward += self.rewards[Response.NewlySeen]
+                # reward += self.rewards[Response.NewlySeen]
+                if reward == 0:
+                    reward = self.rewards[Response.NewlySeen]
                 object.seen = True
 
         if verb is not None:

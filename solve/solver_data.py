@@ -10,9 +10,14 @@ class SolverData:
         self['NUM_EPOCHS'] = 200
         self['NUM_EPIS_TRAIN'] = (25, "number of episodes for training at each epoch")
         self['NUM_EPIS_TEST'] = (50, "number of episodes for testing")
+        self['MAX_PASSES_FITTED_Q'] = (0, "number of passes of the fitted q supervised learning set")
+        self['LOSS_TOLERANCE_FITTED_Q'] = (0, "ratio delta average loss between passes divided by average loss, which terminates learning")
+        self['EPOCH_TIME_RATIO_FITTED_Q'] = (0.8, "desired ratio between epoch time and fitted q time, which epoch time adjusts to satisfy")
+        self['LEARN_WHILE_TRAINING'] = (True, "whether training passes update q values, typically True unless MAX_PASSES_FITTED_Q != 0")
         self['MAX_STEPS'] = (20, "maxiumum number of steps in an espisode")
         self['ALPHA'] = (0.1, "learning rate for training")
-        self['ALREADY_SEEN_PENALTY'] = (0, "subtract from reward when the state repeats")
+        self['HIDDEN_SIZE'] = (200, "number of nodes in the hidden layer of a one-level dqn")
+        self['REPEATED_STATE_PENALTY'] = (-0.2, "subtract from reward when the state repeats")
         self['PRINT_LOG_THRESHOLD'] = (10, "Set this lower to print the activity once the ewma reward hits a threshold")
 
     # Value is a tuple (actualValue, explanationStr)

@@ -63,17 +63,17 @@ def update_seen():
     global fresh_epoch
     if not seen_locations[game.state.location.i]:
         if fresh_epoch:
-            print("")
+            #print("")
             fresh_epoch = False
-        print("SEEN LOCATION:", game.state.location)
+        #print("SEEN LOCATION:", game.state.location)
         seen_locations[game.state.location.i] = True
 
     for object in game.world.objects:
         if object.seen and not seen_objects[object.i]:
             if fresh_epoch:
-                print("")
+                #print("")
                 fresh_epoch = False
-            print("SEEN OBJECT:", object)
+            #print("SEEN OBJECT:", object)
             seen_objects[object.i] = True
 
 def step_game(current_room_desc, current_quest_desc, action_index, object_index):

@@ -58,16 +58,16 @@ class CIA(Game):
         self.state['combination'] = 12345
         self.state['guardTicks'] = -1
 
-        self.defaultReward = -0.1
+        self.defaultReward = -0.01
         self.rewards = {
             Response.Success: self.defaultReward,
-            Response.QuestCompleted: 100,
-            Response.IllegalCommand: -1 + self.defaultReward,
-            Response.Fatal: -100,
-            Response.MaybeLater: -0.2 + self.defaultReward,
-            Response.NotUseful: -0.8 + self.defaultReward,
-            Response.NewlySeen: 2 + self.defaultReward,
-            Response.MightBeUseful: 1 + self.defaultReward,
+            Response.QuestCompleted: 1,
+            Response.IllegalCommand: -0.1 + self.defaultReward,
+            Response.Fatal: -1,
+            Response.MaybeLater: 0.04 + self.defaultReward,
+            Response.NotUseful: -0.02 + self.defaultReward,
+            Response.NewlySeen: 0.06 + self.defaultReward,
+            Response.MightBeUseful: 0.02 + self.defaultReward,
         }
 
         self.state.inventory.Add(self.world.objects['BADGE'])
@@ -120,6 +120,7 @@ class CIA(Game):
         if verb.Is('OPEN') and target is not None and target.IsObject() and target.value.Is('A LOCKED WOODEN DOOR') \
                 and self.state.location.Is('ANTEROOM') \
                 and self.Has('KEY'):
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!OPENED WOODEN DOOR!!!!!!!!!!!!!!!!!!!!!!!")
             jj = 99
 
 if __name__ == '__main__':

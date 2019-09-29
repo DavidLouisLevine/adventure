@@ -33,7 +33,7 @@ solverData['NUM_EPOCHS'] = 10000
 solverData['MAX_STEPS'] = 40
 solverData['PRINT_LOG_THRESHOLD'] = 100000
 solverData['HIDDEN_SIZE'] = 500
-solverData['ALREADY_SEEN_PENALTY'] = (-0.5, "subtract from reward when the state repeats")
+#solverData['REPEATED_STATE_PENALTY'] = (-0.2)
 solverData['NUM_RUNS'] = 1
 
 strategy = CIAStrategy(game)
@@ -52,12 +52,13 @@ if tune:
     solverData['NUM_EPOCHS'] = 4
     solverData['MAX_STEPS'] = 18
     solverData['NUM_EPIS_TEST'] = 2
-    solverData['NUM_TRIES'] = 6
+    solverData['NUM_TUNING_TRIES'] = 6
 
     values, score, records = tuners.tune(solverData, lambda: Solver(framework, ModelPerVerbPredictor(strategy, hidden_size=solverData['HIDDEN_SIZE']), solverData, strategy))
 
     print("Tuned score, values:", score, values)
 
+    print("*****logical order****")
     print('\n'.join(map(lambda x: str(x), records)))
     records.sort(key=lambda x: x[0])
     print("*****sorted****")
@@ -76,10 +77,24 @@ solverData['NUM_EPIS_TRAIN'] = 30
 solverData['NUM_EPOCHS'] = 10000
 solverData['MAX_STEPS'] = 40
 
+solverData['MAX_PASSES_FITTED_Q'] = 250
+solverData['LOSS_TOLERANCE_FITTED_Q'] = 0.01
+solverData['LEARN_WHILE_TRAINING'] = False
+solverData['TRAINING_EP'] = 0.5
+solverData['TRAINING_EP_MIN'] = 0.1
+solverData['TRAINING_EP_MAX'] = 1
+solverData['NUM_EPIS_TRAIN'] = 50
+solverData['NUM_EPIS_TEST'] = 1
+solverData['NUM_EPOCHS'] = 10000
+solverData['MAX_STEPS'] = 25
+solverData['GAMMA'] = 0.5
+solverData['ALPHA'] = 0.1
+solverData['HIDDEN_SIZE'] = 2500
+
 #solver = Solver(framework, ModelPerActionPredictor(DQN), solverData, strategy)
-#solver = Solver(framework, ModelPerVerbPredictor(DQN), solverData, strategy)
+solver = Solver(framework, ModelPerVerbPredictor(DQN), solverData, strategy)
 #solver = Solver(framework, ModelPerObjectPredictor(DQN), solverData, strategy)
-solver = Solver(framework, DecoupledPredictor(DQN), solverData, strategy)
+#solver = Solver(framework, DecoupledPredictor(DQN), solverData, strategy)
 
 Plotter(solver.execute(), solverData)
 
